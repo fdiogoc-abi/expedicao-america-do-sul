@@ -1138,24 +1138,29 @@
         🔒
       </div>
       
-      <h2 class="text-base font-bold text-slate-800" id="lockTitle">Acesso ao Roteiro</h2>
+      <h2 class="text-base font-bold text-slate-800" id="lockTitle">Definir Senha</h2>
+      <p class="text-xs text-slate-500 mt-1" id="lockSubtitle">Crie uma senha para acessar seu roteiro</p>
 
-      <!-- FORMULÁRIO DE DESBLOQUEIO -->
-      <form id="unlockForm" onsubmit="handleUnlockSubmit(event)" class="mt-4 space-y-3">
-        <div class="relative">
-          <input type="password" id="unlockPasswordInput" required autocomplete="current-password" placeholder="Digite sua senha..." class="w-full px-3.5 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-800 text-sm font-medium text-slate-800 pr-9">
-          <button type="button" onclick="togglePasswordVisibility('unlockPasswordInput', this)" class="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs p-1">
+      <!-- FORMULÁRIO UNIFICADO -->
+      <form id="authForm" onsubmit="handleAuthSubmit(event)" class="mt-4 space-y-3">
+        <div class="relative text-left">
+          <input type="password" id="authPasswordInput" required autocomplete="current-password" placeholder="Crie uma nova senha..." class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-800 text-sm font-medium text-slate-800 pr-9">
+          <button type="button" onclick="togglePasswordVisibility('authPasswordInput', this)" class="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs p-1">
             👁️
           </button>
         </div>
 
-        <div class="flex items-center justify-between text-xs text-slate-500">
+        <div id="authConfirmContainer" class="text-left">
+          <input type="password" id="authConfirmInput" placeholder="Confirme a nova senha..." class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-800 text-sm font-medium text-slate-800">
+        </div>
+
+        <div class="flex items-center justify-between text-xs text-slate-500 pt-0.5">
           <label class="flex items-center gap-1.5 cursor-pointer select-none">
             <input type="checkbox" id="rememberDeviceCheck" checked class="rounded text-slate-800 focus:ring-slate-800">
             <span>Lembrar</span>
           </label>
-          <button type="button" onclick="promptResetPassword()" class="text-slate-400 hover:text-slate-700 underline cursor-pointer">
-            Redefinir
+          <button type="button" id="resetPasswordBtn" onclick="promptResetPassword()" class="text-slate-400 hover:text-slate-700 underline cursor-pointer">
+            Criar nova senha
           </button>
         </div>
 
@@ -1163,39 +1168,47 @@
           <span id="authErrorText">Senha incorreta</span>
         </div>
 
-        <button type="submit" id="unlockSubmitBtn" class="w-full py-2 px-4 rounded-xl bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs transition-colors cursor-pointer">
-          Entrar
-        </button>
-      </form>
-
-      <!-- FORMULÁRIO DE PRIMEIRO ACESSO -->
-      <form id="setupPasswordForm" onsubmit="handleSetupPasswordSubmit(event)" class="mt-4 space-y-3 hidden text-left">
-        <p class="text-xs text-slate-500 text-center">Crie uma senha para este roteiro:</p>
-        <div>
-          <input type="password" id="setupPasswordInput" required placeholder="Nova senha" class="w-full px-3.5 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-800 text-sm font-medium text-slate-800">
-        </div>
-        <div>
-          <input type="password" id="setupPasswordConfirm" required placeholder="Confirme a senha" class="w-full px-3.5 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-800 text-sm font-medium text-slate-800">
-        </div>
-
-        <div class="flex items-center text-xs text-slate-500">
-          <label class="flex items-center gap-1.5 cursor-pointer select-none">
-            <input type="checkbox" id="setupRememberDeviceCheck" checked class="rounded text-slate-800 focus:ring-slate-800">
-            <span>Lembrar neste computador</span>
-          </label>
-        </div>
-
-        <div id="setupErrorMessage" class="text-xs text-rose-600 font-medium hidden">
-          <span id="setupErrorText">As senhas não coincidem.</span>
-        </div>
-
-        <button type="submit" class="w-full py-2 px-4 rounded-xl bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs transition-colors cursor-pointer">
+        <button type="submit" id="authSubmitBtn" class="w-full py-2.5 px-4 rounded-xl bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs transition-colors cursor-pointer shadow-sm">
           Salvar Senha & Entrar
         </button>
       </form>
 
     </div>
   </div>
+
+  <script>
+    // Inicialização visual instantânea da tela de bloqueio
+    (function initLockUIPrompt() {
+      try {
+        var hasHash = !!localStorage.getItem("expedicao_auth_hash");
+        var title = document.getElementById("lockTitle");
+        var subtitle = document.getElementById("lockSubtitle");
+        var input = document.getElementById("authPasswordInput");
+        var confirmBox = document.getElementById("authConfirmContainer");
+        var submitBtn = document.getElementById("authSubmitBtn");
+        var resetBtn = document.getElementById("resetPasswordBtn");
+
+        if (!hasHash) {
+          if (title) title.textContent = "Definir Senha";
+          if (subtitle) subtitle.textContent = "Crie uma senha para acessar seu roteiro";
+          if (input) input.placeholder = "Crie sua nova senha...";
+          if (confirmBox) confirmBox.classList.remove("hidden");
+          if (submitBtn) submitBtn.textContent = "Salvar Senha & Entrar";
+          if (resetBtn) resetBtn.classList.add("hidden");
+        } else {
+          if (title) title.textContent = "Acesso ao Roteiro";
+          if (subtitle) subtitle.textContent = "Digite sua senha para entrar";
+          if (input) input.placeholder = "Digite sua senha...";
+          if (confirmBox) confirmBox.classList.add("hidden");
+          if (submitBtn) submitBtn.textContent = "Entrar";
+          if (resetBtn) {
+            resetBtn.classList.remove("hidden");
+            resetBtn.textContent = "Criar nova senha";
+          }
+        }
+      } catch(e) {}
+    })();
+  </script>
 
   <!-- ========================================== -->
   <!-- ☁️ MODAL DE NUVEM & SEGURANÇA (MULTI-PC) -->
@@ -2226,9 +2239,39 @@
       }
     }
 
-    async function handleUnlockSubmit(e) {
+    function updateLockUIState() {
+      const hasHash = !!localStorage.getItem("expedicao_auth_hash");
+      const title = document.getElementById("lockTitle");
+      const subtitle = document.getElementById("lockSubtitle");
+      const input = document.getElementById("authPasswordInput");
+      const confirmBox = document.getElementById("authConfirmContainer");
+      const submitBtn = document.getElementById("authSubmitBtn");
+      const resetBtn = document.getElementById("resetPasswordBtn");
+
+      if (!hasHash) {
+        if (title) title.textContent = "Definir Senha";
+        if (subtitle) subtitle.textContent = "Crie uma senha para acessar seu roteiro";
+        if (input) input.placeholder = "Crie sua nova senha...";
+        if (confirmBox) confirmBox.classList.remove("hidden");
+        if (submitBtn) submitBtn.textContent = "Salvar Senha & Entrar";
+        if (resetBtn) resetBtn.classList.add("hidden");
+      } else {
+        if (title) title.textContent = "Acesso ao Roteiro";
+        if (subtitle) subtitle.textContent = "Digite sua senha para entrar";
+        if (input) input.placeholder = "Digite sua senha...";
+        if (confirmBox) confirmBox.classList.add("hidden");
+        if (submitBtn) submitBtn.textContent = "Entrar";
+        if (resetBtn) {
+          resetBtn.classList.remove("hidden");
+          resetBtn.textContent = "Criar nova senha";
+        }
+      }
+    }
+
+    async function handleAuthSubmit(e) {
       if (e) e.preventDefault();
-      const input = document.getElementById("unlockPasswordInput");
+      const input = document.getElementById("authPasswordInput");
+      const confirmInput = document.getElementById("authConfirmInput");
       const errBox = document.getElementById("authErrorMessage");
       const errText = document.getElementById("authErrorText");
       const rememberCheck = document.getElementById("rememberDeviceCheck");
@@ -2237,17 +2280,51 @@
       const password = input.value.trim();
       if (!password) return;
 
+      const hasHash = !!localStorage.getItem("expedicao_auth_hash");
+
+      // CASO 1: CRIANDO SENHA PELA PRIMEIRA VEZ
+      if (!hasHash) {
+        const confirmPass = confirmInput ? confirmInput.value.trim() : "";
+        if (password.length < 3) {
+          if (errBox) errBox.classList.remove("hidden");
+          if (errText) errText.textContent = "A senha deve ter pelo menos 3 caracteres.";
+          return;
+        }
+        if (password !== confirmPass) {
+          if (errBox) errBox.classList.remove("hidden");
+          if (errText) errText.textContent = "As duas senhas não conferem.";
+          return;
+        }
+
+        const hash = await computeSha256(password);
+        localStorage.setItem("expedicao_auth_hash", hash);
+        masterPassword = password;
+        isAppUnlocked = true;
+        sessionStorage.setItem("expedicao_unlocked", "true");
+
+        if (rememberCheck && rememberCheck.checked) {
+          localStorage.setItem("expedicao_remember_device", "true");
+          localStorage.setItem("expedicao_saved_key", btoa(encodeURIComponent(password)));
+        }
+
+        const overlay = document.getElementById("authLockOverlay");
+        if (overlay) overlay.classList.add("hidden");
+        if (errBox) errBox.classList.add("hidden");
+
+        showToast("🔒 Senha criada com sucesso! Painel liberado.");
+        syncToCloud(true);
+        return;
+      }
+
+      // CASO 2: DESBLOQUEANDO COM SENHA EXISTENTE
       const hash = await computeSha256(password);
       const storedHash = localStorage.getItem("expedicao_auth_hash");
 
       let isValid = false;
-
-      if (storedHash) {
-        if (hash === storedHash) {
-          isValid = true;
-        }
+      if (storedHash && hash === storedHash) {
+        isValid = true;
       } else {
-        // Caso de pareamento no PC 2: sem hash local, testa descriptografar o cesto da nuvem
+        // Se estiver no PC 2 (sem hash local ainda), tenta descriptografar cesto da nuvem
         try {
           const endpoint = getPantryEndpoint();
           const res = await fetch(endpoint);
@@ -2277,55 +2354,16 @@
 
         const overlay = document.getElementById("authLockOverlay");
         if (overlay) overlay.classList.add("hidden");
-
         if (errBox) errBox.classList.add("hidden");
         input.value = "";
-        showToast("🔓 Bem-vindo! Painel desbloqueado com sucesso.");
+        showToast("🔓 Bem-vindo! Painel desbloqueado.");
         fetchFromCloud(false);
       } else {
         if (errBox) errBox.classList.remove("hidden");
-        if (errText) errText.textContent = "Senha incorreta. Tente novamente.";
+        if (errText) errText.textContent = "Senha incorreta.";
         input.classList.add("ring-2", "ring-rose-500");
         setTimeout(() => input.classList.remove("ring-2", "ring-rose-500"), 1500);
       }
-    }
-
-    async function handleSetupPasswordSubmit(e) {
-      if (e) e.preventDefault();
-      const p1 = document.getElementById("setupPasswordInput").value.trim();
-      const p2 = document.getElementById("setupPasswordConfirm").value.trim();
-      const errBox = document.getElementById("setupErrorMessage");
-      const errText = document.getElementById("setupErrorText");
-      const rememberCheck = document.getElementById("setupRememberDeviceCheck");
-
-      if (p1.length < 4) {
-        if (errBox) errBox.classList.remove("hidden");
-        if (errText) errText.textContent = "A senha deve ter pelo menos 4 caracteres.";
-        return;
-      }
-
-      if (p1 !== p2) {
-        if (errBox) errBox.classList.remove("hidden");
-        if (errText) errText.textContent = "As senhas digitadas não conferem.";
-        return;
-      }
-
-      const hash = await computeSha256(p1);
-      localStorage.setItem("expedicao_auth_hash", hash);
-      masterPassword = p1;
-      isAppUnlocked = true;
-      sessionStorage.setItem("expedicao_unlocked", "true");
-
-      if (rememberCheck && rememberCheck.checked) {
-        localStorage.setItem("expedicao_remember_device", "true");
-        localStorage.setItem("expedicao_saved_key", btoa(encodeURIComponent(p1)));
-      }
-
-      const overlay = document.getElementById("authLockOverlay");
-      if (overlay) overlay.classList.add("hidden");
-
-      showToast("🛡️ Senha Mestra criada! Seus dados foram protegidos.");
-      syncToCloud(true);
     }
 
     function lockApp() {
@@ -2335,13 +2373,10 @@
       localStorage.removeItem("expedicao_saved_key");
 
       const overlay = document.getElementById("authLockOverlay");
-      const unlockForm = document.getElementById("unlockForm");
-      const setupForm = document.getElementById("setupPasswordForm");
-      const input = document.getElementById("unlockPasswordInput");
-
       if (overlay) overlay.classList.remove("hidden");
-      if (unlockForm) unlockForm.classList.remove("hidden");
-      if (setupForm) setupForm.classList.add("hidden");
+      updateLockUIState();
+
+      const input = document.getElementById("authPasswordInput");
       if (input) {
         input.value = "";
         setTimeout(() => input.focus(), 200);
@@ -2350,18 +2385,22 @@
     }
 
     function promptResetPassword() {
-      const ok = confirm("Deseja redefinir a senha deste computador?\\n\\nIsso permitirá criar uma nova senha para o painel. Seus dados locais serão preservados.");
-      if (!ok) return;
-
       localStorage.removeItem("expedicao_auth_hash");
       localStorage.removeItem("expedicao_saved_key");
       sessionStorage.removeItem("expedicao_unlocked");
       masterPassword = null;
 
-      const unlockForm = document.getElementById("unlockForm");
-      const setupForm = document.getElementById("setupPasswordForm");
-      if (unlockForm) unlockForm.classList.add("hidden");
-      if (setupForm) setupForm.classList.remove("hidden");
+      updateLockUIState();
+
+      const input = document.getElementById("authPasswordInput");
+      if (input) {
+        input.value = "";
+        setTimeout(() => input.focus(), 200);
+      }
+      const confirmInput = document.getElementById("authConfirmInput");
+      if (confirmInput) confirmInput.value = "";
+      const errBox = document.getElementById("authErrorMessage");
+      if (errBox) errBox.classList.add("hidden");
     }
 
     async function openChangePasswordPrompt() {
@@ -2519,18 +2558,9 @@
       }
 
       if (overlay) overlay.classList.remove("hidden");
-
-      if (hasStoredHash) {
-        if (unlockForm) unlockForm.classList.remove("hidden");
-        if (setupForm) setupForm.classList.add("hidden");
-        const passInput = document.getElementById("unlockPasswordInput");
-        if (passInput) setTimeout(() => passInput.focus(), 300);
-      } else {
-        if (unlockForm) unlockForm.classList.add("hidden");
-        if (setupForm) setupForm.classList.remove("hidden");
-        const setupInput = document.getElementById("setupPasswordInput");
-        if (setupInput) setTimeout(() => setupInput.focus(), 300);
-      }
+      updateLockUIState();
+      const authInput = document.getElementById("authPasswordInput");
+      if (authInput) setTimeout(() => authInput.focus(), 250);
     }
 
     let currentCurrency = "BRL";
