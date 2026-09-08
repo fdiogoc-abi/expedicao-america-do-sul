@@ -29,13 +29,11 @@
     <header class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
       <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div>
-          <div class="flex items-center gap-2 mb-1 flex-wrap">
-            <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800">Rota 3.0 Definitiva</span>
-            <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-sky-100 text-sky-800">6 Países: AR, UY, CL, PE, EC, CO</span>
-            <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-800">Longboard + Caribe Colombiano</span>
+          <div id="headerBadges" class="flex items-center gap-2 mb-1 flex-wrap">
+            <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-600">Expedição</span>
           </div>
-          <h1 class="text-2xl md:text-3xl font-bold text-slate-900">Expedição América do Sul: O Roteiro Definitivo</h1>
-          <p class="text-slate-500 text-sm mt-1">Início em Buenos Aires → Patagônia dos Lagos → Longboard no Pacífico → Vulcões do Equador → Paraíso Caribeño (30 Semanas)</p>
+          <h1 id="headerTitle" class="text-2xl md:text-3xl font-bold text-slate-900">Expedição América do Sul</h1>
+          <p id="headerSubtitle" class="text-slate-500 text-sm mt-1">Painel Nômade & Planejador Financeiro</p>
         </div>
 
         <!-- CONTROLES GLOBAIS DE SIMULAÇÃO -->
@@ -221,40 +219,8 @@
               L 230,820
             " fill="none" stroke="#475569" stroke-width="12" stroke-linecap="round" stroke-opacity="0.35" />
 
-            <!-- ROTAS -->
-            <!-- VOO DE CHEGADA A BUENOS AIRES (INÍCIO DA EXPEDIÇÃO) -->
-            <path d="M 520,620 Q 450,635 395,650" fill="none" stroke="#38bdf8" stroke-width="2" stroke-dasharray="4 4" opacity="0.4"/>
-            <text x="470" y="618" fill="#94a3b8" font-size="9" font-weight="600">Chegada ✈️</text>
-
-            <!-- FERRY BUENOS AIRES <-> COLONIA DEL SACRAMENTO (URUGUAI) -->
-            <path d="M 395,650 L 415,638" fill="none" stroke="#818cf8" stroke-width="2.5" class="route-ferry"/>
-            <!-- 2. VOO BUENOS AIRES -> BARILOCHE (7 LAGOS) -->
-            <path d="M 395,650 Q 300,670 220,715" fill="none" stroke="#38bdf8" stroke-width="2.5" class="route-flight" filter="url(#glow)"/>
-            <!-- 3. VOO BARILOCHE -> MENDOZA -->
-            <path d="M 220,715 Q 210,660 250,615" fill="none" stroke="#38bdf8" stroke-width="2.5" class="route-flight" filter="url(#glow)"/>
-            <!-- 4. ÔNIBUS CÊNICO MENDOZA -> SANTIAGO -->
-            <path d="M 250,615 L 200,620" fill="none" stroke="#34d399" stroke-width="3" class="route-land"/>
-            <!-- 5. VOO SANTIAGO -> AREQUIPA -->
-            <path d="M 200,620 Q 180,500 190,400" fill="none" stroke="#38bdf8" stroke-width="2.5" class="route-flight" filter="url(#glow)"/>
-            <!-- 6. ÔNIBUS LEITO NOTURNO AREQUIPA -> CUSCO -->
-            <path d="M 190,400 L 205,365" fill="none" stroke="#34d399" stroke-width="3" class="route-land"/>
-            <!-- 7. VOO CUSCO -> LIMA -->
-            <path d="M 205,365 Q 165,345 130,335" fill="none" stroke="#38bdf8" stroke-width="2.5" class="route-flight" filter="url(#glow)"/>
-            <!-- 8. ÔNIBUS LEITO LIMA -> HUANCHACO -->
-            <path d="M 130,335 L 105,290" fill="none" stroke="#f59e0b" stroke-width="3" class="route-land"/>
-            <!-- 9. ÔNIBUS LEITO HUANCHACO -> LOS ÓRGANOS / VICHAYITO -->
-            <path d="M 105,290 L 82,235" fill="none" stroke="#f59e0b" stroke-width="3.5" class="route-land"/>
-            <!-- 10. VAN TRANSFRONTEIRIÇA LOS ÓRGANOS -> OLÓN & AYAMPE -->
-            <path d="M 82,235 L 82,205" fill="none" stroke="#f59e0b" stroke-width="3.5" class="route-land"/>
-            <!-- 11. SUBIDA DA COSTA PARA QUILOTOA & BAÑOS (VULCÕES) -->
-            <path d="M 82,205 L 98,175" fill="none" stroke="#34d399" stroke-width="3" class="route-land"/>
-            <!-- 12. VOO EQUADOR -> MEDELLÍN (sem prancha) -->
-            <path d="M 98,175 Q 115,145 145,120" fill="none" stroke="#38bdf8" stroke-width="2.5" class="route-flight" filter="url(#glow)"/>
-            <!-- 13. VOO MEDELLÍN -> CARIBE COLOMBIANO (SANTA MARTA / TAYRONA) -->
-            <path d="M 145,120 L 185,55" fill="none" stroke="#f43f5e" stroke-width="2.5" class="route-flight" filter="url(#glow)"/>
-            <!-- RETORNO AO BRASIL -->
-            <path d="M 185,55 Q 360,180 500,280" fill="none" stroke="#fbbf24" stroke-width="2" stroke-dasharray="4 4" opacity="0.4"/>
-            <text x="450" y="265" fill="#fde68a" font-size="9" font-weight="600">✈️ Retorno</text>
+            <!-- ROTAS DINÂMICAS GERADAS A PARTIR DO COFRE CRIPTOGRAFADO -->
+            <g id="mapRoutesGroup"></g>
 
             <!-- INDICADOR ANIMADO DE SELEÇÃO (CENTRALIZADO, SEM DESLOCAMENTO) -->
             <g id="selectedPinMarker" style="pointer-events: none;">
@@ -266,105 +232,8 @@
               <circle id="selectedPinAura" cx="395" cy="650" r="18" fill="#38bdf8" opacity="0.2"/>
             </g>
 
-            <!-- 1. BUENOS AIRES (INÍCIO) -->
-            <g class="map-pin" onclick="selectBase(0)" id="pin-0">
-              <circle cx="395" cy="650" r="8" fill="#38bdf8"/>
-              <text x="395" y="654" fill="#0f172a" font-size="10" font-weight="black" text-anchor="middle">1</text>
-              <text x="350" y="665" fill="#cbd5e1" font-size="11" font-weight="600">Buenos Aires</text>
-            </g>
-
-            <!-- 2. COLONIA DEL SACRAMENTO (URUGUAI) -->
-            <g class="map-pin" onclick="selectBase(1)" id="pin-1">
-              <circle cx="415" cy="638" r="7" fill="#818cf8"/>
-              <text x="415" y="642" fill="#0f172a" font-size="9" font-weight="black" text-anchor="middle">2</text>
-              <text x="428" y="636" fill="#c7d2fe" font-size="10" font-weight="bold">Colonia (UY) 🚢</text>
-            </g>
-
-            <!-- 3. SETE LAGOS (BARILOCHE) -->
-            <g class="map-pin" onclick="selectBase(2)" id="pin-2">
-              <circle cx="220" cy="715" r="9" fill="#10b981"/>
-              <text x="220" y="719" fill="#0f172a" font-size="10" font-weight="black" text-anchor="middle">3</text>
-              <text x="130" y="720" fill="#a7f3d0" font-size="11" font-weight="bold">🏔️ Sete Lagos</text>
-            </g>
-
-            <!-- 4. MENDOZA -->
-            <g class="map-pin" onclick="selectBase(3)" id="pin-3">
-              <circle cx="250" cy="615" r="8" fill="#a855f7"/>
-              <text x="250" y="619" fill="#ffffff" font-size="10" font-weight="black" text-anchor="middle">4</text>
-              <text x="265" y="618" fill="#e9d5ff" font-size="11" font-weight="600">Mendoza 🍇</text>
-            </g>
-
-            <!-- 5. SANTIAGO EXPRESS -->
-            <g class="map-pin" onclick="selectBase(4)" id="pin-4">
-              <circle cx="200" cy="620" r="7" fill="#64748b"/>
-              <text x="200" y="624" fill="#ffffff" font-size="9" font-weight="black" text-anchor="middle">5</text>
-              <text x="135" y="615" fill="#94a3b8" font-size="10">Santiago (3d)</text>
-            </g>
-
-            <!-- 6. AREQUIPA -->
-            <g class="map-pin" onclick="selectBase(5)" id="pin-5">
-              <circle cx="190" cy="400" r="8" fill="#38bdf8"/>
-              <text x="190" y="404" fill="#0f172a" font-size="10" font-weight="black" text-anchor="middle">6</text>
-              <text x="205" y="404" fill="#cbd5e1" font-size="11" font-weight="600">Arequipa</text>
-            </g>
-
-            <!-- 7. CUSCO & MACHU PICCHU -->
-            <g class="map-pin" onclick="selectBase(6)" id="pin-6">
-              <circle cx="205" cy="365" r="8" fill="#10b981"/>
-              <text x="205" y="369" fill="#0f172a" font-size="10" font-weight="black" text-anchor="middle">7</text>
-              <text x="220" y="368" fill="#a7f3d0" font-size="11" font-weight="bold">Cusco ⛰️</text>
-            </g>
-
-            <!-- 8. LIMA (MAKAHA) -->
-            <g class="map-pin" onclick="selectBase(7)" id="pin-7">
-              <circle cx="130" cy="335" r="9" fill="#f59e0b"/>
-              <text x="130" y="339" fill="#0f172a" font-size="10" font-weight="black" text-anchor="middle">8</text>
-              <text x="45" y="338" fill="#fde68a" font-size="11" font-weight="bold">🏄 Lima</text>
-            </g>
-
-            <!-- 9. HUANCHACO -->
-            <g class="map-pin" onclick="selectBase(8)" id="pin-8">
-              <circle cx="105" cy="290" r="10" fill="#f59e0b"/>
-              <circle cx="105" cy="290" r="16" fill="#f59e0b" opacity="0.25"/>
-              <text x="105" y="294" fill="#0f172a" font-size="10" font-weight="black" text-anchor="middle">9</text>
-              <text x="10" y="293" fill="#fde68a" font-size="11" font-weight="bold">🏄 Huanchaco (QG)</text>
-            </g>
-
-            <!-- 10. LOS ÓRGANOS & VICHAYITO -->
-            <g class="map-pin" onclick="selectBase(9)" id="pin-9">
-              <circle cx="82" cy="235" r="9" fill="#f59e0b"/>
-              <text x="82" y="239" fill="#0f172a" font-size="10" font-weight="black" text-anchor="middle">10</text>
-              <text x="5" y="248" fill="#fde68a" font-size="10" font-weight="bold">Los Órganos 🐢</text>
-            </g>
-
-            <!-- 11. OLÓN & AYAMPE -->
-            <g class="map-pin" onclick="selectBase(10)" id="pin-10">
-              <circle cx="82" cy="205" r="9" fill="#f59e0b"/>
-              <text x="82" y="209" fill="#0f172a" font-size="10" font-weight="black" text-anchor="middle">11</text>
-              <text x="10" y="210" fill="#fde68a" font-size="10" font-weight="bold">Olón & Ayampe 🌴</text>
-            </g>
-
-            <!-- 12. QUILOTOA & BAÑOS (VULCÕES & AMAZÔNIA) -->
-            <g class="map-pin" onclick="selectBase(11)" id="pin-11">
-              <circle cx="98" cy="175" r="8" fill="#10b981"/>
-              <text x="98" y="179" fill="#ffffff" font-size="9" font-weight="black" text-anchor="middle">12</text>
-              <text x="110" y="178" fill="#6ee7b7" font-size="10" font-weight="bold">🌋 Baños / Quilotoa</text>
-            </g>
-
-            <!-- 13. MEDELLÍN -->
-            <g class="map-pin" onclick="selectBase(12)" id="pin-12">
-              <circle cx="145" cy="120" r="9" fill="#38bdf8"/>
-              <text x="145" y="124" fill="#0f172a" font-size="10" font-weight="black" text-anchor="middle">13</text>
-              <text x="160" y="124" fill="#e0f2fe" font-size="11" font-weight="bold">Medellín ☕</text>
-            </g>
-
-            <!-- 14. CARIBE COLOMBIANO (TAYRONA / SANTA MARTA) -->
-            <g class="map-pin" onclick="selectBase(13)" id="pin-13">
-              <circle cx="185" cy="55" r="10" fill="#f43f5e"/>
-              <circle cx="185" cy="55" r="16" fill="#f43f5e" opacity="0.3"/>
-              <text x="185" y="59" fill="#ffffff" font-size="10" font-weight="black" text-anchor="middle">14</text>
-              <text x="200" y="58" fill="#fecdd3" font-size="11" font-weight="bold">🏝️ Tayrona (Caribe!)</text>
-            </g>
+            <!-- PINOS DINÂMICOS GERADOS A PARTIR DO COFRE CRIPTOGRAFADO -->
+            <g id="mapPinsGroup"></g>
           </svg>
         </div>
 
@@ -1138,26 +1007,22 @@
         🔒
       </div>
       
-      <h2 class="text-base font-bold text-slate-800" id="lockTitle">Definir Senha</h2>
-      <p class="text-xs text-slate-500 mt-1" id="lockSubtitle">Crie uma senha para acessar seu roteiro</p>
+      <h2 class="text-base font-bold text-slate-800" id="lockTitle">Acesso ao Roteiro</h2>
+      <p class="text-xs text-slate-500 mt-1" id="lockSubtitle">Digite sua senha para entrar</p>
 
       <!-- FORMULÁRIO UNIFICADO -->
       <form id="authForm" onsubmit="handleAuthSubmit(event)" class="mt-4 space-y-3">
         <div class="relative text-left">
-          <input type="password" id="authPasswordInput" required autocomplete="current-password" placeholder="Crie uma nova senha..." class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-800 text-sm font-medium text-slate-800 pr-9">
-          <button type="button" onclick="togglePasswordVisibility('authPasswordInput', this)" class="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs p-1">
+          <input type="password" id="authPasswordInput" required autocomplete="current-password" placeholder="Digite sua senha..." class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-800 text-sm font-medium text-slate-800 pr-9">
+          <button type="button" onclick="togglePasswordVisibility('authPasswordInput', this)" class="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs p-1 cursor-pointer">
             👁️
           </button>
-        </div>
-
-        <div id="authConfirmContainer" class="text-left">
-          <input type="password" id="authConfirmInput" placeholder="Confirme a nova senha..." class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-800 text-sm font-medium text-slate-800">
         </div>
 
         <div class="flex items-center text-xs text-slate-500 pt-0.5">
           <label class="flex items-center gap-1.5 cursor-pointer select-none">
             <input type="checkbox" id="rememberDeviceCheck" checked class="rounded text-slate-800 focus:ring-slate-800">
-            <span>Lembrar</span>
+            <span>Lembrar neste dispositivo</span>
           </label>
         </div>
 
@@ -1166,40 +1031,12 @@
         </div>
 
         <button type="submit" id="authSubmitBtn" class="w-full py-2.5 px-4 rounded-xl bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs transition-colors cursor-pointer shadow-sm">
-          Salvar Senha & Entrar
+          Entrar
         </button>
       </form>
 
     </div>
   </div>
-
-  <script>
-    // Inicialização visual instantânea da tela de bloqueio
-    (function initLockUIPrompt() {
-      try {
-        var hasHash = !!localStorage.getItem("expedicao_auth_hash");
-        var title = document.getElementById("lockTitle");
-        var subtitle = document.getElementById("lockSubtitle");
-        var input = document.getElementById("authPasswordInput");
-        var confirmBox = document.getElementById("authConfirmContainer");
-        var submitBtn = document.getElementById("authSubmitBtn");
-
-        if (!hasHash) {
-          if (title) title.textContent = "Definir Senha";
-          if (subtitle) subtitle.textContent = "Crie uma senha para acessar seu roteiro";
-          if (input) input.placeholder = "Crie sua nova senha...";
-          if (confirmBox) confirmBox.classList.remove("hidden");
-          if (submitBtn) submitBtn.textContent = "Salvar Senha & Entrar";
-        } else {
-          if (title) title.textContent = "Acesso ao Roteiro";
-          if (subtitle) subtitle.textContent = "Digite sua senha para entrar";
-          if (input) input.placeholder = "Digite sua senha...";
-          if (confirmBox) confirmBox.classList.add("hidden");
-          if (submitBtn) submitBtn.textContent = "Entrar";
-        }
-      } catch(e) {}
-    })();
-  </script>
 
   <!-- ========================================== -->
   <!-- ☁️ MODAL DE NUVEM & SEGURANÇA (MULTI-PC) -->
@@ -1297,536 +1134,11 @@
   </div>
 
   <script>
-    // BASE DATA CONFIGURATION - ROTA 3.0 DEFINITIVA (30 SEMANAS / 14 ETAPAS)
-    const baseData = [
-  {
-    "id": "ba",
-    "name": "Buenos Aires",
-    "country": "Argentina",
-    "flag": "🇦🇷",
-    "weeks": 4,
-    "role": "Início Oficial & Adaptação Nômade",
-    "hospUsdMonth": 780,
-    "alimUsdMonth": 440,
-    "transUsd": 170,
-    "transType": "Voo de Chegada a Buenos Aires (Início da Expedição)",
-    "extrasUsdMonth": 140,
-    "fuso": "UTC-3 (Idêntico a Brasília)",
-    "surfNotes": "Sem surfe - treino físico e adaptação",
-    "foodNotes": "Carnicerías de bairro, feiras livres em Palermo/Colegiales e jantares fartos com Dólar MEP (bife de chorizo com vinho por ~US$ 9).",
-    "spanishNotes": "Polo 1 (Destravar no Mês 1): Momento ideal para professor particular 1-on-1 com Dólar MEP (~US$ 8-12/h) ou escolas em Palermo (Expanish / UBA Idiomas). Elimina o portunhol para o resto da viagem!",
-    "temp": "Verão quente (26-32°C)",
-    "isSurf": false,
-    "isBeach": false,
-    "isAndes": false,
-    "desc": "Ponto de partida e início oficial da expedição sul-americana! Primeiro mês para criar a rotina de trabalho remoto, comprar chips locais Claro/Movistar, usufruir do câmbio favorável com Dólar MEP nos cartões e abastecer a despensa em feiras livres de Palermo e Colegiales.",
-    "image": "https://images.unsplash.com/photo-1612294037637-ec328d0e075e?auto=format&fit=crop&w=1000&q=80",
-    "guide": {
-      "highlight": "A capital cultural e gastronômica: vida de bairro a pé, carnes excepcionais com Dólar MEP e cafés parisienses.",
-      "neighborhoods": "Melhores: Colegiales (calmo, arborizado e seguro) e Palermo Hollywood (vibrante e repleto de mercados). Evitar: San Telmo à noite e Microcentro (muito barulhento).",
-      "cafes": "Cuervo Café (El Salvador), Lattente (Thames) e Rondó Café. Todos com ambiente excelente para laptop e tomadas acessíveis.",
-      "weekend": "Pegar o trem cênico Mitre até o Delta do Tigre para passeio de barco pelos canais; almoço de domingo na Feira de San Telmo e piquenique no Rosedal.",
-      "food": "Parrilla Don Julio é cara e turística; vá à 'La Carnicería' ou a bodegones de bairro como 'El Obrero' e 'Donnet'. Bife de chorizo com vinho por US$ 9 no Dólar MEP.",
-      "safety": "Não use celular na beirada da calçada (risco de motochorros). Peça Cabify em vez de pegar táxi na rua para evitar notas falsas."
-    }
-  },
-  {
-    "id": "colonia",
-    "name": "Colonia del Sacramento",
-    "country": "Uruguai",
-    "flag": "🇺🇾",
-    "weeks": 0,
-    "role": "Escapada pelo Rio da Prata",
-    "hospUsdMonth": 0,
-    "alimUsdMonth": 0,
-    "transUsd": 90,
-    "transType": "Ferry rápido Buquebus (1h15 de travessia)",
-    "extrasUsdMonth": 0,
-    "fuso": "UTC-3",
-    "surfNotes": "Passeio romântico de fim de semana",
-    "foodNotes": "Chivito uruguaio na brasa e taças de vinho Tannat em bistrôs coloniais com vista para o Rio da Prata.",
-    "temp": "Brisa fresca do Rio da Prata (22-28°C)",
-    "isSurf": false,
-    "isBeach": false,
-    "isAndes": false,
-    "desc": "BÔNUS DE FIM DE SEMANA: Travessia rápida de ferry saindo de Puerto Madero em Buenos Aires. Ruas coloniais de pedra portuguesas tombadas pela UNESCO, farol antigo, vinhos uruguaios e carnes sem perder nenhum minuto de trabalho.",
-    "image": "https://images.unsplash.com/photo-1596484552834-6a58f850e0a1?auto=format&fit=crop&w=1000&q=80",
-    "guide": {
-      "highlight": "Charme colonial português tombado pela UNESCO às margens do Rio da Prata.",
-      "neighborhoods": "Bairro Histórico (dentro das muralhas) ou próximo ao terminal do porto Buquebus para fazer tudo a pé.",
-      "cafes": "Café Rincón del Teatro e Lentas Maravillas (jardim relaxante com vista panorâmica para o Rio da Prata).",
-      "weekend": "Alugar um carrinho de golfe elétrico para percorrer a orla até a Plaza de Toros Real de San Carlos; assistir ao pôr do sol no Farol de 1857.",
-      "food": "Chivito uruguaio completo no 'El Drugstore' e taças de vinho Tannat uruguaio nos bistrôs de pedra.",
-      "safety": "Uma das cidades mais pacatas e seguras de toda a América do Sul. Caminhadas noturnas totalmente tranquilas."
-    }
-  },
-  {
-    "id": "7lagos",
-    "name": "Rota dos Sete Lagos (Bariloche a San Martín)",
-    "country": "Patagônia Argentina",
-    "flag": "🇦🇷",
-    "weeks": 3,
-    "role": "Verão Alpino & Praias de Lago",
-    "hospUsdMonth": 950,
-    "alimUsdMonth": 520,
-    "transUsd": 320,
-    "transType": "Voo BA -> Bariloche + 6 dias de carro alugado",
-    "extrasUsdMonth": 200,
-    "fuso": "UTC-3",
-    "surfNotes": "Caiaque, stand-up paddle e banho de lago cristalino",
-    "foodNotes": "Trutas frescas dos lagos patagônicos, cordeiro no fogo de chão, chocolates artesanais e cervejarias locais de Bariloche.",
-    "temp": "Verão fresco alpino (12-25°C)",
-    "isSurf": false,
-    "isBeach": true,
-    "isAndes": true,
-    "desc": "O auge da natureza andina. Em vez do extremo sul caro, vocês curtem 3 semanas entre Bariloche, Villa La Angostura e San Martín de los Andes. Águas transparentes, cervejarias artesanais e trilhas gratuitas.",
-    "image": "https://images.unsplash.com/photo-1544984243-ec57ea16fe25?auto=format&fit=crop&w=1000&q=80",
-    "guide": {
-      "highlight": "Verão alpino na Patagônia dos lagos transparentes, florestas de arrayanes e cervejarias artesanais.",
-      "neighborhoods": "Dividir as 3 semanas: 10 dias em Bariloche (Playa Bonita / Melipal), 5 dias em Villa La Angostura e 6 dias em San Martín de los Andes.",
-      "cafes": "Rapanui e Mamuschka para café com chocolates artesanais; cafeterias à beira do Lago Nahuel Huapi.",
-      "weekend": "Travessia de carro da Rota dos 7 Lagos (Ruta 40) parando nos lagos Correntoso, Espejo e Villarino; trilha ao Cerro Campanario (vista eleita top 10 mundial pela NatGeo).",
-      "food": "Trutas frescas dos rios patagônicos, cordeiro no fogo de chão e degustação de chopp nas fábricas artesanais Blest e Manush.",
-      "safety": "Região super segura. Na estrada, respeite a velocidade nas curvas fechadas da montanha e cuide com animais silvestres na pista."
-    }
-  },
-  {
-    "id": "mendoza",
-    "name": "Mendoza (Quinta Sección / Godoy Cruz)",
-    "country": "Argentina",
-    "flag": "🇦🇷",
-    "weeks": 3,
-    "role": "Safra da Vindima & Cordilheira",
-    "hospUsdMonth": 650,
-    "alimUsdMonth": 420,
-    "transUsd": 120,
-    "transType": "Voo Bariloche -> Mendoza",
-    "extrasUsdMonth": 150,
-    "fuso": "UTC-3",
-    "surfNotes": "Sem mar - caminhadas no Parque San Martín",
-    "foodNotes": "Vinhos Malbec boutique (US$ 3-6 a garrafa em mercados), asados caseiros, empanadas mendocinas na massa folhada e piqueniques nas bodegas.",
-    "temp": "Outono seco e ensolarado (18-28°C)",
-    "isSurf": false,
-    "isBeach": false,
-    "isAndes": true,
-    "desc": "A época de ouro da colheita da uva (Festa da Vindima). Vida tranquila de bairro, internet fibra rápida e passeios de bicicleta pelas vinícolas de Luján de Cuyo nos fins de semana.",
-    "image": "https://images.unsplash.com/photo-1506377247377-2a5b3b417ebb?auto=format&fit=crop&w=1000&q=80",
-    "guide": {
-      "highlight": "A capital mundial do Malbec na época de ouro da Vindima (colheita da uva) aos pés da Cordilheira.",
-      "neighborhoods": "Quinta Sección (o melhor bairro: arborizado, calmo, seguro e ao lado do Parque San Martín) ou Godoy Cruz.",
-      "cafes": "Mokka Coffee Store, Silla Comedor e Chachingo Craft Beer & Coffee (ar-condicionado e tomadas).",
-      "weekend": "Alugar bike em Chacras de Coria ou Maipú para pedalar entre vinícolas; day trip relaxante às Termas de Cacheuta encravadas no cânion.",
-      "food": "Empanadas mendocinas na massa folhada com cebola e azeitona assadas no forno a lenha, asado caseiro e vinhos boutique por US$ 4 a garrafa.",
-      "safety": "Bairro da Quinta Sección é muito seguro. À noite, evite caminhar sozinho nas proximidades da rodoviária central."
-    }
-  },
-  {
-    "id": "santiago_exp",
-    "name": "Santiago Express (3-4 dias)",
-    "country": "Chile",
-    "flag": "🇨🇱",
-    "weeks": 1,
-    "role": "Travessia Cênica dos Andes & Conexão",
-    "hospUsdMonth": 900,
-    "alimUsdMonth": 550,
-    "transUsd": 40,
-    "transType": "Ônibus internacional cênico diurno (Passo Libertadores)",
-    "extrasUsdMonth": 150,
-    "fuso": "UTC-3",
-    "surfNotes": "Escala urbana antes do Pacífico",
-    "foodNotes": "Empanadas de pino de forno, frutos do mar frescos no Mercado Central e feiras de rua em Providencia.",
-    "spanishNotes": "⚠️ Alerta de Sotaque: Espanhol chileno é ultrarrápido com corte de sílabas e gírias pesadas (chilenismos). Foque apenas em escuta passiva!",
-    "temp": "Outono ameno (15-24°C)",
-    "isSurf": false,
-    "isBeach": false,
-    "isAndes": true,
-    "desc": "Cruzam a Cordilheira dos Andes de ônibus no sábado (7h de viagem deslumbrante). Ficam 3-4 dias em Santiago para compras rápidas e conectividade antes de voar para o Peru, economizando milhares de reais.",
-    "image": "https://images.unsplash.com/photo-1589394815804-964ed0be2eb5?auto=format&fit=crop&w=1000&q=80",
-    "guide": {
-      "highlight": "Escala urbana estratégica com travessia cênica dos Andes de ônibus pelo lendário Passo Libertadores.",
-      "neighborhoods": "Providencia (perto das estações de metrô Los Leones ou Tobalaba) ou Las Condes. Moderno, limpo e seguro.",
-      "cafes": "Original Green Roasters, Café Wonderland e praças de alimentação com Wi-Fi veloz no Costanera Center.",
-      "weekend": "Subir o teleférico do Cerro San Cristóbal para ver a Cordilheira dos Andes nevada no pôr do sol; compras rápidas de eletrônicos no Costanera.",
-      "food": "Empanadas de pino no tradicional 'Zunino' e ceviche de salmão fresco no Mercado Tirso de Molina.",
-      "safety": "Atenção a carteiristas em estações cheias de metrô e na Plaza de Armas. Use Uber ou Cabify."
-    }
-  },
-  {
-    "id": "arequipa",
-    "name": "Arequipa (Yanahuara / Cayma)",
-    "country": "Peru",
-    "flag": "🇵🇪",
-    "weeks": 2,
-    "role": "Aclimatação Suave 2.300m & Picanterías",
-    "hospUsdMonth": 500,
-    "alimUsdMonth": 350,
-    "transUsd": 160,
-    "transType": "Voo Santiago -> Arequipa",
-    "extrasUsdMonth": 100,
-    "fuso": "UTC-5 (-2h Brasília) - Expediente 07h-16h",
-    "surfNotes": "Sem surfe - aclimatação sem soroche",
-    "foodNotes": "Capital gastronômica: almoços completos nas picanterías tradicionais (rocoto relleno, pastel de papa, chupe de camarones) por 14 a 18 soles (US$ 4 a 5).",
-    "spanishNotes": "Polo 2 (Reforço Andino): O sotaque mais pausado, neutro e didático do Peru. Professores particulares em cafés coloniais (~US$ 6-8/h).",
-    "temp": "Sol constante e ar seco (12-23°C)",
-    "isSurf": false,
-    "isBeach": false,
-    "isAndes": true,
-    "desc": "A Cidade Branca. A 2.300m de altitude, permite ao casal se aclimatar suavemente aos Andes sem sofrer com dor de cabeça. Almoços nas picanterías tradicionais por 14 soles (R$ 20).",
-    "image": "https://images.unsplash.com/photo-1580619305218-8423a7ef79b4?auto=format&fit=crop&w=1000&q=80",
-    "guide": {
-      "highlight": "A espetacular Cidade Branca de pedra vulcânica, aclimatação suave a 2.300m e a capital culinária do sul peruano.",
-      "neighborhoods": "Yanahuara e Cayma: bairros residenciais nobres, silenciosos, com vista para o vulcão Misti e a 15 min a pé do centro histórico.",
-      "cafes": "Palacios Coffee, Kaffee Haus e Chaqchao Organic Chocolates (terraço com vista para a arquitetura colonial).",
-      "weekend": "Excursão de fim de semana ao Cânion do Colca (um dos mais profundos do mundo) para ver o voo rasante dos Condores; visita ao Convento de Santa Catalina.",
-      "food": "Almoço nas picanterías tradicionais (La Nueva Palomino): Rocoto Relleno com pastel de papa e Chupe de Camarones por 15 soles (US$ 4).",
-      "safety": "Cidade tranquila e policiada. Pegue apenas táxis de aplicativo ou táxis oficiais credenciados com selo no vidro."
-    }
-  },
-  {
-    "id": "cusco",
-    "name": "Cusco & Vale Sagrado",
-    "country": "Peru",
-    "flag": "🇵🇪",
-    "weeks": 1,
-    "role": "Machu Picchu via Hidroeléctrica",
-    "hospUsdMonth": 550,
-    "alimUsdMonth": 380,
-    "transUsd": 35,
-    "transType": "Ônibus noturno Cruz del Sur leito",
-    "extrasUsdMonth": 220,
-    "fuso": "UTC-5 (-2h Brasília)",
-    "surfNotes": "Sem surfe - caminhada nos trilhos incas",
-    "foodNotes": "Sopas andinas revigorantes, truta grelhada com batatas nativas, cafés orgânicos do Vale Sagrado e sucos no Mercado San Pedro.",
-    "spanishNotes": "Prática cultural diária nas ruas históricas e encontros de intercâmbio de idiomas com voluntários internacionais.",
-    "temp": "Frio noturno, sol diurno (5-20°C)",
-    "isSurf": false,
-    "isBeach": false,
-    "isAndes": true,
-    "desc": "Uma semana focada no império Inca. No fim de semana, bate-volta a Machu Picchu pela rota da Hidrelétrica: van no sábado cedo, caminhada cênica pelos trilhos e entrada na cidadela no domingo.",
-    "image": "https://images.unsplash.com/photo-1526392060635-9d6019884377?auto=format&fit=crop&w=1000&q=80",
-    "guide": {
-      "highlight": "O umbigo do mundo e berço da civilização Inca a 3.400m de altitude.",
-      "neighborhoods": "San Blas (bairro de artesãos, charmoso e boêmio, com ladeiras de pedra) ou no centro plano perto da Plaza San Francisco.",
-      "cafes": "Limbus Restobar (a vista panorâmica mais linda de Cusco), Cicciolina e Three Monkeys Coffee.",
-      "weekend": "Machu Picchu econômico via Hidroeléctrica (van até a usina + caminhada cênica pelos trilhos da selva) ou bate-volta a Pisac e Ollantaytambo.",
-      "food": "Sopas andinas revigorantes no Mercado San Pedro por 8 soles (R$ 12), truta fresca do Vale Sagrado e cafés orgânicos.",
-      "safety": "Respeite o 'soroche' (mal de altitude): no 1º dia, tome chá de muña/coca, beba bastante água e não faça esforço físico pesado."
-    }
-  },
-  {
-    "id": "lima",
-    "name": "Lima (Miraflores / Makaha)",
-    "country": "Peru",
-    "flag": "🇵🇪",
-    "weeks": 1,
-    "role": "Compra da Prancha & Treino na Costa Verde",
-    "hospUsdMonth": 850,
-    "alimUsdMonth": 460,
-    "transUsd": 65,
-    "transType": "Voo Cusco -> Lima (LATAM/Sky)",
-    "extrasUsdMonth": 120,
-    "fuso": "UTC-5 (-2h Brasília) - Mar às 06h",
-    "surfNotes": "Makaha/Waikiki (cascalho). Compra do pranchão 9'0\".",
-    "foodNotes": "Capital culinária das Américas: cevicherias clássicas, tiraditos, lomo saltado, causas e restaurantes icônicos em Miraflores e Barranco.",
-    "temp": "Neblina amena de outono (18-22°C, água 17°C com 3/2mm)",
-    "isSurf": true,
-    "isBeach": false,
-    "isAndes": false,
-    "desc": "Início oficial da temporada de mar! O surfista surfa em Makaha enquanto o outro desfruta do Malecón florido e da alta gastronomia de Miraflores. Compra de pranchão clássico usado por ~US$ 250.",
-    "image": "https://images.unsplash.com/photo-1531968455001-5c5272a41129?auto=format&fit=crop&w=1000&q=80",
-    "guide": {
-      "highlight": "Metrópole à beira do Pacífico, início oficial da temporada de mar e a capital gastronômica das Américas.",
-      "neighborhoods": "Miraflores (ao redor do Malecón florido) ou Barranco (bairro boêmio de casarões coloridos e galerias de arte).",
-      "cafes": "Buena Vista Café (no próprio Malecón com vista para os surfistas), Colonia & Co e Puku Puku Café.",
-      "weekend": "Pedalar pela ciclovia da orla de Miraflores a Barranco, atravessar a Puente de los Suspiros e comprar o longboard 9'0\" usado em Miraflores.",
-      "food": "Cevicheria La Mar (do premiado Gastón Acurio), Canta Rana em Barranco e o clássico sanduíche de chicharrón no El Chinito.",
-      "safety": "Miraflores e Barranco têm segurança privada municipal (Serenazgo) e são muito seguros. Evite caminhar no Centro Histórico após o anoitecer."
-    }
-  },
-  {
-    "id": "huanchaco",
-    "name": "Huanchaco (La Curvita / El Elio)",
-    "country": "Peru",
-    "flag": "🇵🇪",
-    "weeks": 3,
-    "role": "O QG Mundial do Longboard + Chicama",
-    "hospUsdMonth": 440,
-    "alimUsdMonth": 330,
-    "transUsd": 35,
-    "transType": "Cruz del Sur leito (prancha no bagageiro)",
-    "extrasUsdMonth": 110,
-    "fuso": "UTC-5 (-2h Brasília) - Tarde inteira de mar",
-    "surfNotes": "Esquerda lendária perfeita. Bate-volta no sábado a Chicama!",
-    "foodNotes": "Ceviche fresco dos pescadores de caballitos de totora logo de manhã, parihuela de mariscos e menús del día por 12 a 15 soles (US$ 3,50 a 4).",
-    "temp": "Clima seco de praia (18-24°C, água 16°C com 3/2mm)",
-    "isSurf": true,
-    "isBeach": false,
-    "isAndes": false,
-    "desc": "A grande base técnica da viagem. Três semanas morando na orla pé no mar. O surfista surfa na maré cheia no meio do dia enquanto o outro trabalha na varanda com vista pro mar. No sábado, bate-volta épico a Chicama!",
-    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1000&q=80",
-    "guide": {
-      "highlight": "Reserva Mundial do Surf, esquerdas perfeitas de point break e a tradição milenar dos caballitos de totora.",
-      "neighborhoods": "Trecho de 'La Curvita' (de frente para as ondas mais longas) ou próximo ao Píer Histórico. Fuja das boates da avenida principal.",
-      "cafes": "Chocolate Café (vista pro mar) e Otra Cosa Café (varanda rústica vegetariana).",
-      "weekend": "Bate-volta no sábado a Chicama (a onda mais longa do mundo) e tour cultural na maior cidadela de adobe do planeta (Chan Chan).",
-      "food": "Ceviche fresco feito pelos próprios pescadores artesanais às 11h da manhã na beira da praia; peixe frito com yuca no 'Club Colonial'.",
-      "safety": "Vila de pescadores muito acolhedora e segura. Evite apenas caminhar em trechos desertos de praia tarde da noite."
-    }
-  },
-  {
-    "id": "organos",
-    "name": "Los Órganos & Vichayito",
-    "country": "Norte do Peru",
-    "flag": "🇵🇪",
-    "weeks": 3,
-    "role": "Água Morna 24°C, Bermuda & Tartarugas",
-    "hospUsdMonth": 640,
-    "alimUsdMonth": 380,
-    "transUsd": 35,
-    "transType": "Ônibus noturno Civa ou Cruz del Sur",
-    "extrasUsdMonth": 120,
-    "fuso": "UTC-5 (-2h Brasília)",
-    "surfNotes": "Point break macio sobre areia. Surfe de bermuda!",
-    "foodNotes": "Frutos do mar do dia, peixe na brasa servido na praia, ceviche de mero e jantares descontraídos à beira-mar de bermuda.",
-    "temp": "Sol tropical e deserto (24-30°C, água 23°C)",
-    "isSurf": true,
-    "isBeach": true,
-    "isAndes": false,
-    "desc": "O 'Caribe do Pacífico'! Aqui os DOIS são 100% felizes: sol todo dia, água morna e transparente, nadar com tartarugas marinhas e espreguiçadeiras pé na areia enquanto o surfista pega o point break macio de Los Órganos.",
-    "image": "https://images.unsplash.com/photo-1519046904884-53103b34b206?auto=format&fit=crop&w=1000&q=80",
-    "guide": {
-      "highlight": "O Caribe do Pacífico: mar morno a 24°C, areia dourada, sol 365 dias por ano e nado com tartarugas marinhas.",
-      "neighborhoods": "Condomínios beira-mar em Vichayito (bangalôs pé na areia) ou perto da praia de Punta Veleros em Los Órganos.",
-      "cafes": "Cafeterias dos ecolodges de Vichayito com vista para as dunas e o restaurante Punta Veleros.",
-      "weekend": "Nadar com tartarugas marinhas gigantes no cais de El Ñuro; passeio de barco para ver baleias jubarte saltando no horizonte (julho/agosto).",
-      "food": "Ceviche de mero, lagostas grelhadas na brasa e peixe do dia servido na esteira de praia debaixo das cabanas de palha.",
-      "safety": "Muito pacato e seguro. Leve dinheiro em espécie (notas de soles/dólares), pois caixas eletrônicos costumam ficar sem cédulas na região."
-    }
-  },
-  {
-    "id": "olon_ayampe",
-    "name": "Olón & Ayampe",
-    "country": "Equador",
-    "flag": "🇪🇨",
-    "weeks": 3,
-    "role": "Selva no Mar, Vibe Boho & Starlink",
-    "hospUsdMonth": 580,
-    "alimUsdMonth": 390,
-    "transUsd": 50,
-    "transType": "Van transfronteiriça Máncora -> Olón",
-    "extrasUsdMonth": 110,
-    "fuso": "UTC-5 (-2h Brasília)",
-    "surfNotes": "Beach breaks extensos, água quente e fundo de areia",
-    "foodNotes": "Bowls de açaí e frutas tropicais, cafés com Starlink, peixe fresco em folhas de bananeira e opções saudáveis e veganas.",
-    "temp": "Tropical quente (24-28°C)",
-    "isSurf": true,
-    "isBeach": true,
-    "isAndes": false,
-    "desc": "A jóia ecológica do Equador: selva tropical descendo até a praia, cafés charmosos com Starlink, aulas de ioga, massagens e piscinas naturais na maré baixa. Temporada de baleias jubarte! Revenda do pranchão por ~US$ 200 aqui.",
-    "image": "https://images.unsplash.com/photo-1502680390469-be75c86b636f?auto=format&fit=crop&w=1000&q=80",
-    "guide": {
-      "highlight": "O paraíso boho-chic do Equador: selva tropical verdejante tocando o oceano e ondas macias com água morna.",
-      "neighborhoods": "Ayampe (vila rústica de mata e mar, ruas de terra e silêncio absoluto) ou Olón (vila com praia de 7km e ótima estrutura).",
-      "cafes": "The Barn Bakery (Ayampe, café especial de altitude e ótima estrutura de trabalho), Momo Deli e Café Olón.",
-      "weekend": "Trilha a cavalo na Reserva Ecológica Dos Mangas; aula de yoga no deck dos ecolodges; pôr do sol em Montañita (a 5 min) e volta para dormir no sossego de Olón.",
-      "food": "Bolón de verde com queijo derretido, peixe assado em folhas de bananeira e sucos naturais de maracujá e guanábana.",
-      "safety": "Comunidade alternativa e extremamente segura. A moeda oficial é o Dólar Americano (USD)."
-    }
-  },
-  {
-    "id": "vulcoes",
-    "name": "Quilotoa & Baños de Agua Santa",
-    "country": "Equador",
-    "flag": "🇪🇨",
-    "weeks": 1,
-    "role": "Cratera Vulcânica & Beira da Amazônia",
-    "hospUsdMonth": 480,
-    "alimUsdMonth": 320,
-    "transUsd": 40,
-    "transType": "Ônibus interprovincial equatoriano",
-    "extrasUsdMonth": 120,
-    "fuso": "UTC-5 (-2h Brasília)",
-    "surfNotes": "Sem mar - cachoeiras gigantes e termas vulcânicas",
-    "foodNotes": "Locro de papa (sopa cremosa de batata com queijo e abacate), trutas andinas e doces artesanais (melcochas) em Baños.",
-    "temp": "Clima de montanha e selva (14-22°C)",
-    "isSurf": false,
-    "isBeach": false,
-    "isAndes": true,
-    "desc": "Uma das paisagens mais impactantes do continente: a lagoa verde-esmeralda na cratera do vulcão Quilotoa a 3.900m + a cidade de Baños com cachoeiras colossais (Pailón del Diablo) na porta de entrada da Amazônia.",
-    "image": "https://images.unsplash.com/photo-1589802829985-817e51171b92?auto=format&fit=crop&w=1000&q=80",
-    "guide": {
-      "highlight": "A monumental lagoa verde-esmeralda na cratera do Quilotoa a 3.900m e as cachoeiras colossais de Baños.",
-      "neighborhoods": "Em Baños: ruas centrais próximas à cascata Cabellera de la Virgen. Em Quilotoa: pousadas rústicas com lareira na borda do cânion.",
-      "cafes": "Café Hood (Baños), Honey Coffee & Tea e cafeterias dos mirantes com lareira.",
-      "weekend": "Alugar mountain bike para fazer a descida cênica da 'Ruta de las Cascadas' até o Pailón del Diablo; andar no Balanço do Fim do Mundo na Casa del Árbol.",
-      "food": "Locro de papa quentinho com queijo andino e abacate, truta grelhada e doces artesanais (melcochas).",
-      "safety": "Cidades turísticas muito tranquilas e policiadas. Ao contratar rafting ou tirolesas, escolha agências com certificação oficial."
-    }
-  },
-  {
-    "id": "medellin",
-    "name": "Medellín (Laureles) & Eje Cafetero",
-    "country": "Colômbia",
-    "flag": "🇨🇴",
-    "weeks": 3,
-    "role": "Polo Nômade Urbano & Fazendas de Café",
-    "hospUsdMonth": 850,
-    "alimUsdMonth": 450,
-    "transUsd": 170,
-    "transType": "Voo Quito -> Medellín (sem prancha)",
-    "extrasUsdMonth": 180,
-    "fuso": "UTC-5 (-2h Brasília) - Polo nômade #1",
-    "surfNotes": "Sem surfe - vida urbana, cafés e Salento",
-    "foodNotes": "Bandeja paisa farta, arepas de choclo com queijo, frutas tropicais abundantes e a rota dos melhores cafés especiais em Laureles.",
-    "spanishNotes": "Polo 3 (A Pós-Graduação): O sotaque mais limpo, cadenciado e elegante do continente. Escolas premiadas (Toucan / Blink / Colombia Immersion) e Tandems semanais em cafeterias de Laureles!",
-    "temp": "Eterna primavera (18-27°C)",
-    "isSurf": false,
-    "isBeach": false,
-    "isAndes": true,
-    "desc": "A melhor infraestrutura de trabalho remoto da América Latina. Bairro Laureles com ruas planas e arborizadas. No fim de semana, viagem inesquecível ao Eje Cafetero (Salento e as palmeiras gigantes do Valle de Cocora).",
-    "image": "https://images.unsplash.com/photo-1599839575945-a9e5af0c3fa5?auto=format&fit=crop&w=1000&q=80",
-    "guide": {
-      "highlight": "A cidade da eterna primavera: polo nômade #1 da América do Sul, cafés especiais premiados e o sotaque mais limpo do mundo.",
-      "neighborhoods": "Laureles (Primer ou Segundo Parque): plano, arborizado, seguro, autêntico e sem o caos turístico de El Poblado. Eleito o bairro mais legal do mundo pela Time Out!",
-      "cafes": "Rituales Café (café premiado da Comuna 13), Pergamino Laureles, Café Revolución e Semillero Café (ótima estrutura para laptop).",
-      "weekend": "Subir os 740 degraus da colossal Piedra del Peñol em Guatapé; fim de semana inesquecível em Salento e as palmeiras de 60 metros do Valle de Cocora.",
-      "food": "Bandeja Paisa no tradicional 'El Trifásico', arepas de choclo quentinhas e tour gastronômico de café especial.",
-      "safety": "Regra colombiana: 'No dar papaya' (não ostentar celulares caros na rua à noite). Metrô e teleféricos Metrocable são os mais seguros e limpos do continente."
-    }
-  },
-  {
-    "id": "caribe",
-    "name": "Caribe Colombiano: Tayrona & Palomino",
-    "country": "Colômbia",
-    "flag": "🇨🇴",
-    "weeks": 2,
-    "role": "O Paraíso do Caribe: Mar Cristalino & Coqueirais",
-    "hospUsdMonth": 720,
-    "alimUsdMonth": 400,
-    "transUsd": 60,
-    "transType": "Voo rápido Medellín -> Santa Marta",
-    "extrasUsdMonth": 160,
-    "fuso": "UTC-5 (-2h Brasília)",
-    "surfNotes": "Mar calmo caribenho a 28°C para relaxar a dois",
-    "foodNotes": "Arroz con coco caribenho, peixe pargo vermelho frito na praia, patacones crocantes e limonadas de coco geladas.",
-    "temp": "Calor tropical caribenho (27-32°C, mar 28°C)",
-    "isSurf": false,
-    "isBeach": true,
-    "isAndes": false,
-    "desc": "O GRAN FINALE DOS SONHOS! O parceiro que ama praia é coroado com o verdadeiro mar do Caribe: água verde-esmeralda a 28°C, areia branca, trilhas em praias preservadas do Parque Tayrona e o clima relaxante de Palomino antes do retorno ao Brasil.",
-    "image": "https://images.unsplash.com/photo-1590523277543-a94d2e4eb00b?auto=format&fit=crop&w=1000&q=80",
-    "guide": {
-      "highlight": "O gran finale paradisíaco: mar do Caribe morno a 28°C, areia branca, coqueirais e a exuberância preservada do Parque Tayrona.",
-      "neighborhoods": "Ecolodges pé na areia em Palomino ou pousadas ecológicas próximas à entrada El Zahíno do Parque Nacional Tayrona.",
-      "cafes": "Café Holocausto em Palomino e restaurantes beira-mar com boa estrutura para passar algumas horas.",
-      "weekend": "Trilha no Parque Nacional Tayrona até a praia de Cabo San Juan de Guía; boia-cross relaxante descendo o Rio Palomino até desembocar no mar do Caribe.",
-      "food": "Pargo vermelho frito inteiro na praia com arroz de coco, patacones crocantes e limonadas de coco geladas.",
-      "safety": "Região praiana pacífica e relaxante. Use protetor solar biodegradável e repelente forte para as trilhas do Tayrona."
-    }
-  }
-];
-
-    // GUIA CIRÚRGICO DE BAIRROS E AUDITORIA PARA AS 14 CIDADES
-    const CITY_NEIGHBORHOOD_GUIDE = {
-      ba: {
-        recommended: ["Colegiales", "Palermo Hollywood", "Palermo Soho", "Belgrano", "Villa Crespo", "Chacarita"],
-        avoid: ["San Telmo à noite", "Microcentro", "Constitución", "Retiro", "La Boca", "Once"],
-        tips: "Colegiales e Palermo Hollywood são os bairros mais planos, seguros e arborizados para caminhar a pé e trabalhar.",
-        climateNote: "Verão quente (Jan/Fev): Ar-condicionado split no quarto e sala é essencial.",
-        climateType: "ac"
-      },
-      colonia: {
-        recommended: ["Barrio Histórico", "Centro", "Real de San Carlos"],
-        avoid: ["Áreas afastadas sem acesso a pé"],
-        tips: "Fique dentro das muralhas coloniais ou a até 10 min a pé do terminal Buquebus.",
-        climateNote: "Brisa fresca do Rio da Prata.",
-        climateType: "neutral"
-      },
-      "7lagos": {
-        recommended: ["Centro de Bariloche", "San Martín de los Andes Centro", "Villa La Angostura Centro", "Playa Bonita"],
-        avoid: ["Alto Bariloche", "Periferia sul distante"],
-        tips: "Em San Martín ou La Angostura, fique no miolo plano para caminhar até restaurantes sem carro.",
-        climateNote: "Clima andino de montanha: aquecimento central / calefação potente é indispensável.",
-        climateType: "heat"
-      },
-      mendoza: {
-        recommended: ["Quinta Sección", "Barrio Bombal", "Godoy Cruz (centro)", "Plaza Independencia"],
-        avoid: ["Las Heras", "Guaymallén profundo", "Periferia leste"],
-        tips: "A Quinta Sección é o melhor bairro: arborizada por canais de água, segura e colada ao Parque San Martín.",
-        climateNote: "Semiárido ensolarado: ar-condicionado é essencial para os dias quentes.",
-        climateType: "ac"
-      },
-      santiago_exp: {
-        recommended: ["Providencia", "Lastarria", "Bellas Artes", "Las Condes"],
-        avoid: ["Estación Central", "Recoleta", "La Chimba à noite"],
-        tips: "Providencia (próximo ao metrô Pedro de Valdivia/Los Leones) tem o melhor equilíbrio de segurança e mobilidade.",
-        climateNote: "Proximidade a pé da Linha 1 do metrô é a prioridade #1.",
-        climateType: "ac"
-      },
-      arequipa: {
-        recommended: ["Yanahuara", "Cayma", "Centro Histórico (Santa Catalina)", "Vallecito"],
-        avoid: ["Cerro Colorado", "Paucarpata", "Bustamante y Rivero à noite"],
-        tips: "Yanahuara e Cayma são os bairros mais nobres, seguros e charmosos, com vistas deslumbrantes do vulcão Misti.",
-        climateNote: "Noites frescas e clima muito seco: peça aquecedor portátil se for sensível ao frio.",
-        climateType: "heat"
-      },
-      cusco: {
-        recommended: ["San Blas (parte baixa)", "Centro Histórico (plano)", "Lucrepata", "Ollantaytambo"],
-        avoid: ["San Blas alto (muitas escadarias íngremes)", "Santiago", "Zarzuela"],
-        tips: "ATENÇÃO A ESCADARIAS: a 3.400m de altitude, subir escadarias longas com compras causa exaustão extrema.",
-        climateNote: "Frio andino noturno (4-8°C): calefação elétrica ou lareira é crucial.",
-        climateType: "heat"
-      },
-      lima: {
-        recommended: ["Miraflores (Malecón / Makaha)", "Barranco", "San Isidro"],
-        avoid: ["Centro de Lima à noite", "Callao", "La Victoria", "Surquillo profundo"],
-        tips: "Miraflores próximo ao Malecón ou da descida para a praia Makaha permite surfar diariamente a pé.",
-        climateNote: "Alta umidade costeira: apartamentos em andares mais altos são mais arejados.",
-        climateType: "ac"
-      },
-      huanchaco: {
-        recommended: ["La Curvita", "El Elio", "Avenida Víctor Larco (orla)", "Balneário Centro"],
-        avoid: ["Interior desértico longe da praia", "Bairros periféricos de Trujillo"],
-        tips: "Fique a no máximo 2 quadras da orla para checar a formação das ondas direto da calçada.",
-        climateNote: "Brisa marinha constante: sacada com vista para o mar e chuveiro quente pós-surf.",
-        climateType: "neutral"
-      },
-      organos: {
-        recommended: ["Vichayito", "Punta Veleros", "Los Órganos Centro (praia)"],
-        avoid: ["Beira da Rodovia Panamericana (muito ruído)", "Máncora Centro (baladas 24h)"],
-        tips: "Vichayito e Punta Veleros oferecem tranquilidade total, mar morno (24°C) e tartarugas na areia.",
-        climateNote: "Sol forte e calor o ano todo: ar-condicionado silencioso no quarto é indispensável.",
-        climateType: "ac"
-      },
-      olon_ayampe: {
-        recommended: ["Ayampe (vilarejo)", "Olón Centro", "La Rinconada"],
-        avoid: ["Montañita Centro (festa ensurdecedora 24h)"],
-        tips: "Ayampe é o refúgio perfeito de surf e yoga; Olón tem praia espaçosa e comércio maior.",
-        climateNote: "Clima tropical úmido: telas mosquiteiras nas janelas e ventilador/ar-condicionado.",
-        climateType: "ac"
-      },
-      vulcoes: {
-        recommended: ["Baños Centro (praça/igreja)", "Santa Ana", "Comunidades da Laguna Quilotoa"],
-        avoid: ["Periferia barulhenta perto de oficinas ou rodoviária"],
-        tips: "Em Baños, fique no centro plano para caminhar até termas e restaurantes; em Quilotoa, certifique-se de lareira.",
-        climateNote: "Noites frias de serra: chuveiro a gás com pressão e cobertor térmico.",
-        climateType: "heat"
-      },
-      medellin: {
-        recommended: ["Laureles (Primer ou Segundo Parque)", "Estadio / Florida Nueva", "Manila (El Poblado tranquilo)"],
-        avoid: ["El Centro (La Candelaria) à noite", "Parque Lleras (ruído e assédio)", "Prado"],
-        tips: "Laureles é o melhor bairro da América do Sul: plano, arborizado, seguro e com cafés excepcionais.",
-        climateNote: "Eterna primavera: apartamento arejado em rua residencial tranquila longe de avenidas de motos.",
-        climateType: "ac"
-      },
-      caribe: {
-        recommended: ["Palomino (rua da praia)", "Ecolodges entrada El Zahíno (Tayrona)", "Buritaca"],
-        avoid: ["Rodovia Troncal del Caribe (tráfego de carretas)", "Periferia de Santa Marta"],
-        tips: "Em Palomino, escolha ecolodges ou pousadas com gerador de energia e acesso direto à praia.",
-        climateNote: "Calor tropical caribenho: ar-condicionado ou ventilador potente + repelente.",
-        climateType: "ac"
-      }
-    };
+    // DADOS CARREGADOS DINAMICAMENTE DO COFRE CRIPTOGRAFADO (PANTRY)
+    let baseData = [];
+    let mapRoutes = [];
+    let CITY_NEIGHBORHOOD_GUIDE = {};
+    let appDecryptedBundle = null;
 
     function auditNeighborhood(baseId, neighborhoodInput, titleInput, urlInput) {
       const guide = CITY_NEIGHBORHOOD_GUIDE[baseId] || CITY_NEIGHBORHOOD_GUIDE.ba;
@@ -2050,6 +1362,121 @@
       return `https://getpantry.cloud/apiv1/pantry/${cfg.pantryId}/basket/${cfg.basketName}`;
     }
 
+    // --- Renderizadores Dinâmicos da Rota e Mapa ---
+    function renderHeaderInfo() {
+      const hTitle = document.getElementById("headerTitle");
+      const hSub = document.getElementById("headerSubtitle");
+      const hBadges = document.getElementById("headerBadges");
+      if (appDecryptedBundle) {
+        if (hTitle && appDecryptedBundle.title) hTitle.textContent = appDecryptedBundle.title;
+        if (hSub && appDecryptedBundle.subtitle) hSub.textContent = appDecryptedBundle.subtitle;
+        if (hBadges && Array.isArray(appDecryptedBundle.badges)) {
+          hBadges.innerHTML = appDecryptedBundle.badges.map(b => 
+            `<span class="px-2.5 py-0.5 rounded-full text-xs font-semibold ${b.class}">${b.text}</span>`
+          ).join("");
+        }
+      }
+    }
+
+    function renderMapRoutes() {
+      const container = document.getElementById("mapRoutesGroup");
+      if (!container || !mapRoutes || mapRoutes.length === 0) return;
+      container.innerHTML = mapRoutes.map(r => {
+        const cls = r.cls ? `class="${r.cls}"` : "";
+        const dash = r.dash ? `stroke-dasharray="${r.dash}"` : "";
+        const filt = r.filter ? `filter="${r.filter}"` : "";
+        const opac = r.opacity ? `opacity="${r.opacity}"` : "";
+        let html = `<path d="${r.d}" fill="none" stroke="${r.stroke}" stroke-width="${r.strokeWidth}" ${cls} ${dash} ${filt} ${opac}/>`;
+        if (r.label) {
+          html += `<text x="${r.lx}" y="${r.ly}" fill="${r.stroke}" font-size="9" font-weight="600">${r.label}</text>`;
+        }
+        return html;
+      }).join("\n");
+    }
+
+    function renderMapPins() {
+      const container = document.getElementById("mapPinsGroup");
+      if (!container || !baseData || baseData.length === 0) return;
+      container.innerHTML = baseData.map((b, idx) => {
+        const mc = b.mapConfig || { cx: 200, cy: 400, r: 8, color: "#38bdf8", lx: 215, ly: 404, label: b.name, lcolor: "#cbd5e1" };
+        const pulseCircle = mc.pulse ? `<circle cx="${mc.cx}" cy="${mc.cy}" r="16" fill="${mc.color}" opacity="0.25"/>` : "";
+        const numColor = mc.numColor || "#0f172a";
+        const numSize = mc.numSize || 10;
+        const fontSize = mc.fontSize || 11;
+        const fontWt = mc.fontWeight || "bold";
+        const labelColor = mc.lcolor || "#cbd5e1";
+        return `
+          <g class="map-pin cursor-pointer transition-transform duration-200" onclick="selectBase(${idx})" id="pin-${idx}">
+            <circle cx="${mc.cx}" cy="${mc.cy}" r="${mc.r || 8}" fill="${mc.color}"/>
+            ${pulseCircle}
+            <text x="${mc.cx}" y="${mc.cy + 4}" fill="${numColor}" font-size="${numSize}" font-weight="black" text-anchor="middle">${idx + 1}</text>
+            <text x="${mc.lx}" y="${mc.ly}" fill="${labelColor}" font-size="${fontSize}" font-weight="${fontWt}">${mc.label || b.name}</text>
+          </g>
+        `;
+      }).join("\n");
+    }
+
+    function hydrateDecryptedBundle(bundle, password) {
+      if (!bundle) return false;
+      appDecryptedBundle = bundle;
+      if (password) masterPassword = password;
+
+      if (Array.isArray(bundle.baseData) && bundle.baseData.length > 0) {
+        baseData = bundle.baseData;
+      }
+      if (bundle.cityGuides) {
+        CITY_NEIGHBORHOOD_GUIDE = bundle.cityGuides;
+      }
+      if (Array.isArray(bundle.mapRoutes)) {
+        mapRoutes = bundle.mapRoutes;
+      }
+      if (bundle.tripStartDate && /^\d{4}-\d{2}-\d{2}$/.test(bundle.tripStartDate)) {
+        tripStartDate = bundle.tripStartDate;
+        const dateInput = document.getElementById("tripStartDateInput");
+        if (dateInput) dateInput.value = tripStartDate;
+      }
+      if (Array.isArray(bundle.airbnbQuotes)) {
+        airbnbQuotes = bundle.airbnbQuotes;
+        DEFAULT_AIRBNB_QUOTES = bundle.airbnbQuotes;
+        try {
+          localStorage.setItem("expedicao_airbnbs_v2", JSON.stringify(airbnbQuotes));
+        } catch(e) {}
+      }
+      if (bundle.settings) {
+        if (bundle.settings.currency) {
+          currentCurrency = bundle.settings.currency;
+          const cSelect = document.getElementById("currencySelect");
+          if (cSelect) cSelect.value = currentCurrency;
+        }
+        if (bundle.settings.usdRate) {
+          usdRate = parseFloat(bundle.settings.usdRate) || 5.50;
+          const uInput = document.getElementById("usdRate");
+          if (uInput) uInput.value = usdRate;
+        }
+        if (bundle.settings.profile) {
+          const pSelect = document.getElementById("profileSelect");
+          if (pSelect) {
+            pSelect.value = bundle.settings.profile;
+            profileMultiplier = bundle.settings.profile === "budget" ? 0.82 : 1.0;
+          }
+        }
+      }
+
+      // Renderiza todos os módulos visuais com os dados descriptografados
+      renderHeaderInfo();
+      renderMapRoutes();
+      renderMapPins();
+      renderBases();
+      selectBase(0);
+      populateCityDropdowns();
+      updateFormBudgetMeta();
+      renderAirbnbCards();
+      updateAirbnbKPIs();
+      updateAirbnbBadge();
+
+      return true;
+    }
+
     // --- Indicadores Visuais de Status da Nuvem ---
     function updateCloudStatusUI(status, errorMsg = "") {
       const headerIcon = document.getElementById("headerCloudIcon");
@@ -2058,7 +1485,7 @@
       const modalText = document.getElementById("modalCloudStatusText");
       const modalLast = document.getElementById("modalCloudLastSync");
 
-      const timeStr = lastCloudSyncTimestamp ? `Hoje às ${lastCloudSyncTimestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : "Ainda não sincronizado";
+      const timeStr = lastCloudSyncTimestamp ? `Hoje às ${lastCloudSyncTimestamp.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}` : "Ainda não sincronizado";
 
       if (status === "synced") {
         if (headerIcon) headerIcon.textContent = "☁️";
@@ -2096,8 +1523,20 @@
         localStorage.setItem("expedicao_local_updated_at", localUpdated.toString());
 
         const rawData = {
+          v: 1,
+          app: "expedicao-america-do-sul",
           updatedAt: localUpdated,
+          title: appDecryptedBundle?.title || "Expedição América do Sul: O Roteiro Definitivo",
+          subtitle: appDecryptedBundle?.subtitle || "Início em Buenos Aires → Patagônia dos Lagos → Longboard no Pacífico → Vulcões do Equador → Paraíso Caribeño (30 Semanas)",
+          badges: appDecryptedBundle?.badges || [
+            { text: "Rota 3.0 Definitiva", class: "bg-emerald-100 text-emerald-800" },
+            { text: "6 Países: AR, UY, CL, PE, EC, CO", class: "bg-sky-100 text-sky-800" },
+            { text: "Longboard + Caribe Colombiano", class: "bg-amber-100 text-amber-800" }
+          ],
           tripStartDate: getTripStartDate(),
+          baseData: baseData,
+          mapRoutes: mapRoutes,
+          cityGuides: CITY_NEIGHBORHOOD_GUIDE,
           airbnbQuotes: airbnbQuotes,
           settings: {
             currency: currentCurrency,
@@ -2117,6 +1556,8 @@
 
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
+        localStorage.setItem("expedicao_cached_bundle", JSON.stringify(rawData));
+        localStorage.setItem("expedicao_cloud_payload", JSON.stringify(encrypted));
         lastCloudSyncTimestamp = new Date();
         updateCloudStatusUI("synced");
         if (showToastFeedback) {
@@ -2126,7 +1567,7 @@
         console.warn("Erro na sincronização em nuvem:", err);
         updateCloudStatusUI("error", err.message);
         if (showToastFeedback) {
-          showToast("⚠️ Falha ao sincronizar com o Pantry. Dados seguros localmente.");
+          showToast("⚠️ Falha ao sincronizar com o Pantry. Dados salvos localmente.");
         }
       } finally {
         isSyncingToCloud = false;
@@ -2146,60 +1587,21 @@
         if (data.ciphertext && data.salt && data.iv) {
           const decryptedStr = await decryptPayloadE2EE(data, masterPassword);
           const cloudData = JSON.parse(decryptedStr);
+          localStorage.setItem("expedicao_cloud_payload", JSON.stringify(data));
+          localStorage.setItem("expedicao_cached_bundle", decryptedStr);
 
           const localTimestamp = parseInt(localStorage.getItem("expedicao_local_updated_at") || "0", 10);
           const cloudTimestamp = cloudData.updatedAt || 0;
 
-          if (cloudTimestamp > localTimestamp || showToastFeedback) {
-            if (cloudData.tripStartDate && /^\d{4}-\d{2}-\d{2}$/.test(cloudData.tripStartDate)) {
-              tripStartDate = cloudData.tripStartDate;
-              localStorage.setItem("expedicao_start_date", tripStartDate);
-              const dateInput = document.getElementById("tripStartDateInput");
-              if (dateInput) dateInput.value = tripStartDate;
-            }
-
-            if (Array.isArray(cloudData.airbnbQuotes)) {
-              airbnbQuotes = cloudData.airbnbQuotes;
-              localStorage.setItem("expedicao_airbnbs_v2", JSON.stringify(airbnbQuotes));
-            }
-
-            if (cloudData.settings) {
-              if (cloudData.settings.currency) {
-                currentCurrency = cloudData.settings.currency;
-                const cSelect = document.getElementById("currencySelect");
-                if (cSelect) cSelect.value = currentCurrency;
-              }
-              if (cloudData.settings.usdRate) {
-                usdRate = parseFloat(cloudData.settings.usdRate) || 5.50;
-                const uInput = document.getElementById("usdRate");
-                if (uInput) uInput.value = usdRate;
-              }
-              if (cloudData.settings.profile) {
-                const pSelect = document.getElementById("profileSelect");
-                if (pSelect) {
-                  pSelect.value = cloudData.settings.profile;
-                  profileMultiplier = cloudData.settings.profile === "budget" ? 0.82 : 1.0;
-                }
-              }
-            }
-
+          if (cloudTimestamp > localTimestamp || showToastFeedback || !baseData || baseData.length === 0) {
+            hydrateDecryptedBundle(cloudData, masterPassword);
             localStorage.setItem("expedicao_local_updated_at", cloudTimestamp.toString());
-            renderBases();
-            selectBase(currentSelectedBaseIndex);
-            populateCityDropdowns();
-            updateFormBudgetMeta();
-            renderAirbnbCards();
-            updateAirbnbKPIs();
-            updateAirbnbBadge();
             if (showToastFeedback) {
               showToast("📥 Dados mais recentes sincronizados da nuvem com sucesso!");
             }
           }
           lastCloudSyncTimestamp = new Date();
           updateCloudStatusUI("synced");
-        } else {
-          // Basket virgem: envia os dados locais iniciais
-          syncToCloud(false);
         }
       } catch (err) {
         console.warn("Erro ao baixar da nuvem:", err);
@@ -2217,7 +1619,30 @@
       }, 1500);
     }
 
-    // --- Funções de Bloqueio, Desbloqueio e Pareamento ---
+    // --- Autenticação & Desbloqueio Zero-Knowledge ---
+    let preloadedCloudPayload = null;
+
+    async function preloadCloudPayload() {
+      try {
+        const endpoint = getPantryEndpoint();
+        const res = await fetch(endpoint);
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.ciphertext) {
+            preloadedCloudPayload = data;
+            try {
+              localStorage.setItem("expedicao_cloud_payload", JSON.stringify(data));
+            } catch (e) {}
+          }
+        }
+      } catch (e) {
+        try {
+          const stored = localStorage.getItem("expedicao_cloud_payload");
+          if (stored) preloadedCloudPayload = JSON.parse(stored);
+        } catch (err) {}
+      }
+    }
+
     function togglePasswordVisibility(inputId, btn) {
       const input = document.getElementById(inputId);
       if (!input) return;
@@ -2230,129 +1655,115 @@
       }
     }
 
-    function updateLockUIState() {
-      const hasHash = !!localStorage.getItem("expedicao_auth_hash");
-      const title = document.getElementById("lockTitle");
-      const subtitle = document.getElementById("lockSubtitle");
+    async function attemptUnlockWithPassword(password, isSilent = false) {
+      const errBox = document.getElementById("authErrorMessage");
+      const errText = document.getElementById("authErrorText");
       const input = document.getElementById("authPasswordInput");
-      const confirmBox = document.getElementById("authConfirmContainer");
       const submitBtn = document.getElementById("authSubmitBtn");
 
-      if (!hasHash) {
-        if (title) title.textContent = "Definir Senha";
-        if (subtitle) subtitle.textContent = "Crie uma senha para acessar seu roteiro";
-        if (input) input.placeholder = "Crie sua nova senha...";
-        if (confirmBox) confirmBox.classList.remove("hidden");
-        if (submitBtn) submitBtn.textContent = "Salvar Senha & Entrar";
-      } else {
-        if (title) title.textContent = "Acesso ao Roteiro";
-        if (subtitle) subtitle.textContent = "Digite sua senha para entrar";
-        if (input) input.placeholder = "Digite sua senha...";
-        if (confirmBox) confirmBox.classList.add("hidden");
-        if (submitBtn) submitBtn.textContent = "Entrar";
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = "Descriptografando...";
       }
+
+      try {
+        const inputHash = await computeSha256(password);
+        const storedHash = localStorage.getItem("expedicao_auth_hash");
+        const cachedBundleStr = localStorage.getItem("expedicao_cached_bundle");
+
+        // 1. Descriptografia ultrarrápida do cache local (se houver correspondência de hash)
+        if (cachedBundleStr && storedHash && storedHash === inputHash) {
+          try {
+            const bundle = JSON.parse(cachedBundleStr);
+            hydrateDecryptedBundle(bundle, password);
+            finalizeUnlock(password, inputHash);
+            setTimeout(() => fetchFromCloud(false), 500);
+            return true;
+          } catch (e) {}
+        }
+
+        // 2. Se não estiver em cache, obter payload criptografado
+        let payload = preloadedCloudPayload;
+        if (!payload) {
+          try {
+            const stored = localStorage.getItem("expedicao_cloud_payload");
+            if (stored) payload = JSON.parse(stored);
+          } catch (e) {}
+        }
+        if (!payload) {
+          const endpoint = getPantryEndpoint();
+          const res = await fetch(endpoint);
+          if (!res.ok) throw new Error("Não foi possível conectar ao cofre na nuvem.");
+          payload = await res.json();
+        }
+
+        if (!payload || !payload.ciphertext) {
+          throw new Error("Cofre não encontrado ou vazio.");
+        }
+
+        // 3. Tentar descriptografar o payload da nuvem com PBKDF2 + AES-GCM
+        const decryptedStr = await decryptPayloadE2EE(payload, password);
+        const bundle = JSON.parse(decryptedStr);
+
+        // Sucesso na descriptografia!
+        localStorage.setItem("expedicao_auth_hash", inputHash);
+        localStorage.setItem("expedicao_cached_bundle", decryptedStr);
+        localStorage.setItem("expedicao_cloud_payload", JSON.stringify(payload));
+        
+        hydrateDecryptedBundle(bundle, password);
+        finalizeUnlock(password, inputHash);
+        showToast("🔓 Bem-vindo! Roteiro descriptografado com sucesso.");
+        return true;
+      } catch (err) {
+        console.warn("Falha ao desbloquear com a senha informada:", err);
+        if (!isSilent) {
+          if (errBox) errBox.classList.remove("hidden");
+          if (errText) errText.textContent = "Senha incorreta ou erro de conexão.";
+          if (input) {
+            input.classList.add("ring-2", "ring-rose-500");
+            setTimeout(() => input.classList.remove("ring-2", "ring-rose-500"), 1500);
+          }
+        }
+        return false;
+      } finally {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = "Entrar";
+        }
+      }
+    }
+
+    function finalizeUnlock(password, hash) {
+      masterPassword = password;
+      isAppUnlocked = true;
+      sessionStorage.setItem("expedicao_unlocked", "true");
+
+      const rememberCheck = document.getElementById("rememberDeviceCheck");
+      if (rememberCheck && rememberCheck.checked) {
+        localStorage.setItem("expedicao_remember_device", "true");
+        localStorage.setItem("expedicao_saved_key", btoa(encodeURIComponent(password)));
+      } else {
+        localStorage.removeItem("expedicao_remember_device");
+        localStorage.removeItem("expedicao_saved_key");
+      }
+
+      const overlay = document.getElementById("authLockOverlay");
+      if (overlay) overlay.classList.add("hidden");
+      const main = document.getElementById("mainAppContainer");
+      if (main) main.classList.remove("hidden");
+      const errBox = document.getElementById("authErrorMessage");
+      if (errBox) errBox.classList.add("hidden");
+      const input = document.getElementById("authPasswordInput");
+      if (input) input.value = "";
     }
 
     async function handleAuthSubmit(e) {
       if (e) e.preventDefault();
       const input = document.getElementById("authPasswordInput");
-      const confirmInput = document.getElementById("authConfirmInput");
-      const errBox = document.getElementById("authErrorMessage");
-      const errText = document.getElementById("authErrorText");
-      const rememberCheck = document.getElementById("rememberDeviceCheck");
       if (!input) return;
-
       const password = input.value.trim();
       if (!password) return;
-
-      const hasHash = !!localStorage.getItem("expedicao_auth_hash");
-
-      // CASO 1: CRIANDO SENHA PELA PRIMEIRA VEZ
-      if (!hasHash) {
-        const confirmPass = confirmInput ? confirmInput.value.trim() : "";
-        if (password.length < 3) {
-          if (errBox) errBox.classList.remove("hidden");
-          if (errText) errText.textContent = "A senha deve ter pelo menos 3 caracteres.";
-          return;
-        }
-        if (password !== confirmPass) {
-          if (errBox) errBox.classList.remove("hidden");
-          if (errText) errText.textContent = "As duas senhas não conferem.";
-          return;
-        }
-
-        const hash = await computeSha256(password);
-        localStorage.setItem("expedicao_auth_hash", hash);
-        masterPassword = password;
-        isAppUnlocked = true;
-        sessionStorage.setItem("expedicao_unlocked", "true");
-
-        if (rememberCheck && rememberCheck.checked) {
-          localStorage.setItem("expedicao_remember_device", "true");
-          localStorage.setItem("expedicao_saved_key", btoa(encodeURIComponent(password)));
-        }
-
-        const overlay = document.getElementById("authLockOverlay");
-        if (overlay) overlay.classList.add("hidden");
-        const main = document.getElementById("mainAppContainer");
-        if (main) main.classList.remove("hidden");
-        if (errBox) errBox.classList.add("hidden");
-
-        showToast("🔒 Senha criada com sucesso! Painel liberado.");
-        syncToCloud(true);
-        return;
-      }
-
-      // CASO 2: DESBLOQUEANDO COM SENHA EXISTENTE
-      const hash = await computeSha256(password);
-      const storedHash = localStorage.getItem("expedicao_auth_hash");
-
-      let isValid = false;
-      if (storedHash && hash === storedHash) {
-        isValid = true;
-      } else {
-        // Se estiver no PC 2 (sem hash local ainda), tenta descriptografar cesto da nuvem
-        try {
-          const endpoint = getPantryEndpoint();
-          const res = await fetch(endpoint);
-          if (res.ok) {
-            const data = await res.json();
-            if (data.ciphertext && data.salt && data.iv) {
-              await decryptPayloadE2EE(data, password);
-              isValid = true;
-              localStorage.setItem("expedicao_auth_hash", hash);
-            }
-          }
-        } catch (cloudErr) {}
-      }
-
-      if (isValid) {
-        masterPassword = password;
-        isAppUnlocked = true;
-        sessionStorage.setItem("expedicao_unlocked", "true");
-
-        if (rememberCheck && rememberCheck.checked) {
-          localStorage.setItem("expedicao_remember_device", "true");
-          localStorage.setItem("expedicao_saved_key", btoa(encodeURIComponent(password)));
-        } else {
-          localStorage.removeItem("expedicao_remember_device");
-          localStorage.removeItem("expedicao_saved_key");
-        }
-
-        const overlay = document.getElementById("authLockOverlay");
-        if (overlay) overlay.classList.add("hidden");
-        const main = document.getElementById("mainAppContainer");
-        if (main) main.classList.remove("hidden");
-        if (errBox) errBox.classList.add("hidden");
-        input.value = "";
-        showToast("🔓 Bem-vindo! Painel desbloqueado.");
-        fetchFromCloud(false);
-      } else {
-        if (errBox) errBox.classList.remove("hidden");
-        if (errText) errText.textContent = "Senha incorreta.";
-        input.classList.add("ring-2", "ring-rose-500");
-        setTimeout(() => input.classList.remove("ring-2", "ring-rose-500"), 1500);
-      }
+      await attemptUnlockWithPassword(password, false);
     }
 
     function lockApp() {
@@ -2361,37 +1772,25 @@
       sessionStorage.removeItem("expedicao_unlocked");
       localStorage.removeItem("expedicao_saved_key");
 
+      // Limpeza de memória dos dados sensíveis ao bloquear
+      baseData = [];
+      CITY_NEIGHBORHOOD_GUIDE = {};
+      DEFAULT_AIRBNB_QUOTES = [];
+      airbnbQuotes = [];
+      mapRoutes = [];
+      appDecryptedBundle = null;
+
       const overlay = document.getElementById("authLockOverlay");
       if (overlay) overlay.classList.remove("hidden");
       const main = document.getElementById("mainAppContainer");
       if (main) main.classList.add("hidden");
-      updateLockUIState();
 
       const input = document.getElementById("authPasswordInput");
       if (input) {
         input.value = "";
         setTimeout(() => input.focus(), 200);
       }
-      showToast("🔒 Painel bloqueado.");
-    }
-
-    function promptResetPassword() {
-      localStorage.removeItem("expedicao_auth_hash");
-      localStorage.removeItem("expedicao_saved_key");
-      sessionStorage.removeItem("expedicao_unlocked");
-      masterPassword = null;
-
-      updateLockUIState();
-
-      const input = document.getElementById("authPasswordInput");
-      if (input) {
-        input.value = "";
-        setTimeout(() => input.focus(), 200);
-      }
-      const confirmInput = document.getElementById("authConfirmInput");
-      if (confirmInput) confirmInput.value = "";
-      const errBox = document.getElementById("authErrorMessage");
-      if (errBox) errBox.classList.add("hidden");
+      showToast("🔒 Painel bloqueado e memória limpa.");
     }
 
     async function openChangePasswordPrompt() {
@@ -2475,7 +1874,7 @@
         id: cfg.pantryId,
         basket: cfg.basketName
       };
-      const hash = '#sync=' + encodeURIComponent(btoa(JSON.stringify(payload)));
+      const hash = "#sync=" + encodeURIComponent(btoa(JSON.stringify(payload)));
       const url = window.location.origin + window.location.pathname + hash;
 
       navigator.clipboard.writeText(url).then(() => {
@@ -2487,9 +1886,15 @@
 
     function exportDataJson() {
       const exportObj = {
-        version: 2,
+        version: 3,
         exportedAt: new Date().toISOString(),
+        title: appDecryptedBundle?.title || "Expedição América do Sul: O Roteiro Definitivo",
+        subtitle: appDecryptedBundle?.subtitle || "",
+        badges: appDecryptedBundle?.badges || [],
         tripStartDate: getTripStartDate(),
+        baseData: baseData,
+        mapRoutes: mapRoutes,
+        cityGuides: CITY_NEIGHBORHOOD_GUIDE,
         airbnbQuotes: airbnbQuotes,
         settings: {
           currency: currentCurrency,
@@ -2524,34 +1929,42 @@
         }
       }
 
-      // 2. Verificar se o dispositivo está desbloqueado
+      // 2. Pre-aquecimento do payload na nuvem em segundo plano
+      preloadCloudPayload();
+
+      // 3. Verificar se o dispositivo está com sessão desbloqueada ou lembrar ativo
       const overlay = document.getElementById("authLockOverlay");
-      const hasStoredHash = !!localStorage.getItem("expedicao_auth_hash");
       const isRemembered = localStorage.getItem("expedicao_remember_device") === "true";
       const isSessionUnlocked = sessionStorage.getItem("expedicao_unlocked") === "true";
       const savedKey = localStorage.getItem("expedicao_saved_key");
+      const cachedBundle = localStorage.getItem("expedicao_cached_bundle");
 
       if (savedKey && (isRemembered || isSessionUnlocked)) {
         try {
           const restoredPass = decodeURIComponent(atob(savedKey));
-          const testHash = await computeSha256(restoredPass);
-          if (testHash === localStorage.getItem("expedicao_auth_hash")) {
-            masterPassword = restoredPass;
-            isAppUnlocked = true;
-            if (overlay) overlay.classList.add("hidden");
-            const main = document.getElementById("mainAppContainer");
-            if (main) main.classList.remove("hidden");
-            updateCloudStatusUI("synced");
-            fetchFromCloud(false);
-            return;
+          if (cachedBundle) {
+            try {
+              const bundle = JSON.parse(cachedBundle);
+              hydrateDecryptedBundle(bundle, restoredPass);
+              isAppUnlocked = true;
+              if (overlay) overlay.classList.add("hidden");
+              const main = document.getElementById("mainAppContainer");
+              if (main) main.classList.remove("hidden");
+              updateCloudStatusUI("synced");
+              setTimeout(() => fetchFromCloud(false), 800);
+              return;
+            } catch (ce) {}
           }
+
+          const unlocked = await attemptUnlockWithPassword(restoredPass, true);
+          if (unlocked) return;
         } catch (e) {}
       }
 
+      // Se bloqueado, mantém overlay e foca no campo de senha
       if (overlay) overlay.classList.remove("hidden");
       const main = document.getElementById("mainAppContainer");
       if (main) main.classList.add("hidden");
-      updateLockUIState();
       const authInput = document.getElementById("authPasswordInput");
       if (authInput) setTimeout(() => authInput.focus(), 250);
     }
@@ -2684,6 +2097,7 @@
     }
 
     function selectBase(index) {
+      if (!baseData || baseData.length === 0 || !baseData[index]) return;
       currentSelectedBaseIndex = index;
       const base = baseData[index];
       const inspectorCard = document.getElementById("inspectorCard");
@@ -3040,32 +2454,16 @@
         </div>
       `;
 
-      // Coordenadas exatas dos pinos para mover o anel de seleção sem distorcer o mapa
-      const pinCoords = [
-        { cx: 395, cy: 650 }, // 0. Buenos Aires
-        { cx: 415, cy: 638 }, // 1. Colonia del Sacramento (UY)
-        { cx: 220, cy: 715 }, // 2. Rota dos Sete Lagos
-        { cx: 250, cy: 615 }, // 3. Mendoza
-        { cx: 200, cy: 620 }, // 4. Santiago Express
-        { cx: 190, cy: 400 }, // 5. Arequipa
-        { cx: 205, cy: 365 }, // 6. Cusco
-        { cx: 130, cy: 335 }, // 7. Lima
-        { cx: 105, cy: 290 }, // 8. Huanchaco
-        { cx: 82,  cy: 235 }, // 9. Los Órganos
-        { cx: 82,  cy: 205 }, // 10. Olón & Ayampe
-        { cx: 98,  cy: 175 }, // 11. Quilotoa & Baños
-        { cx: 145, cy: 120 }, // 12. Medellín
-        { cx: 185, cy: 55  }  // 13. Caribe Colombiano
-      ];
-
-      const coords = pinCoords[index];
-      if (coords) {
+      // Coordenadas exatas do pino para mover o anel de seleção
+      const targetCx = base?.mapConfig?.cx;
+      const targetCy = base?.mapConfig?.cy;
+      if (targetCx && targetCy) {
         const pulse = document.getElementById("selectedPinPulse");
         const ring = document.getElementById("selectedPinRing");
         const aura = document.getElementById("selectedPinAura");
-        if (pulse) { pulse.setAttribute("cx", coords.cx); pulse.setAttribute("cy", coords.cy); }
-        if (ring) { ring.setAttribute("cx", coords.cx); ring.setAttribute("cy", coords.cy); }
-        if (aura) { aura.setAttribute("cx", coords.cx); aura.setAttribute("cy", coords.cy); }
+        if (pulse) { pulse.setAttribute("cx", targetCx); pulse.setAttribute("cy", targetCy); }
+        if (ring) { ring.setAttribute("cx", targetCx); ring.setAttribute("cy", targetCy); }
+        if (aura) { aura.setAttribute("cx", targetCx); aura.setAttribute("cy", targetCy); }
       }
 
       baseData.forEach((_, i) => {
@@ -3345,68 +2743,7 @@
     // MÓDULO DE COTAÇÕES & COMPARADOR DE AIRBNBS
     // ==========================================
 
-    const DEFAULT_AIRBNB_QUOTES = [
-      {
-        id: "quote-ba-1",
-        baseId: "ba",
-        title: "Loft c/ Varanda & Home Office em Palermo Soho",
-        url: "https://www.airbnb.com.br/rooms/sample-palermo",
-        neighborhood: "Palermo Soho",
-        price: 3800,
-        currency: "BRL",
-        periodType: "total",
-        speed: 280,
-        dist: "Bairro plano, 3 min do Parque El Rosedal",
-        status: "approved",
-        desk: true,
-        ac: true,
-        kitchen: true,
-        washer: true,
-        discountApplied: true,
-        notes: "Mesa ampla de jantar com tomadas próximas e cadeiras confortáveis. Bairro arborizado.",
-        createdAt: "2026-09-08"
-      },
-      {
-        id: "quote-huanchaco-1",
-        baseId: "huanchaco",
-        title: "Apartamento Vista Mar Pé na Areia (La Curvita)",
-        url: "https://www.airbnb.com.br/rooms/sample-huanchaco",
-        neighborhood: "La Curvita",
-        price: 2150,
-        currency: "BRL",
-        periodType: "total",
-        speed: 150,
-        dist: "Pé na areia (0 min do pico de surf)",
-        status: "booked",
-        desk: true,
-        ac: false,
-        kitchen: true,
-        washer: true,
-        discountApplied: true,
-        notes: "Dá para ver a formação das esquerdas direto da sacada! Desconto mensal de 22% confirmado.",
-        createdAt: "2026-09-08"
-      },
-      {
-        id: "quote-organos-1",
-        baseId: "organos",
-        title: "Bungalô Tropical c/ Piscina & Deck em Vichayito",
-        url: "https://www.airbnb.com.br/rooms/sample-vichayito",
-        neighborhood: "Vichayito",
-        price: 2900,
-        currency: "BRL",
-        periodType: "total",
-        speed: 90,
-        dist: "120m do mar morno (2 min a pé)",
-        status: "contacted",
-        desk: true,
-        ac: true,
-        kitchen: true,
-        washer: true,
-        discountApplied: false,
-        notes: "Deck excelente para yoga e descanso a 2 min a pé da praia de Vichayito.",
-        createdAt: "2026-09-08"
-      }
-    ];
+    let DEFAULT_AIRBNB_QUOTES = [];
 
     const STATUS_MAP = {
       analyzing: { label: "🟡 Em Validação / Análise", badgeClass: "bg-amber-100 text-amber-800 border-amber-300" },
@@ -3458,25 +2795,10 @@
     }
 
     function getAirbnbSearchUrl(base) {
-      if (!base) base = baseData[0];
-      const cityMap = {
-        ba: "Buenos-Aires--Argentina",
-        colonia: "Colonia-del-Sacramento--Colonia--Uruguay",
-        "7lagos": "San-Carlos-de-Bariloche--Rio-Negro--Argentina",
-        mendoza: "Mendoza--Mendoza-Province--Argentina",
-        santiago_exp: "Providencia--Santiago-Metropolitan-Region--Chile",
-        arequipa: "Arequipa--Peru",
-        cusco: "Cusco--Peru",
-        lima: "Miraflores--Lima--Peru",
-        huanchaco: "Huanchaco--La-Libertad--Peru",
-        organos: "Los-Organos--Piura--Peru",
-        olon_ayampe: "Olon--Santa-Elena--Ecuador",
-        vulcoes: "Banos--Tungurahua--Ecuador",
-        medellin: "Laureles--Medellin--Antioquia--Colombia",
-        caribe: "Palomino--La-Guajira--Colombia"
-      };
+      if (!base && baseData && baseData.length > 0) base = baseData[0];
+      if (!base) return "https://www.airbnb.com.br";
 
-      const locationSlug = cityMap[base.id] || encodeURIComponent(base.name + " " + base.country);
+      const locationSlug = base.airbnbSlug || encodeURIComponent((base.name || "") + " " + (base.country || ""));
       
       // Calculate target budget with 12% margin for negotiation
       const targetActive = getBaseTargetHospInActiveCurrency(base);
@@ -3484,7 +2806,7 @@
       const priceParam = maxPrice > 0 ? `&price_max=${maxPrice}` : "";
 
       const datesMap = calculateAllBaseDates(tripStartDate);
-      const baseDates = datesMap[base.id] || { checkin: "2026-10-01", checkout: "2026-10-29" };
+      const baseDates = (datesMap && datesMap[base.id]) ? datesMap[base.id] : { checkin: "2026-10-01", checkout: "2026-10-29" };
       const checkin = baseDates.checkin;
       const checkout = baseDates.checkout;
 
@@ -4712,9 +4034,6 @@
       tripStartInput.value = tripStartDate;
     }
 
-    renderBases();
-    selectBase(0); // Inicia na Etapa 1: Buenos Aires
-    initAirbnbModule();
     initSecurityAndCloud();
   </script>
 </body>
