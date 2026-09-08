@@ -83,10 +83,25 @@ Mesmo adicionando o Uruguai, os vulcões do Equador e o Caribe Colombiano, o or�
 
 ---
 
-## 4. O Que Fazer Agora
+## 4. Rastreador e Cotador de Airbnbs em Tempo Real (Integrado ao Dashboard)
 
-1. **Abra o Dashboard:** O arquivo [`expedicao_7_meses_dashboard.html`](./expedicao_7_meses_dashboard.html) foi totalmente atualizado com:
-   * O **novo mapa vetorial** mostrando os 14 pontos (com a travessia de ferry ao Uruguai, os vulcões do Equador e a ponta caribenha da Colômbia).
-   * O **Inspetor Dinâmico** atualizado para todas as novas paradas.
-   * Filtros temáticos: *Picos de Longboard*, *Paraísos de Praia (Água Morna)* e *Andes/Lagos/Vulcões*.
-2. Dê um duplo clique no arquivo [`expedicao_7_meses_dashboard.html`](./expedicao_7_meses_dashboard.html) no seu navegador para ver o roteiro definitivo completo!
+Para você cotar apartamentos reais no Airbnb e jogar no sistema:
+
+1. **Acesse a aba `🏡 Cotações de Airbnbs`** no topo do dashboard (ou no site online).
+2. **Preencha os dados da acomodação:**
+   * **Destino:** Escolha a base (o sistema já carrega a meta de orçamento planejada para aquela cidade).
+   * **Link:** Cole o link direto do anúncio no Airbnb.
+   * **Preço Cotado:** Insira o valor (em R$ ou US$, total da estadia, diária ou mensal com desconto).
+   * **Comparador Automático:** O sistema calcula na hora a diária real e se o imóvel está gerando economia ou se excedeu o teto orçado.
+   * **Checklist & Speedtest:** Salve a velocidade do Wi-Fi enviada pelo anfitrião, se tem mesa de trabalho dedicada, ar condicionado, distância da praia e notas de negociação.
+3. **Status Dinâmico:** Alterne entre *🟡 Em Análise*, *💬 Em Contato*, *✅ Aprovado* e *🎉 Reservado!*.
+4. **Envio para o WhatsApp:** Com 1 clique no botão **"📋 Copiar p/ WhatsApp"**, o sistema gera uma mensagem bonita e formatada pronta para enviar para o seu parceiro(a).
+5. **Backup & Compartilhamento:** Os dados ficam salvos automaticamente no seu navegador (`localStorage`), e você pode exportar ou importar arquivos `.json` para compartilhar entre celulares e computadores.
+
+---
+
+## 5. Como Acessar e Compartilhar com o Casal
+
+* **Acesso Online (GitHub Pages):** [`https://fdiogoc-abi.github.io/expedicao-america-do-sul/`](https://fdiogoc-abi.github.io/expedicao-america-do-sul/)
+* **Arquivo Local:** Dê um duplo clique no arquivo [`index.html`](./index.html) ou [`expedicao_7_meses_dashboard.html`](./expedicao_7_meses_dashboard.html) no seu computador.
+
