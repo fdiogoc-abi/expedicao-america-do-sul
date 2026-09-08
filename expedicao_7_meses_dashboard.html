@@ -1284,7 +1284,7 @@
       getItem(k) {
         try {
           if (typeof window !== "undefined" && window.localStorage) {
-            const val = window.appStorage.getItem(k);
+            const val = window.localStorage.getItem(k);
             if (val !== null) return val;
           }
         } catch (e) {}
@@ -1294,7 +1294,7 @@
         this._mem[k] = String(v);
         try {
           if (typeof window !== "undefined" && window.localStorage) {
-            window.appStorage.setItem(k, String(v));
+            window.localStorage.setItem(k, String(v));
           }
         } catch (e) {}
       },
@@ -1302,7 +1302,7 @@
         delete this._mem[k];
         try {
           if (typeof window !== "undefined" && window.localStorage) {
-            window.appStorage.removeItem(k);
+            window.localStorage.removeItem(k);
           }
         } catch (e) {}
       }
@@ -1313,7 +1313,7 @@
       getItem(k) {
         try {
           if (typeof window !== "undefined" && window.sessionStorage) {
-            const val = window.appSession.getItem(k);
+            const val = window.sessionStorage.getItem(k);
             if (val !== null) return val;
           }
         } catch (e) {}
@@ -1323,7 +1323,7 @@
         this._mem[k] = String(v);
         try {
           if (typeof window !== "undefined" && window.sessionStorage) {
-            window.appSession.setItem(k, String(v));
+            window.sessionStorage.setItem(k, String(v));
           }
         } catch (e) {}
       },
@@ -1331,7 +1331,7 @@
         delete this._mem[k];
         try {
           if (typeof window !== "undefined" && window.sessionStorage) {
-            window.appSession.removeItem(k);
+            window.sessionStorage.removeItem(k);
           }
         } catch (e) {}
       }
@@ -1465,11 +1465,61 @@
         const dateInput = document.getElementById("tripStartDateInput");
         if (dateInput) dateInput.value = tripStartDate;
       }
+      if (password) {
+        masterPassword = password;
+        try {
+          appSession.setItem("expedicao_session_key", btoa(encodeURIComponent(password)));
+        } catch (e) {}
+      }
+
       if (Array.isArray(bundle.airbnbQuotes)) {
-        airbnbQuotes = bundle.airbnbQuotes;
-        DEFAULT_AIRBNB_QUOTES = bundle.airbnbQuotes;
+        // Safe Merge com Local Storage para NUNCA apagar cotações inseridas pelo usuário
+        let localQuotes = [];
+        try {
+          const saved = appStorage.getItem("expedicao_airbnbs_v2");
+          if (saved) localQuotes = JSON.parse(saved);
+        } catch (e) {}
+        if (!Array.isArray(localQuotes)) localQuotes = [];
+
+        let deletedIds = [];
+        try {
+          const dSaved = appStorage.getItem("expedicao_deleted_quotes");
+          if (dSaved) deletedIds = JSON.parse(dSaved);
+        } catch (e) {}
+        if (!Array.isArray(deletedIds)) deletedIds = [];
+
+        const quotesMap = new Map();
+        // 1. Carrega cotações recebidas (exceto as excluídas explicitamente)
+        bundle.airbnbQuotes.forEach(q => {
+          if (q && q.id && !deletedIds.includes(q.id)) {
+            quotesMap.set(q.id, q);
+          }
+        });
+
+        // 2. Mescla cotações locais (preserva inserções do usuário e edições mais recentes)
+        localQuotes.forEach(q => {
+          if (q && q.id && !deletedIds.includes(q.id)) {
+            if (!quotesMap.has(q.id)) {
+              quotesMap.set(q.id, q);
+            } else {
+              const existing = quotesMap.get(q.id);
+              const localTime = q.updatedAt || (q.createdAt ? new Date(q.createdAt).getTime() : 0);
+              const incomingTime = existing.updatedAt || (existing.createdAt ? new Date(existing.createdAt).getTime() : 0);
+              if (localTime >= incomingTime) {
+                quotesMap.set(q.id, { ...existing, ...q });
+              }
+            }
+          }
+        });
+
+        airbnbQuotes = Array.from(quotesMap.values());
+        DEFAULT_AIRBNB_QUOTES = airbnbQuotes;
         try {
           appStorage.setItem("expedicao_airbnbs_v2", JSON.stringify(airbnbQuotes));
+          if (appDecryptedBundle) {
+            appDecryptedBundle.airbnbQuotes = airbnbQuotes;
+            appStorage.setItem("expedicao_cached_bundle", JSON.stringify(appDecryptedBundle));
+          }
         } catch(e) {}
       }
       if (bundle.settings) {
@@ -1544,7 +1594,23 @@
 
     // --- Envio e Recebimento na Nuvem ---
     async function syncToCloud(showToastFeedback = false) {
-      if (!masterPassword || isSyncingToCloud) return;
+      if (!masterPassword) {
+        const savedKey = appSession.getItem("expedicao_session_key") || appStorage.getItem("expedicao_saved_key");
+        if (savedKey) {
+          try {
+            masterPassword = decodeURIComponent(atob(savedKey));
+          } catch (e) {}
+        }
+      }
+
+      if (!masterPassword) {
+        console.warn("syncToCloud: masterPassword não disponível.");
+        if (showToastFeedback) {
+          showToast("💾 Salvo no navegador! Insira sua senha para sincronizar na nuvem.");
+        }
+        return;
+      }
+      if (isSyncingToCloud) return;
       isSyncingToCloud = true;
       updateCloudStatusUI("syncing");
 
@@ -1598,13 +1664,13 @@
         lastCloudSyncTimestamp = new Date();
         updateCloudStatusUI("synced");
         if (showToastFeedback) {
-          showToast("☁️ Dados salvos e criptografados na nuvem com sucesso!");
+          showToast("☁️ Salvo no navegador e sincronizado na nuvem com sucesso!");
         }
       } catch (err) {
         console.warn("Erro na sincronização em nuvem:", err);
         updateCloudStatusUI("error", err.message);
         if (showToastFeedback) {
-          showToast("⚠️ Falha ao sincronizar com o Pantry. Dados salvos localmente.");
+          showToast("💾 Salvo localmente! (Sincronização em nuvem tentará em breve)");
         }
       } finally {
         isSyncingToCloud = false;
@@ -1612,6 +1678,14 @@
     }
 
     async function fetchFromCloud(showToastFeedback = false) {
+      if (!masterPassword) {
+        const savedKey = appSession.getItem("expedicao_session_key") || appStorage.getItem("expedicao_saved_key");
+        if (savedKey) {
+          try {
+            masterPassword = decodeURIComponent(atob(savedKey));
+          } catch (e) {}
+        }
+      }
       if (!masterPassword) return;
       updateCloudStatusUI("syncing");
 
@@ -1625,20 +1699,20 @@
           const decryptedStr = decryptPayloadCrypto(data.ciphertext, masterPassword);
           const cloudData = JSON.parse(decryptedStr);
           appStorage.setItem("expedicao_cloud_payload", JSON.stringify(data));
-          appStorage.setItem("expedicao_cached_bundle", decryptedStr);
 
           const localTimestamp = parseInt(appStorage.getItem("expedicao_local_updated_at") || "0", 10);
           const cloudTimestamp = cloudData.updatedAt || 0;
 
-          if (cloudTimestamp > localTimestamp || showToastFeedback || !baseData || baseData.length === 0) {
-            hydrateDecryptedBundle(cloudData, masterPassword);
+          // Mescla segura com dados locais (nunca destrói cotações do usuário)
+          hydrateDecryptedBundle(cloudData, masterPassword);
+          if (cloudTimestamp >= localTimestamp) {
             appStorage.setItem("expedicao_local_updated_at", cloudTimestamp.toString());
-            if (showToastFeedback) {
-              showToast("📥 Dados mais recentes sincronizados da nuvem com sucesso!");
-            }
           }
           lastCloudSyncTimestamp = new Date();
           updateCloudStatusUI("synced");
+          if (showToastFeedback) {
+            showToast("📥 Dados sincronizados da nuvem com sucesso!");
+          }
         }
       } catch (err) {
         console.warn("Erro ao baixar da nuvem:", err);
@@ -1701,6 +1775,8 @@
       const cleanPass = (password || "").trim();
       if (!cleanPass) return false;
 
+      let actualPasswordUsed = cleanPass;
+
       if (submitBtn) {
         submitBtn.disabled = true;
         submitBtn.textContent = "Descriptografando...";
@@ -1717,7 +1793,7 @@
             const bundle = JSON.parse(cachedBundleStr);
             if (bundle && bundle.baseData && bundle.baseData.length > 0) {
               hydrateDecryptedBundle(bundle, cleanPass);
-              finalizeUnlock(actualPasswordUsed, inputHash);
+              finalizeUnlock(cleanPass, inputHash);
               setTimeout(() => fetchFromCloud(false), 600);
               return true;
             }
@@ -1727,7 +1803,6 @@
         // 2. Tentar descriptografar com a senha informada e variações de maiúsculas/minúsculas
         let decryptedStr = null;
         let finalBundle = null;
-        let actualPasswordUsed = cleanPass;
 
         const candidatePasswords = [
           cleanPass,
@@ -1812,6 +1887,7 @@
       masterPassword = password;
       isAppUnlocked = true;
       appSession.setItem("expedicao_unlocked", "true");
+      appSession.setItem("expedicao_session_key", btoa(encodeURIComponent(password)));
 
       const rememberCheck = document.getElementById("rememberDeviceCheck");
       if (rememberCheck && rememberCheck.checked) {
@@ -1997,7 +2073,7 @@
       const overlay = document.getElementById("authLockOverlay");
       const isRemembered = appStorage.getItem("expedicao_remember_device") === "true";
       const isSessionUnlocked = appSession.getItem("expedicao_unlocked") === "true";
-      const savedKey = appStorage.getItem("expedicao_saved_key");
+      const savedKey = appStorage.getItem("expedicao_saved_key") || appSession.getItem("expedicao_session_key");
       const cachedBundle = appStorage.getItem("expedicao_cached_bundle");
 
       if (savedKey && (isRemembered || isSessionUnlocked)) {
@@ -2007,6 +2083,7 @@
             try {
               const bundle = JSON.parse(cachedBundle);
               hydrateDecryptedBundle(bundle, restoredPass);
+              finalizeUnlock(restoredPass, computePasswordHash(restoredPass));
               isAppUnlocked = true;
               if (overlay) overlay.classList.add("hidden");
               const main = document.getElementById("mainAppContainer");
@@ -3124,14 +3201,26 @@
       }
     }
 
-    function saveAirbnbQuotes() {
+    function saveAirbnbQuotes(immediateSync = false) {
       try {
         appStorage.setItem("expedicao_airbnbs_v2", JSON.stringify(airbnbQuotes));
       } catch (e) {
         console.warn("Erro ao salvar no LocalStorage:", e);
       }
+
+      if (appDecryptedBundle) {
+        appDecryptedBundle.airbnbQuotes = airbnbQuotes;
+        appDecryptedBundle.updatedAt = Date.now();
+        try {
+          appStorage.setItem("expedicao_cached_bundle", JSON.stringify(appDecryptedBundle));
+        } catch (e) {}
+      }
+
       updateAirbnbBadge();
-      if (typeof scheduleCloudSync === "function") {
+
+      if (immediateSync) {
+        syncToCloud(true);
+      } else if (typeof scheduleCloudSync === "function") {
         scheduleCloudSync();
       }
     }
@@ -3308,18 +3397,19 @@
         washer,
         discountApplied: base ? base.weeks >= 3 : true,
         notes,
-        createdAt: new Date().toISOString().slice(0, 10)
+        createdAt: new Date().toISOString().slice(0, 10),
+        updatedAt: Date.now()
       };
 
       airbnbQuotes.unshift(newQuote);
-      saveAirbnbQuotes();
+      saveAirbnbQuotes(true);
       clearAirbnbForm();
       renderAirbnbCards();
       updateAirbnbKPIs();
       selectBase(currentSelectedBaseIndex);
       renderBases();
 
-      alert(`✅ Cotação "${title}" salva com sucesso!`);
+      showToast(`🎉 Cotação "${title}" salva e sincronizada na nuvem!`);
     }
 
     function changeQuoteStatus(quoteId, newStatus) {
@@ -3330,7 +3420,8 @@
       const quote = airbnbQuotes.find(q => q.id === quoteId);
       if (!quote) return;
       quote.status = newStatus;
-      saveAirbnbQuotes();
+      quote.updatedAt = Date.now();
+      saveAirbnbQuotes(true);
       selectBase(currentSelectedBaseIndex);
       renderAirbnbCards();
       updateAirbnbKPIs();
@@ -3348,11 +3439,21 @@
     function unlinkAirbnbFromBase(baseId, quoteId) {
       if (!baseId && !quoteId) return;
       if (quoteId) {
+        try {
+          let deletedIds = [];
+          const dSaved = appStorage.getItem("expedicao_deleted_quotes");
+          if (dSaved) deletedIds = JSON.parse(dSaved);
+          if (!Array.isArray(deletedIds)) deletedIds = [];
+          if (!deletedIds.includes(quoteId)) {
+            deletedIds.push(quoteId);
+            appStorage.setItem("expedicao_deleted_quotes", JSON.stringify(deletedIds));
+          }
+        } catch (e) {}
         airbnbQuotes = airbnbQuotes.filter(q => q.id !== quoteId);
       } else {
         airbnbQuotes = airbnbQuotes.filter(q => q.baseId !== baseId);
       }
-      saveAirbnbQuotes();
+      saveAirbnbQuotes(true);
       selectBase(currentSelectedBaseIndex);
       renderAirbnbCards();
       updateAirbnbKPIs();
@@ -3364,8 +3465,18 @@
     function deleteAirbnbQuote(quoteId) {
       const quote = airbnbQuotes.find(q => q.id === quoteId);
       if (!quote) return;
+      try {
+        let deletedIds = [];
+        const dSaved = appStorage.getItem("expedicao_deleted_quotes");
+        if (dSaved) deletedIds = JSON.parse(dSaved);
+        if (!Array.isArray(deletedIds)) deletedIds = [];
+        if (!deletedIds.includes(quoteId)) {
+          deletedIds.push(quoteId);
+          appStorage.setItem("expedicao_deleted_quotes", JSON.stringify(deletedIds));
+        }
+      } catch (e) {}
       airbnbQuotes = airbnbQuotes.filter(q => q.id !== quoteId);
-      saveAirbnbQuotes();
+      saveAirbnbQuotes(true);
       renderAirbnbCards();
       updateAirbnbKPIs();
       updateAirbnbBadge();
@@ -3842,6 +3953,7 @@
         }
         quote.status = "analyzing";
         quote.title = `Airbnb em Análise - ${baseName}`;
+        quote.updatedAt = Date.now();
       } else {
         const defaultPrice = base ? Math.round(getBaseTargetHospInActiveCurrency(base)) : 3500;
         quote = {
@@ -3862,12 +3974,13 @@
           washer: true,
           discountApplied: base ? base.weeks >= 3 : true,
           notes: "Link colado para validação e auditoria.",
-          createdAt: new Date().toISOString().split("T")[0]
+          createdAt: new Date().toISOString().split("T")[0],
+          updatedAt: Date.now()
         };
         airbnbQuotes.unshift(quote);
       }
 
-      saveAirbnbQuotes();
+      saveAirbnbQuotes(true);
       selectBase(currentSelectedBaseIndex);
       renderAirbnbCards();
       updateAirbnbKPIs();
@@ -4142,6 +4255,7 @@
           quote.ac = ac;
           quote.discountApplied = discountApplied;
           quote.notes = notes;
+          quote.updatedAt = Date.now();
         }
       } else {
         const newQuote = {
@@ -4162,12 +4276,13 @@
           washer: washer,
           discountApplied: discountApplied,
           notes: notes,
-          createdAt: new Date().toISOString().split("T")[0]
+          createdAt: new Date().toISOString().split("T")[0],
+          updatedAt: Date.now()
         };
         airbnbQuotes.unshift(newQuote);
       }
 
-      saveAirbnbQuotes();
+      saveAirbnbQuotes(true);
       closeQuickAirbnbModal();
       selectBase(currentSelectedBaseIndex);
       renderAirbnbCards();
@@ -4175,7 +4290,7 @@
       updateAirbnbBadge();
       renderBases();
 
-      showToast("🎉 Airbnb auditado e salvo com sucesso!");
+      showToast("🎉 Airbnb salvo localmente e sincronizado na nuvem!");
     }
 
     document.addEventListener("keydown", (event) => {
