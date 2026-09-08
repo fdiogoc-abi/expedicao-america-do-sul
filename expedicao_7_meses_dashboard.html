@@ -95,6 +95,10 @@
       <button onclick="switchTab('map')" id="tab-map" class="py-3 px-2 tab-active transition-colors whitespace-nowrap">🗺️ Mapa Completo da Rota</button>
       <button onclick="switchTab('itinerary')" id="tab-itinerary" class="py-3 px-2 text-slate-500 hover:text-slate-800 transition-colors whitespace-nowrap">📋 Cronograma & Ajustador</button>
       <button onclick="switchTab('costs')" id="tab-costs" class="py-3 px-2 text-slate-500 hover:text-slate-800 transition-colors whitespace-nowrap">💰 Custos Reais Detalhados</button>
+      <button onclick="switchTab('airbnb')" id="tab-airbnb" class="py-3 px-2 text-slate-500 hover:text-slate-800 transition-colors whitespace-nowrap flex items-center gap-1.5">
+        <span>🏡 Cotações de Airbnbs</span>
+        <span id="tabAirbnbBadge" class="bg-sky-100 text-sky-800 text-[10px] font-bold px-1.5 py-0.5 rounded-full">3</span>
+      </button>
       <button onclick="switchTab('surf')" id="tab-surf" class="py-3 px-2 text-slate-500 hover:text-slate-800 transition-colors whitespace-nowrap">🏄 O Circuito do Longboard</button>
       <button onclick="switchTab('savings')" id="tab-savings" class="py-3 px-2 text-slate-500 hover:text-slate-800 transition-colors whitespace-nowrap">📉 Economia de R$ 16.000</button>
       <button onclick="switchTab('wifi')" id="tab-wifi" class="py-3 px-2 text-slate-500 hover:text-slate-800 transition-colors whitespace-nowrap">📶 Checklist de Conexão</button>
@@ -444,6 +448,264 @@
           <span class="text-[11px] text-slate-400">~US$ 18/mês por pessoa</span>
         </div>
       </div>
+    </div>
+
+    <!-- ABA 2.5: COTAÇÕES & COMPARADOR DE AIRBNBS -->
+    <div id="content-airbnb" class="hidden space-y-6">
+
+      <!-- HEADER DO COMPARADOR -->
+      <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+        <div>
+          <div class="flex items-center gap-2 mb-1 flex-wrap">
+            <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-sky-100 text-sky-800">Rastreador do Casal</span>
+            <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800">Comparação Automática com Orçamento</span>
+            <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-purple-100 text-purple-800">Salvo no Navegador</span>
+          </div>
+          <h2 class="text-xl md:text-2xl font-bold text-slate-900">🏡 Cotações & Comparador de Airbnbs em Tempo Real</h2>
+          <p class="text-slate-500 text-sm mt-1">Cole os links que você for encontrando no Airbnb, teste se o valor cabe no teto da cidade, guarde o print do Speedtest e compartilhe direto no WhatsApp do casal.</p>
+        </div>
+
+        <!-- AÇÕES DE EXPORTAÇÃO / IMPORTAÇÃO -->
+        <div class="flex items-center gap-2 flex-wrap">
+          <button onclick="exportAirbnbQuotes()" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl border border-slate-300 transition-colors flex items-center gap-1.5 shadow-2xs">
+            <span>📥</span> Exportar JSON
+          </button>
+          <label class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl border border-slate-300 transition-colors flex items-center gap-1.5 shadow-2xs cursor-pointer">
+            <span>📤</span> Importar JSON
+            <input type="file" id="importJsonInput" accept=".json" class="hidden" onchange="importAirbnbQuotes(event)">
+          </label>
+          <button onclick="resetDefaultAirbnbQuotes()" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-semibold rounded-xl border border-slate-300 transition-colors" title="Restaurar cotações de exemplo">
+            🔄 Exemplos
+          </button>
+        </div>
+      </div>
+
+      <!-- CARDS DE RESUMO KPI DAS COTAÇÕES -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+          <span class="text-xs text-slate-500 font-medium block">Total de Opções Salvas</span>
+          <span id="kpiAbCount" class="text-2xl font-black text-slate-900">0</span>
+          <span class="text-[11px] text-slate-400 block mt-0.5" id="kpiAbCountSub">0 em análise</span>
+        </div>
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+          <span class="text-xs text-slate-500 font-medium block">Cobertura de Etapas</span>
+          <span id="kpiAbBooked" class="text-2xl font-black text-purple-700">0 / 10</span>
+          <span class="text-[11px] text-purple-600 block mt-0.5" id="kpiAbBookedSub">Bases garantidas</span>
+        </div>
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+          <span class="text-xs text-slate-500 font-medium block">Balanço vs Meta de Orçamento</span>
+          <span id="kpiAbBalance" class="text-2xl font-black text-emerald-700">R$ 0</span>
+          <span class="text-[11px] text-emerald-600 block mt-0.5" id="kpiAbBalanceSub">Economia estimada</span>
+        </div>
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+          <span class="text-xs text-slate-500 font-medium block">Internet Média Comprovada</span>
+          <span id="kpiAbSpeed" class="text-2xl font-black text-sky-700">0 Mbps</span>
+          <span class="text-[11px] text-sky-600 block mt-0.5">Testes verificados</span>
+        </div>
+      </div>
+
+      <!-- FORMULÁRIO DE NOVA COTAÇÃO -->
+      <div class="bg-white rounded-2xl p-6 border border-sky-200 shadow-sm space-y-4">
+        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+          <div class="flex items-center gap-2">
+            <span class="w-8 h-8 rounded-lg bg-sky-100 text-sky-700 flex items-center justify-center font-bold text-sm">➕</span>
+            <div>
+              <h3 class="font-bold text-slate-900 text-base">Nova Cotação de Airbnb / Hospedagem</h3>
+              <p class="text-xs text-slate-500">Cadastre o link do anúncio para comparar com o teto da cidade em tempo real.</p>
+            </div>
+          </div>
+          <button type="button" onclick="toggleAirbnbForm()" id="btnToggleForm" class="text-xs text-sky-700 hover:text-sky-900 font-semibold transition-colors">
+            Recolher Formulário ▲
+          </button>
+        </div>
+
+        <form id="airbnbForm" onsubmit="handleSaveAirbnb(event)" class="space-y-4">
+          <!-- LINHA 1: Destino e Nome -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Destino / Etapa da Expedição *</label>
+              <select id="formCitySelect" onchange="updateFormBudgetMeta()" required class="w-full text-sm bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-slate-800 focus:ring-2 focus:ring-sky-500 focus:bg-white outline-none">
+                <!-- Populado dinamicamente via script -->
+              </select>
+              <div id="formBudgetMetaBadge" class="mt-1.5 p-2 bg-sky-50 border border-sky-100 rounded-lg text-xs text-sky-800 flex items-center justify-between">
+                <span>🎯 Meta de Hospedagem: <strong id="metaHospText">--</strong></span>
+                <span id="metaDurationText" class="text-[11px] text-sky-600">-- semanas</span>
+              </div>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Nome ou Apelido do Imóvel *</label>
+              <input type="text" id="formTitle" required placeholder="Ex: Loft com Terraço em Palermo Soho ou Bangalô Beira-Mar Vichayito" class="w-full text-sm bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-slate-800 focus:ring-2 focus:ring-sky-500 focus:bg-white outline-none">
+              <span class="text-[11px] text-slate-400 block mt-1">Um nome fácil para o casal identificar a opção</span>
+            </div>
+          </div>
+
+          <!-- LINHA 2: Link e Valores -->
+          <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
+            <div class="md:col-span-5">
+              <label class="block text-xs font-bold text-slate-700 mb-1">Link do Anúncio (Airbnb / Booking)</label>
+              <input type="url" id="formUrl" placeholder="https://www.airbnb.com.br/rooms/..." class="w-full text-sm bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-slate-800 focus:ring-2 focus:ring-sky-500 focus:bg-white outline-none">
+            </div>
+            <div class="md:col-span-3">
+              <label class="block text-xs font-bold text-slate-700 mb-1">Valor Cotado *</label>
+              <div class="flex items-center gap-1.5">
+                <select id="formCurrency" onchange="calcLiveComparison()" class="text-sm font-semibold bg-slate-50 border border-slate-300 rounded-xl px-2 py-2 text-slate-700 focus:ring-2 focus:ring-sky-500 outline-none">
+                  <option value="BRL" selected>R$</option>
+                  <option value="USD">US$</option>
+                </select>
+                <input type="number" id="formPrice" oninput="calcLiveComparison()" required min="1" step="any" placeholder="Ex: 3800" class="w-full text-sm font-bold bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-slate-800 focus:ring-2 focus:ring-sky-500 focus:bg-white outline-none">
+              </div>
+            </div>
+            <div class="md:col-span-4">
+              <label class="block text-xs font-bold text-slate-700 mb-1">Período de Preço Informado</label>
+              <select id="formPeriodType" onchange="calcLiveComparison()" class="w-full text-sm bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-slate-800 focus:ring-2 focus:ring-sky-500 focus:bg-white outline-none">
+                <option value="total" selected>Valor Total da Estadia na Base</option>
+                <option value="night">Valor por Noite / Diária</option>
+                <option value="month">Valor Mensal (c/ desconto Airbnb)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- COMPARADOR EM TEMPO REAL -->
+          <div id="liveComparisonBox" class="p-3.5 rounded-xl border border-slate-200 bg-slate-50 flex flex-col md:flex-row md:items-center justify-between gap-2 text-xs">
+            <div class="flex items-center gap-3 flex-wrap">
+              <span class="font-bold text-slate-700">Simulação Imediata:</span>
+              <span>Diária equivalente: <strong id="liveDailyVal" class="text-slate-900 font-bold">R$ 0/noite</strong></span>
+              <span>Total da estada: <strong id="liveTotalVal" class="text-slate-900 font-bold">R$ 0</strong></span>
+            </div>
+            <div id="liveBadgeDiff" class="px-3 py-1 rounded-full text-xs font-bold bg-slate-200 text-slate-600 inline-block text-center">
+              Preencha o valor acima para comparar com a meta
+            </div>
+          </div>
+
+          <!-- LINHA 3: Comodidades e Conexão -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-1">
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">⚡ Speedtest Confirmado (Mbps)</label>
+              <input type="number" id="formSpeed" placeholder="Ex: 250 (download)" class="w-full text-sm bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-slate-800 focus:ring-2 focus:ring-sky-500 focus:bg-white outline-none">
+              <span class="text-[11px] text-slate-400 block mt-1">Velocidade enviada pelo anfitrião</span>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">🌊 Distância da Praia / Centro</label>
+              <input type="text" id="formDist" placeholder="Ex: Pé na areia (0 min) ou 200m da praia" class="w-full text-sm bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-slate-800 focus:ring-2 focus:ring-sky-500 focus:bg-white outline-none">
+              <span class="text-[11px] text-slate-400 block mt-1">Tempo de caminhada até o pico ou praça</span>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">📌 Status Inicial da Opção</label>
+              <select id="formStatus" class="w-full text-sm bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-slate-800 focus:ring-2 focus:ring-sky-500 focus:bg-white outline-none">
+                <option value="analyzing" selected>🟡 Em Análise / Favorito</option>
+                <option value="contacted">💬 Mensagem Enviada (Aguardando Speedtest)</option>
+                <option value="approved">✅ Aprovado (Internet & Preço OK)</option>
+                <option value="booked">🎉 Reservado!</option>
+                <option value="discarded">❌ Descartado</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- LINHA 4: Checkboxes de Estrutura do Casal -->
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-2">Checklist de Estrutura Essencial do Casal:</label>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <label class="flex items-center gap-2 p-2.5 bg-slate-50 hover:bg-slate-100 rounded-xl border border-slate-200 cursor-pointer text-xs font-medium text-slate-700 transition-colors">
+                <input type="checkbox" id="formDesk" checked class="w-4 h-4 rounded text-sky-600 focus:ring-sky-500">
+                <span>🖥️ Mesa de trabalho</span>
+              </label>
+              <label class="flex items-center gap-2 p-2.5 bg-slate-50 hover:bg-slate-100 rounded-xl border border-slate-200 cursor-pointer text-xs font-medium text-slate-700 transition-colors">
+                <input type="checkbox" id="formAc" checked class="w-4 h-4 rounded text-sky-600 focus:ring-sky-500">
+                <span>❄️ / ♨️ Ar / Calefação</span>
+              </label>
+              <label class="flex items-center gap-2 p-2.5 bg-slate-50 hover:bg-slate-100 rounded-xl border border-slate-200 cursor-pointer text-xs font-medium text-slate-700 transition-colors">
+                <input type="checkbox" id="formKitchen" checked class="w-4 h-4 rounded text-sky-600 focus:ring-sky-500">
+                <span>🍳 Cozinha completa</span>
+              </label>
+              <label class="flex items-center gap-2 p-2.5 bg-slate-50 hover:bg-slate-100 rounded-xl border border-slate-200 cursor-pointer text-xs font-medium text-slate-700 transition-colors">
+                <input type="checkbox" id="formWasher" checked class="w-4 h-4 rounded text-sky-600 focus:ring-sky-500">
+                <span>🧺 Máquina de lavar</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- LINHA 5: Anotações -->
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Notas do Casal & Negociação</label>
+            <textarea id="formNotes" rows="2" placeholder="Ex: Anfitrião aceita 15% off para pagamento direto em cash. Roteador de fibra dentro da sala. Varanda ensolarada com espaço para yoga." class="w-full text-sm bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-slate-800 focus:ring-2 focus:ring-sky-500 focus:bg-white outline-none"></textarea>
+          </div>
+
+          <!-- BOTÕES DE AÇÃO -->
+          <div class="flex items-center justify-end gap-3 pt-2">
+            <button type="button" onclick="clearAirbnbForm()" class="px-4 py-2 rounded-xl text-slate-600 hover:text-slate-800 text-xs font-semibold hover:bg-slate-100 transition-colors">Limpar</button>
+            <button type="submit" class="px-5 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-700 text-white text-xs font-bold transition-colors flex items-center gap-1.5 shadow-sm">
+              <span>💾</span> Salvar Cotação
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- BARRA DE FILTROS DAS COTAÇÕES -->
+      <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs">
+        <div class="flex items-center gap-2 flex-wrap">
+          <span class="font-bold text-slate-700">Filtrar por Base:</span>
+          <select id="filterQuoteCity" onchange="renderAirbnbCards()" class="text-xs font-semibold bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5 text-slate-700 focus:ring-2 focus:ring-sky-500 outline-none">
+            <option value="all">Todas as Cidades</option>
+            <!-- Injetado dinamicamente -->
+          </select>
+
+          <span class="font-bold text-slate-700 ml-2">Status:</span>
+          <select id="filterQuoteStatus" onchange="renderAirbnbCards()" class="text-xs font-semibold bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5 text-slate-700 focus:ring-2 focus:ring-sky-500 outline-none">
+            <option value="all">Todos os Status</option>
+            <option value="booked">🎉 Somente Reservados</option>
+            <option value="approved">✅ Aprovados & Reservados</option>
+            <option value="contacted">💬 Mensagem Enviada</option>
+            <option value="analyzing">🟡 Em Análise</option>
+            <option value="discarded">❌ Descartados</option>
+          </select>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <input type="text" id="filterQuoteSearch" oninput="renderAirbnbCards()" placeholder="Buscar por título, notas..." class="text-xs bg-slate-50 border border-slate-300 rounded-lg px-3 py-1.5 text-slate-700 focus:ring-2 focus:ring-sky-500 outline-none w-48">
+          <button onclick="resetQuoteFilters()" class="text-slate-500 hover:text-slate-800 underline text-xs">Limpar</button>
+        </div>
+      </div>
+
+      <!-- LISTA DE CARDS DE AIRBNBS SALVOS -->
+      <div id="airbnbCardsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <!-- Injetado dinamicamente via JS -->
+      </div>
+
+      <!-- SCRIPTS DE NEGOCIAÇÃO RÁPIDA -->
+      <div class="bg-gradient-to-r from-slate-900 to-indigo-950 text-white rounded-2xl p-6 shadow-sm border border-slate-800 space-y-4">
+        <div class="flex items-center gap-2">
+          <span class="text-2xl">💡</span>
+          <div>
+            <h3 class="font-bold text-base text-white">Scripts Prontos para Enviar aos Anfitriões no Airbnb</h3>
+            <p class="text-xs text-slate-300">Copie com um clique para validar a conexão e negociar desconto antes de fechar a reserva.</p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1">
+          <!-- SCRIPT 1 -->
+          <div class="bg-slate-800/80 p-4 rounded-xl border border-slate-700 text-xs font-mono relative">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-[11px] font-bold text-sky-400 uppercase">1. Pedido de Speedtest & Estabilidade</span>
+              <button onclick="copyScriptSpeedtest()" class="bg-sky-600 hover:bg-sky-500 text-white text-[10px] font-sans font-bold px-2 py-0.5 rounded transition-colors">Copiar</button>
+            </div>
+            <p id="scriptSpeedtestText" class="text-slate-200 leading-relaxed text-[11px]">
+"¡Hola! Nos encanta su departamento para una estancia de varias semanas. Trabajamos 100% en remoto para Brasil con videollamadas continuas. ¿Sería tan amable de enviarnos una captura de pantalla de un test de velocidad reciente (Speedtest.net) y confirmarnos si el router de fibra está dentro del departamento? ¡Muchas gracias!"
+            </p>
+          </div>
+
+          <!-- SCRIPT 2 -->
+          <div class="bg-slate-800/80 p-4 rounded-xl border border-slate-700 text-xs font-mono relative">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-[11px] font-bold text-emerald-400 uppercase">2. Proposta de Desconto para Longa Estada</span>
+              <button onclick="copyScriptDiscount()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-sans font-bold px-2 py-0.5 rounded transition-colors">Copiar</button>
+            </div>
+            <p id="scriptDiscountText" class="text-slate-200 leading-relaxed text-[11px]">
+"¡Hola! Somos una pareja profesional muy tranquila, no fumadores y cuidamos los departamentos como si fueran propios. Como nos quedaremos casi un mes, queríamos consultar si es posible considerar un descuento especial sobre la tarifa final. ¡Estamos listos para reservar hoy mismo si llegamos a un acuerdo! Saludos cordiales."
+            </p>
+          </div>
+        </div>
+      </div>
+
     </div>
 
     <!-- ABA 3: O CIRCUITO MUNDIAL DO LONGBOARD -->
@@ -1168,18 +1430,23 @@ Para poder confirmar la reserva, necesitamos verificar la estabilidad de interne
     }
 
     function switchTab(tabId) {
-      const tabs = ["map", "itinerary", "costs", "surf", "savings", "wifi"];
+      const tabs = ["map", "itinerary", "costs", "airbnb", "surf", "savings", "wifi"];
       tabs.forEach(t => {
         const btn = document.getElementById("tab-" + t);
         const content = document.getElementById("content-" + t);
+        if (!btn || !content) return;
         if (t === tabId) {
-          btn.className = "py-3 px-2 tab-active transition-colors whitespace-nowrap";
+          btn.className = "py-3 px-2 tab-active transition-colors whitespace-nowrap flex items-center gap-1.5";
           content.classList.remove("hidden");
         } else {
-          btn.className = "py-3 px-2 text-slate-500 hover:text-slate-800 transition-colors whitespace-nowrap";
+          btn.className = "py-3 px-2 text-slate-500 hover:text-slate-800 transition-colors whitespace-nowrap flex items-center gap-1.5";
           content.classList.add("hidden");
         }
       });
+      if (tabId === "airbnb") {
+        renderAirbnbCards();
+        updateAirbnbKPIs();
+      }
     }
 
     function copyWifiScript() {
@@ -1189,26 +1456,712 @@ Para poder confirmar la reserva, necesitamos verificar la estabilidad de interne
       });
     }
 
+    // ==========================================
+    // MÓDULO DE COTAÇÕES & COMPARADOR DE AIRBNBS
+    // ==========================================
+
+    const DEFAULT_AIRBNB_QUOTES = [
+      {
+        id: "quote-ba-1",
+        baseId: "ba",
+        title: "Loft c/ Varanda & Home Office em Palermo Soho",
+        url: "https://www.airbnb.com.br/rooms/sample-palermo",
+        price: 3800,
+        currency: "BRL",
+        periodType: "total",
+        speed: 280,
+        dist: "Bairro plano, 3 min do Parque El Rosedal",
+        status: "approved",
+        desk: true,
+        ac: true,
+        kitchen: true,
+        washer: true,
+        notes: "Speedtest enviado pelo anfitrião (iPlan Fibra 280 Mbps). Mesa ampla de jantar com tomadas próximas e cadeiras confortáveis.",
+        createdAt: "2026-09-08"
+      },
+      {
+        id: "quote-huanchaco-1",
+        baseId: "huanchaco",
+        title: "Apartamento Vista Mar Pé na Areia (La Curvita)",
+        url: "https://www.airbnb.com.br/rooms/sample-huanchaco",
+        price: 2150,
+        currency: "BRL",
+        periodType: "total",
+        speed: 150,
+        dist: "Pé na areia (0 min do pico de surf)",
+        status: "booked",
+        desk: true,
+        ac: false,
+        kitchen: true,
+        washer: true,
+        notes: "Dá para ver a formação das esquerdas direto da sacada! Claro Fibra com router na sala. Desconto mensal de 22% confirmado.",
+        createdAt: "2026-09-08"
+      },
+      {
+        id: "quote-organos-1",
+        baseId: "organos",
+        title: "Bungalô Tropical c/ Piscina & Deck em Vichayito",
+        url: "https://www.airbnb.com.br/rooms/sample-vichayito",
+        price: 2900,
+        currency: "BRL",
+        periodType: "total",
+        speed: 90,
+        dist: "120m do mar morno (2 min a pé)",
+        status: "contacted",
+        desk: true,
+        ac: true,
+        kitchen: true,
+        washer: true,
+        notes: "Perguntamos se aceitam pagamento em dólares cash para economizar taxa de serviço. Deck excelente para yoga e descanso.",
+        createdAt: "2026-09-08"
+      }
+    ];
+
+    const STATUS_MAP = {
+      analyzing: { label: "🟡 Em Análise", badgeClass: "bg-amber-100 text-amber-800 border-amber-300" },
+      contacted: { label: "💬 Mensagem Enviada", badgeClass: "bg-sky-100 text-sky-800 border-sky-300" },
+      approved: { label: "✅ Aprovado (WiFi & Preço OK)", badgeClass: "bg-emerald-100 text-emerald-800 border-emerald-300" },
+      booked: { label: "🎉 Reservado!", badgeClass: "bg-purple-100 text-purple-800 border-purple-300" },
+      discarded: { label: "❌ Descartado", badgeClass: "bg-slate-100 text-slate-500 border-slate-300 line-through" }
+    };
+
+    let airbnbQuotes = [];
+    let isAirbnbFormCollapsed = false;
+
+    function formatRawMoney(val, curr) {
+      if (curr === "BRL") {
+        return "R$ " + Math.round(val).toLocaleString("pt-BR");
+      } else {
+        return "US$ " + Math.round(val).toLocaleString("en-US");
+      }
+    }
+
+    function getQuoteTotal(quote, base) {
+      const weeks = base && base.weeks > 0 ? base.weeks : 1;
+      const days = weeks * 7;
+      if (quote.periodType === "night") {
+        return quote.price * days;
+      } else if (quote.periodType === "month") {
+        return (quote.price / 4.33) * weeks;
+      } else {
+        return quote.price;
+      }
+    }
+
+    function convertQuotePriceToActive(val, quoteCurrency) {
+      if (quoteCurrency === currentCurrency) return val;
+      if (quoteCurrency === "BRL" && currentCurrency === "USD") {
+        return val / usdRate;
+      }
+      if (quoteCurrency === "USD" && currentCurrency === "BRL") {
+        return val * usdRate;
+      }
+      return val;
+    }
+
+    function getBaseTargetHospInActiveCurrency(base) {
+      if (!base) return 0;
+      const weeks = base.weeks > 0 ? base.weeks : 0.4;
+      const targetUsd = ((base.hospUsdMonth * profileMultiplier) / 4.33) * weeks;
+      return currentCurrency === "BRL" ? targetUsd * usdRate : targetUsd;
+    }
+
+    function loadAirbnbQuotes() {
+      try {
+        const saved = localStorage.getItem("expedicao_airbnbs_v2");
+        if (saved) {
+          airbnbQuotes = JSON.parse(saved);
+        } else {
+          airbnbQuotes = JSON.parse(JSON.stringify(DEFAULT_AIRBNB_QUOTES));
+          saveAirbnbQuotes();
+        }
+      } catch (e) {
+        console.warn("LocalStorage indisponível, fallback para memória:", e);
+        airbnbQuotes = JSON.parse(JSON.stringify(DEFAULT_AIRBNB_QUOTES));
+      }
+    }
+
+    function saveAirbnbQuotes() {
+      try {
+        localStorage.setItem("expedicao_airbnbs_v2", JSON.stringify(airbnbQuotes));
+      } catch (e) {
+        console.warn("Erro ao salvar no LocalStorage:", e);
+      }
+      updateAirbnbBadge();
+    }
+
+    function updateAirbnbBadge() {
+      const badge = document.getElementById("tabAirbnbBadge");
+      if (badge) {
+        const count = airbnbQuotes.filter(q => q.status !== "discarded").length;
+        badge.textContent = count;
+      }
+    }
+
+    function populateCityDropdowns() {
+      const formSelect = document.getElementById("formCitySelect");
+      const filterSelect = document.getElementById("filterQuoteCity");
+      if (!formSelect || !filterSelect) return;
+
+      formSelect.innerHTML = "";
+      filterSelect.innerHTML = '<option value="all">Todas as Cidades</option>';
+
+      baseData.forEach((base, idx) => {
+        if (idx === 0) return; // ignora origem Floripa
+        const optForm = document.createElement("option");
+        optForm.value = base.id;
+        optForm.textContent = `${base.flag} ${base.name} (${base.weeks > 0 ? base.weeks + ' sem' : 'Bônus fds'})`;
+        formSelect.appendChild(optForm);
+
+        const optFilter = document.createElement("option");
+        optFilter.value = base.id;
+        optFilter.textContent = `${base.flag} ${base.name}`;
+        filterSelect.appendChild(optFilter);
+      });
+    }
+
+    function updateFormBudgetMeta() {
+      const citySelect = document.getElementById("formCitySelect");
+      const metaHospText = document.getElementById("metaHospText");
+      const metaDurationText = document.getElementById("metaDurationText");
+      if (!citySelect || !metaHospText) return;
+
+      const base = baseData.find(b => b.id === citySelect.value) || baseData[1];
+      const targetActive = getBaseTargetHospInActiveCurrency(base);
+
+      metaHospText.textContent = formatRawMoney(targetActive, currentCurrency);
+      metaDurationText.textContent = base.weeks > 0 ? `${base.weeks} semanas (~${base.weeks * 7} dias)` : "Passeio de fim de semana";
+      calcLiveComparison();
+    }
+
+    function calcLiveComparison() {
+      const citySelect = document.getElementById("formCitySelect");
+      const priceInput = document.getElementById("formPrice");
+      const currencySelect = document.getElementById("formCurrency");
+      const periodSelect = document.getElementById("formPeriodType");
+      const liveDailyVal = document.getElementById("liveDailyVal");
+      const liveTotalVal = document.getElementById("liveTotalVal");
+      const liveBadgeDiff = document.getElementById("liveBadgeDiff");
+
+      if (!citySelect || !priceInput || !liveDailyVal) return;
+
+      const base = baseData.find(b => b.id === citySelect.value) || baseData[1];
+      const rawPrice = parseFloat(priceInput.value);
+      const quoteCurr = currencySelect.value;
+      const periodType = periodSelect.value;
+
+      if (isNaN(rawPrice) || rawPrice <= 0) {
+        liveDailyVal.textContent = formatRawMoney(0, currentCurrency) + "/noite";
+        liveTotalVal.textContent = formatRawMoney(0, currentCurrency);
+        liveBadgeDiff.className = "px-3 py-1 rounded-full text-xs font-bold bg-slate-200 text-slate-600 inline-block text-center";
+        liveBadgeDiff.textContent = "Preencha o valor para comparar com a meta";
+        return;
+      }
+
+      const dummyQuote = { price: rawPrice, currency: quoteCurr, periodType: periodType };
+      const quoteTotal = getQuoteTotal(dummyQuote, base);
+      const days = base.weeks > 0 ? base.weeks * 7 : 3;
+      const daily = quoteTotal / days;
+
+      const totalInActive = convertQuotePriceToActive(quoteTotal, quoteCurr);
+      const dailyInActive = convertQuotePriceToActive(daily, quoteCurr);
+      const targetActive = getBaseTargetHospInActiveCurrency(base);
+      const diff = targetActive - totalInActive;
+
+      liveDailyVal.textContent = formatRawMoney(dailyInActive, currentCurrency) + "/noite";
+      liveTotalVal.textContent = formatRawMoney(totalInActive, currentCurrency);
+
+      if (diff >= 0) {
+        const pct = targetActive > 0 ? Math.round((diff / targetActive) * 100) : 0;
+        liveBadgeDiff.className = "px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 inline-block text-center";
+        liveBadgeDiff.textContent = `🎉 Economia de ${formatRawMoney(diff, currentCurrency)} (${pct}% abaixo da meta!)`;
+      } else {
+        liveBadgeDiff.className = "px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-300 inline-block text-center";
+        liveBadgeDiff.textContent = `⚠️ ${formatRawMoney(Math.abs(diff), currentCurrency)} acima da meta estipulada`;
+      }
+    }
+
+    function toggleAirbnbForm() {
+      const form = document.getElementById("airbnbForm");
+      const btn = document.getElementById("btnToggleForm");
+      if (!form || !btn) return;
+      isAirbnbFormCollapsed = !isAirbnbFormCollapsed;
+      if (isAirbnbFormCollapsed) {
+        form.classList.add("hidden");
+        btn.textContent = "Expandir Formulário ▼";
+      } else {
+        form.classList.remove("hidden");
+        btn.textContent = "Recolher Formulário ▲";
+      }
+    }
+
+    function clearAirbnbForm() {
+      document.getElementById("formTitle").value = "";
+      document.getElementById("formUrl").value = "";
+      document.getElementById("formPrice").value = "";
+      document.getElementById("formSpeed").value = "";
+      document.getElementById("formDist").value = "";
+      document.getElementById("formNotes").value = "";
+      document.getElementById("formStatus").value = "analyzing";
+      calcLiveComparison();
+    }
+
+    function handleSaveAirbnb(event) {
+      event.preventDefault();
+      const baseId = document.getElementById("formCitySelect").value;
+      const title = document.getElementById("formTitle").value.trim();
+      const url = document.getElementById("formUrl").value.trim();
+      const price = parseFloat(document.getElementById("formPrice").value) || 0;
+      const currency = document.getElementById("formCurrency").value;
+      const periodType = document.getElementById("formPeriodType").value;
+      const speed = parseInt(document.getElementById("formSpeed").value, 10) || null;
+      const dist = document.getElementById("formDist").value.trim();
+      const status = document.getElementById("formStatus").value;
+      const desk = document.getElementById("formDesk").checked;
+      const ac = document.getElementById("formAc").checked;
+      const kitchen = document.getElementById("formKitchen").checked;
+      const washer = document.getElementById("formWasher").checked;
+      const notes = document.getElementById("formNotes").value.trim();
+
+      const newQuote = {
+        id: "quote-" + Date.now(),
+        baseId,
+        title,
+        url,
+        price,
+        currency,
+        periodType,
+        speed,
+        dist,
+        status,
+        desk,
+        ac,
+        kitchen,
+        washer,
+        notes,
+        createdAt: new Date().toISOString().slice(0, 10)
+      };
+
+      airbnbQuotes.unshift(newQuote);
+      saveAirbnbQuotes();
+      clearAirbnbForm();
+      renderAirbnbCards();
+      updateAirbnbKPIs();
+
+      alert(`✅ Cotação "${title}" salva com sucesso!`);
+    }
+
+    function changeQuoteStatus(quoteId, newStatus) {
+      const quote = airbnbQuotes.find(q => q.id === quoteId);
+      if (!quote) return;
+      quote.status = newStatus;
+      saveAirbnbQuotes();
+      renderAirbnbCards();
+      updateAirbnbKPIs();
+    }
+
+    function deleteAirbnbQuote(quoteId) {
+      const quote = airbnbQuotes.find(q => q.id === quoteId);
+      if (!quote) return;
+      if (confirm(`Deseja realmente remover a cotação "${quote.title}"?`)) {
+        airbnbQuotes = airbnbQuotes.filter(q => q.id !== quoteId);
+        saveAirbnbQuotes();
+        renderAirbnbCards();
+        updateAirbnbKPIs();
+      }
+    }
+
+    function copyQuoteToWhatsApp(quoteId) {
+      const quote = airbnbQuotes.find(q => q.id === quoteId);
+      if (!quote) return;
+      const base = baseData.find(b => b.id === quote.baseId) || { name: "Destino", flag: "📍", weeks: 3, hospUsdMonth: 600 };
+
+      const days = (base.weeks > 0 ? base.weeks : 1) * 7;
+      const quoteTotal = getQuoteTotal(quote, base);
+      const daily = quoteTotal / days;
+
+      const targetActive = getBaseTargetHospInActiveCurrency(base);
+      const quoteTotalActive = convertQuotePriceToActive(quoteTotal, quote.currency);
+      const dailyActive = convertQuotePriceToActive(daily, quote.currency);
+      const diff = targetActive - quoteTotalActive;
+
+      let comparisonStr = "";
+      if (targetActive > 0) {
+        if (diff >= 0) {
+          comparisonStr = `🎉 Economia de ${formatRawMoney(diff, currentCurrency)} abaixo da meta da etapa!`;
+        } else {
+          comparisonStr = `⚠️ ${formatRawMoney(Math.abs(diff), currentCurrency)} acima da meta planejada`;
+        }
+      }
+
+      const statusLabel = STATUS_MAP[quote.status] ? STATUS_MAP[quote.status].label : quote.status;
+
+      const msg =
+`🏡 *Cotação Airbnb: ${quote.title}*
+📍 *Base:* ${base.flag} ${base.name} (${base.weeks > 0 ? base.weeks + ' semanas' : 'Passeio'})
+💰 *Preço:* ${formatRawMoney(quoteTotalActive, currentCurrency)} total (~${formatRawMoney(dailyActive, currentCurrency)}/dia)
+🎯 *Comparação:* ${comparisonStr}
+⚡ *Internet:* ${quote.speed ? quote.speed + ' Mbps comprovada' : 'Aguardando Speedtest'}
+🖥️ *Mesa de trabalho:* ${quote.desk ? 'Sim ✅' : 'Não / Improvisada ⚠️'}
+❄️ *Ar / Calefação:* ${quote.ac ? 'Sim ✅' : 'Não'}
+🍳 *Cozinha:* ${quote.kitchen ? 'Sim ✅' : 'Não'}
+🌊 *Distância:* ${quote.dist || 'Não informado'}
+📌 *Status:* ${statusLabel}
+🔗 *Link:* ${quote.url || 'Sem link cadastrado'}
+📝 *Notas:* ${quote.notes || 'Sem observações'}`;
+
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(msg).then(() => {
+          alert("Cotação formatada copiada com sucesso!\n\nAgora é só colar no WhatsApp do casal ✅");
+        }).catch(() => {
+          promptFallbackCopy(msg);
+        });
+      } else {
+        promptFallbackCopy(msg);
+      }
+    }
+
+    function promptFallbackCopy(text) {
+      const textarea = document.createElement("textarea");
+      textarea.value = text;
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand("copy");
+      document.body.removeChild(textarea);
+      alert("Cotação copiada! Só colar no WhatsApp do casal ✅");
+    }
+
+    function renderAirbnbCards() {
+      const container = document.getElementById("airbnbCardsContainer");
+      const cityFilter = document.getElementById("filterQuoteCity").value;
+      const statusFilter = document.getElementById("filterQuoteStatus").value;
+      const searchFilter = (document.getElementById("filterQuoteSearch").value || "").toLowerCase();
+
+      if (!container) return;
+      container.innerHTML = "";
+
+      let filtered = airbnbQuotes.filter(q => {
+        if (cityFilter !== "all" && q.baseId !== cityFilter) return false;
+        if (statusFilter === "booked" && q.status !== "booked") return false;
+        if (statusFilter === "approved" && q.status !== "approved" && q.status !== "booked") return false;
+        if (statusFilter === "contacted" && q.status !== "contacted") return false;
+        if (statusFilter === "analyzing" && q.status !== "analyzing") return false;
+        if (statusFilter === "discarded" && q.status !== "discarded") return false;
+
+        if (searchFilter) {
+          const matchTitle = (q.title || "").toLowerCase().includes(searchFilter);
+          const matchNotes = (q.notes || "").toLowerCase().includes(searchFilter);
+          const base = baseData.find(b => b.id === q.baseId);
+          const matchBase = base ? base.name.toLowerCase().includes(searchFilter) : false;
+          if (!matchTitle && !matchNotes && !matchBase) return false;
+        }
+        return true;
+      });
+
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div class="col-span-full bg-white p-8 rounded-2xl border border-slate-200 text-center space-y-2">
+            <span class="text-3xl">🔍</span>
+            <h4 class="font-bold text-slate-800 text-sm">Nenhuma cotação encontrada com os filtros atuais</h4>
+            <p class="text-xs text-slate-500">Tente alterar os filtros acima ou cadastre uma nova opção no formulário.</p>
+            <button onclick="resetQuoteFilters()" class="text-xs text-sky-700 font-bold hover:underline mt-2">Limpar todos os filtros</button>
+          </div>
+        `;
+        return;
+      }
+
+      filtered.forEach(quote => {
+        const base = baseData.find(b => b.id === quote.baseId) || { name: "Base", flag: "📍", weeks: 3, hospUsdMonth: 600 };
+        const quoteTotal = getQuoteTotal(quote, base);
+        const days = (base.weeks > 0 ? base.weeks : 1) * 7;
+        const daily = quoteTotal / days;
+
+        const targetActive = getBaseTargetHospInActiveCurrency(base);
+        const totalActive = convertQuotePriceToActive(quoteTotal, quote.currency);
+        const dailyActive = convertQuotePriceToActive(daily, quote.currency);
+        const diff = targetActive - totalActive;
+
+        let diffBadgeHtml = "";
+        if (targetActive > 0) {
+          if (diff >= 0) {
+            diffBadgeHtml = `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">🎉 -${formatRawMoney(diff, currentCurrency)} vs Meta</span>`;
+          } else {
+            diffBadgeHtml = `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200">⚠️ +${formatRawMoney(Math.abs(diff), currentCurrency)} vs Meta</span>`;
+          }
+        }
+
+        const isDiscarded = quote.status === "discarded";
+        const isBooked = quote.status === "booked";
+
+        const card = document.createElement("div");
+        card.className = `bg-white rounded-2xl border ${isBooked ? 'border-purple-300 ring-2 ring-purple-100' : isDiscarded ? 'border-slate-200 opacity-60' : 'border-slate-200'} shadow-sm p-5 space-y-3.5 hover:shadow-md transition-shadow flex flex-col justify-between`;
+
+        card.innerHTML = `
+          <div class="space-y-3">
+            <!-- Header do Card: Cidade e Status Dropdown -->
+            <div class="flex items-start justify-between gap-2">
+              <div class="flex items-center gap-1.5 flex-wrap">
+                <span class="text-sm font-bold text-slate-800">${base.flag} ${base.name}</span>
+                <span class="text-[11px] text-slate-400 font-medium">${base.weeks > 0 ? base.weeks + ' sem' : 'Bônus fds'}</span>
+              </div>
+              <select onchange="changeQuoteStatus('${quote.id}', this.value)" class="text-[11px] font-bold rounded-lg px-2 py-1 border border-slate-300 bg-slate-50 text-slate-700 outline-none cursor-pointer focus:ring-1 focus:ring-sky-500">
+                <option value="analyzing" ${quote.status === 'analyzing' ? 'selected' : ''}>🟡 Em Análise</option>
+                <option value="contacted" ${quote.status === 'contacted' ? 'selected' : ''}>💬 Em Contato</option>
+                <option value="approved" ${quote.status === 'approved' ? 'selected' : ''}>✅ Aprovado</option>
+                <option value="booked" ${quote.status === 'booked' ? 'selected' : ''}>🎉 Reservado!</option>
+                <option value="discarded" ${quote.status === 'discarded' ? 'selected' : ''}>❌ Descartado</option>
+              </select>
+            </div>
+
+            <!-- Título e Link do Airbnb -->
+            <div>
+              <h4 class="font-bold text-slate-900 text-sm leading-snug ${isDiscarded ? 'line-through' : ''}">${quote.title}</h4>
+              ${quote.url ? `
+                <a href="${quote.url}" target="_blank" rel="noopener noreferrer" class="text-xs text-sky-600 hover:text-sky-800 font-medium inline-flex items-center gap-1 mt-0.5 hover:underline">
+                  <span>Abrir no Airbnb / Booking</span>
+                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+                </a>
+              ` : '<span class="text-[11px] text-slate-400">Sem link direto</span>'}
+            </div>
+
+            <!-- Bloco de Preço e Comparador -->
+            <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 flex items-baseline justify-between gap-2">
+              <div>
+                <span class="text-xs text-slate-400 block">Total Estadia</span>
+                <span class="text-lg font-black text-slate-900">${formatRawMoney(totalActive, currentCurrency)}</span>
+                <span class="text-[11px] text-slate-500 block">~${formatRawMoney(dailyActive, currentCurrency)}/diária</span>
+              </div>
+              <div class="text-right">
+                ${diffBadgeHtml}
+                <span class="block text-[10px] text-slate-400 mt-1">Meta: ${formatRawMoney(targetActive, currentCurrency)}</span>
+              </div>
+            </div>
+
+            <!-- Grid de Comodidades & Internet -->
+            <div class="grid grid-cols-2 gap-2 text-xs">
+              <div class="flex items-center gap-1.5 text-slate-700 bg-slate-50 p-2 rounded-lg border border-slate-100">
+                <span>⚡</span>
+                <span class="font-bold ${quote.speed ? 'text-emerald-700' : 'text-slate-500'}">${quote.speed ? quote.speed + ' Mbps' : 'Sem teste'}</span>
+              </div>
+              <div class="flex items-center gap-1.5 text-slate-700 bg-slate-50 p-2 rounded-lg border border-slate-100">
+                <span>🖥️</span>
+                <span class="font-medium ${quote.desk ? 'text-slate-800' : 'text-slate-400'}">${quote.desk ? 'Mesa dedicada' : 'Sem mesa'}</span>
+              </div>
+              <div class="flex items-center gap-1.5 text-slate-700 bg-slate-50 p-2 rounded-lg border border-slate-100 col-span-2">
+                <span>🌊</span>
+                <span class="font-medium text-slate-700 truncate">${quote.dist || 'Distância não especificada'}</span>
+              </div>
+            </div>
+
+            <!-- Badges de comodidades adicionais -->
+            <div class="flex items-center gap-1.5 flex-wrap text-[11px] text-slate-600">
+              ${quote.ac ? '<span class="px-2 py-0.5 bg-sky-50 text-sky-700 rounded-md">❄️ Climatizado</span>' : ''}
+              ${quote.kitchen ? '<span class="px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded-md">🍳 Cozinha</span>' : ''}
+              ${quote.washer ? '<span class="px-2 py-0.5 bg-indigo-50 text-indigo-700 rounded-md">🧺 Lavadora</span>' : ''}
+            </div>
+
+            <!-- Notas do Casal -->
+            ${quote.notes ? `
+              <div class="p-2.5 bg-amber-50/70 border border-amber-100 rounded-xl text-xs text-amber-900 leading-relaxed">
+                <span class="font-bold text-[10px] text-amber-700 uppercase tracking-wider block mb-0.5">Notas do Casal:</span>
+                ${quote.notes}
+              </div>
+            ` : ''}
+          </div>
+
+          <!-- Rodapé de Ações: WhatsApp e Excluir -->
+          <div class="pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
+            <button onclick="copyQuoteToWhatsApp('${quote.id}')" class="px-3 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs font-bold transition-colors flex items-center gap-1.5 border border-emerald-200">
+              <span>📋</span> Copiar p/ WhatsApp
+            </button>
+            <button onclick="deleteAirbnbQuote('${quote.id}')" class="text-xs text-slate-400 hover:text-rose-600 font-medium transition-colors" title="Remover cotação">
+              🗑️ Excluir
+            </button>
+          </div>
+        `;
+
+        container.appendChild(card);
+      });
+    }
+
+    function updateAirbnbKPIs() {
+      const kpiCount = document.getElementById("kpiAbCount");
+      const kpiCountSub = document.getElementById("kpiAbCountSub");
+      const kpiBooked = document.getElementById("kpiAbBooked");
+      const kpiBookedSub = document.getElementById("kpiAbBookedSub");
+      const kpiBalance = document.getElementById("kpiAbBalance");
+      const kpiBalanceSub = document.getElementById("kpiAbBalanceSub");
+      const kpiSpeed = document.getElementById("kpiAbSpeed");
+
+      if (!kpiCount) return;
+
+      const activeQuotes = airbnbQuotes.filter(q => q.status !== "discarded");
+      kpiCount.textContent = activeQuotes.length;
+
+      const analyzingCount = activeQuotes.filter(q => q.status === "analyzing" || q.status === "contacted").length;
+      kpiCountSub.textContent = `${analyzingCount} opções em negociação`;
+
+      // Cidades com reserva garantida ou aprovada
+      const bookedBases = new Set();
+      const approvedBases = new Set();
+      activeQuotes.forEach(q => {
+        if (q.status === "booked") bookedBases.add(q.baseId);
+        if (q.status === "approved") approvedBases.add(q.baseId);
+      });
+
+      const totalTargetBases = 10; // 10 paradas principais de estada
+      kpiBooked.textContent = `${bookedBases.size} / ${totalTargetBases}`;
+      kpiBookedSub.textContent = `${approvedBases.size} base(s) aprovada(s)`;
+
+      // Balanço financeiro
+      // Considera as melhores cotações aprovadas/reservadas de cada base vs suas metas
+      let totalDiff = 0;
+      const consideredBaseIds = new Set(activeQuotes.map(q => q.baseId));
+      consideredBaseIds.forEach(bId => {
+        const base = baseData.find(b => b.id === bId);
+        if (!base) return;
+        const targetActive = getBaseTargetHospInActiveCurrency(base);
+
+        // Se tem reservado, usa o reservado; se tem aprovado, usa o aprovado; senão pega o mais barato em análise
+        const quotesOfBase = activeQuotes.filter(q => q.baseId === bId);
+        let chosen = quotesOfBase.find(q => q.status === "booked") ||
+                     quotesOfBase.find(q => q.status === "approved") ||
+                     quotesOfBase[0];
+
+        if (chosen) {
+          const totalQ = getQuoteTotal(chosen, base);
+          const totalActive = convertQuotePriceToActive(totalQ, chosen.currency);
+          totalDiff += (targetActive - totalActive);
+        }
+      });
+
+      if (totalDiff >= 0) {
+        kpiBalance.textContent = `+ ${formatRawMoney(totalDiff, currentCurrency)}`;
+        kpiBalance.className = "text-2xl font-black text-emerald-700";
+        kpiBalanceSub.textContent = "Economia em relação à meta";
+        kpiBalanceSub.className = "text-[11px] text-emerald-600 block mt-0.5";
+      } else {
+        kpiBalance.textContent = `- ${formatRawMoney(Math.abs(totalDiff), currentCurrency)}`;
+        kpiBalance.className = "text-2xl font-black text-amber-700";
+        kpiBalanceSub.textContent = "Acima do orçamento inicial";
+        kpiBalanceSub.className = "text-[11px] text-amber-600 block mt-0.5";
+      }
+
+      // Velocidade média
+      const withSpeed = activeQuotes.filter(q => q.speed && q.speed > 0);
+      if (withSpeed.length > 0) {
+        const avg = Math.round(withSpeed.reduce((acc, q) => acc + q.speed, 0) / withSpeed.length);
+        kpiSpeed.textContent = `${avg} Mbps`;
+      } else {
+        kpiSpeed.textContent = "--";
+      }
+    }
+
+    function resetQuoteFilters() {
+      document.getElementById("filterQuoteCity").value = "all";
+      document.getElementById("filterQuoteStatus").value = "all";
+      document.getElementById("filterQuoteSearch").value = "";
+      renderAirbnbCards();
+    }
+
+    function exportAirbnbQuotes() {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(airbnbQuotes, null, 2));
+      const dl = document.createElement("a");
+      dl.setAttribute("href", dataStr);
+      dl.setAttribute("download", `cotacoes_airbnb_expedicao_${new Date().toISOString().slice(0, 10)}.json`);
+      dl.click();
+    }
+
+    function importAirbnbQuotes(event) {
+      const file = event.target.files && event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const parsed = JSON.parse(e.target.result);
+          if (Array.isArray(parsed)) {
+            airbnbQuotes = parsed;
+            saveAirbnbQuotes();
+            renderAirbnbCards();
+            updateAirbnbKPIs();
+            alert(`🎉 Sucesso! ${parsed.length} cotações de Airbnbs foram carregadas.`);
+          } else {
+            alert("O arquivo selecionado não contém uma lista válida de cotações.");
+          }
+        } catch (err) {
+          alert("Erro ao ler arquivo JSON: " + err.message);
+        }
+      };
+      reader.readAsText(file);
+      event.target.value = "";
+    }
+
+    function resetDefaultAirbnbQuotes() {
+      if (confirm("Deseja restaurar as 3 cotações de exemplo originais?")) {
+        airbnbQuotes = JSON.parse(JSON.stringify(DEFAULT_AIRBNB_QUOTES));
+        saveAirbnbQuotes();
+        renderAirbnbCards();
+        updateAirbnbKPIs();
+      }
+    }
+
+    function copyScriptSpeedtest() {
+      const text = document.getElementById("scriptSpeedtestText").innerText.trim();
+      navigator.clipboard.writeText(text).then(() => {
+        alert("Script de Speedtest copiado! Cole no chat com o anfitrião no Airbnb.");
+      });
+    }
+
+    function copyScriptDiscount() {
+      const text = document.getElementById("scriptDiscountText").innerText.trim();
+      navigator.clipboard.writeText(text).then(() => {
+        alert("Script de desconto para estadia longa copiado! Cole no chat do anfitrião.");
+      });
+    }
+
+    function initAirbnbModule() {
+      loadAirbnbQuotes();
+      populateCityDropdowns();
+      updateFormBudgetMeta();
+      renderAirbnbCards();
+      updateAirbnbKPIs();
+      updateAirbnbBadge();
+    }
+
+    // ==========================================
+    // CONTROLES GLOBAIS
+    // ==========================================
+
     currencySelect.addEventListener("change", (e) => {
       currentCurrency = e.target.value;
       renderBases();
       selectBase(currentSelectedBaseIndex);
+      updateFormBudgetMeta();
+      renderAirbnbCards();
+      updateAirbnbKPIs();
     });
 
     usdRateInput.addEventListener("input", (e) => {
       usdRate = parseFloat(e.target.value) || 5.50;
       renderBases();
       selectBase(currentSelectedBaseIndex);
+      updateFormBudgetMeta();
+      renderAirbnbCards();
+      updateAirbnbKPIs();
     });
 
     profileSelect.addEventListener("change", (e) => {
       profileMultiplier = e.target.value === "budget" ? 0.82 : 1.0;
       renderBases();
       selectBase(currentSelectedBaseIndex);
+      updateFormBudgetMeta();
+      renderAirbnbCards();
+      updateAirbnbKPIs();
     });
 
     renderBases();
     selectBase(1); // Inicia na Etapa 1: Buenos Aires
+    initAirbnbModule();
   </script>
 </body>
 </html>
