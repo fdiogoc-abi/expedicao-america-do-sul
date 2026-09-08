@@ -58,6 +58,12 @@
               <option value="realist">Nômade Confortável</option>
             </select>
           </div>
+          <div>
+            <label class="block text-[11px] font-medium text-slate-500 uppercase tracking-wider flex items-center gap-1">
+              <span>📅</span> Início da Viagem
+            </label>
+            <input type="date" id="tripStartDateInput" onchange="setTripStartDate(this.value)" class="text-xs font-bold bg-white border border-slate-300 rounded-lg px-2 py-1.5 text-slate-700 focus:outline-none focus:ring-2 focus:ring-sky-500 cursor-pointer shadow-2xs">
+          </div>
         </div>
       </div>
 
@@ -1756,6 +1762,102 @@
     let profileMultiplier = 0.82;
     let currentSelectedBaseIndex = 1;
     let tourInterval = null;
+    let tripStartDate = "2026-10-01";
+
+    function getTripStartDate() {
+      try {
+        const saved = localStorage.getItem("expedicao_start_date");
+        if (saved && /^\d{4}-\d{2}-\d{2}$/.test(saved)) {
+          return saved;
+        }
+      } catch (e) {}
+      return "2026-10-01";
+    }
+
+    function setTripStartDate(newDateStr) {
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(newDateStr)) return;
+      tripStartDate = newDateStr;
+      try {
+        localStorage.setItem("expedicao_start_date", newDateStr);
+      } catch (e) {}
+
+      const input = document.getElementById("tripStartDateInput");
+      if (input && input.value !== newDateStr) {
+        input.value = newDateStr;
+      }
+
+      renderBases();
+      selectBase(currentSelectedBaseIndex);
+      populateCityDropdowns();
+      updateFormBudgetMeta();
+      renderAirbnbCards();
+      updateAirbnbKPIs();
+      showToast(`📅 Data inicial atualizada para ${formatDisplayDate(newDateStr)}! Datas de Airbnb recalculadas.`);
+    }
+
+    function formatDateIso(d) {
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+
+    function formatDisplayDate(isoStr) {
+      if (!isoStr) return "";
+      const parts = isoStr.split("-");
+      if (parts.length !== 3) return isoStr;
+      const day = parts[2];
+      const monthNames = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
+      const mIdx = parseInt(parts[1], 10) - 1;
+      const year = parts[0];
+      return `${day}/${monthNames[mIdx]}/${year}`;
+    }
+
+    function calculateAllBaseDates(startDateStr) {
+      const datesMap = {};
+      let current = new Date((startDateStr || "2026-10-01") + "T12:00:00");
+      let baStartDate = new Date(current);
+
+      baseData.forEach((base) => {
+        if (base.id === "colonia") {
+          const colIn = new Date(baStartDate);
+          colIn.setDate(colIn.getDate() + 14);
+          const colOut = new Date(colIn);
+          colOut.setDate(colOut.getDate() + 2);
+          datesMap[base.id] = {
+            checkin: formatDateIso(colIn),
+            checkout: formatDateIso(colOut),
+            nights: 2,
+            displayCheckin: formatDisplayDate(formatDateIso(colIn)),
+            displayCheckout: formatDisplayDate(formatDateIso(colOut)),
+            isSideTrip: true
+          };
+          return;
+        }
+
+        const checkinDate = new Date(current);
+        const nights = base.weeks > 0 ? base.weeks * 7 : 7;
+        const checkoutDate = new Date(current);
+        checkoutDate.setDate(checkoutDate.getDate() + nights);
+
+        if (base.id === "ba") {
+          baStartDate = new Date(checkinDate);
+        }
+
+        datesMap[base.id] = {
+          checkin: formatDateIso(checkinDate),
+          checkout: formatDateIso(checkoutDate),
+          nights: nights,
+          displayCheckin: formatDisplayDate(formatDateIso(checkinDate)),
+          displayCheckout: formatDisplayDate(formatDateIso(checkoutDate)),
+          isSideTrip: false
+        };
+
+        current = new Date(checkoutDate);
+      });
+
+      return datesMap;
+    }
 
     const currencySelect = document.getElementById("currencySelect");
     const usdRateInput = document.getElementById("usdRate");
@@ -1797,6 +1899,8 @@
       }
 
       const days = base.weeks > 0 ? base.weeks * 7 : (base.id === "colonia" ? 2 : 1);
+      const datesMap = calculateAllBaseDates(tripStartDate);
+      const baseDates = datesMap[base.id] || { checkin: "2026-10-01", checkout: "2026-10-29", displayCheckin: "--", displayCheckout: "--", nights: days };
       const multiplier = profileMultiplier;
       const rate = currentCurrency === "BRL" ? usdRate : 1;
 
@@ -1896,6 +2000,7 @@
               <div class="flex items-center gap-2 flex-wrap">
                 <h3 class="text-xl font-bold text-slate-900">${base.name}</h3>
                 <span class="text-xs px-2 py-0.5 rounded bg-emerald-50 text-emerald-800 font-bold border border-emerald-200">${base.role}</span>
+                <span class="text-xs px-2.5 py-0.5 rounded-full bg-sky-100 text-sky-800 font-bold border border-sky-300">📅 ${baseDates.displayCheckin} a ${baseDates.displayCheckout} (${baseDates.nights} noites)</span>
               </div>
               <p class="text-xs text-slate-500 mt-1">${base.country} • ${base.weeks > 0 ? base.weeks + ' semanas alocadas (~' + (base.weeks * 7) + ' dias)' : 'Escapada / Conexão'}</p>
             </div>
@@ -2126,8 +2231,8 @@
             <button type="button" onclick="openCityGuideModal('${base.id}')" class="w-full py-2.5 px-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-colors shadow-sm">
               <span>📖</span> Guia & Segredos (${base.name})
             </button>
-            <a href="${getAirbnbSearchUrl(base)}" target="_blank" class="w-full py-2.5 px-3 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-colors shadow-sm">
-              <span>🔍</span> ${chosenAirbnb ? 'Buscar Outros no Airbnb ↗' : 'Buscar no Airbnb ↗'}
+            <a href="${getAirbnbSearchUrl(base)}" target="_blank" class="w-full py-2.5 px-3 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-colors shadow-sm" title="Buscar no Airbnb para as datas exatas desta etapa">
+              <span>🔍</span> Buscar no Airbnb (${baseDates.displayCheckin} a ${baseDates.displayCheckout}) ↗
             </a>
           </div>
         </div>
@@ -2253,6 +2358,7 @@
       basesListContainer.innerHTML = "";
       let totalWeeks = 0;
       let totalCostUsd = 0;
+      const datesMap = calculateAllBaseDates(tripStartDate);
 
       baseData.forEach((base, index) => {
         if (base.weeks === 0) return; // Pula bônus fds (Colonia) no total de semanas
@@ -2286,6 +2392,7 @@
                 <div class="flex items-center gap-2 flex-wrap">
                   <h3 class="text-base font-bold text-slate-900">${index + 1}. ${base.name}</h3>
                   <span class="text-xs px-2 py-0.5 rounded bg-emerald-50 text-emerald-800 font-medium border border-emerald-100">${base.role}</span>
+                  <span class="text-xs px-2 py-0.5 rounded bg-sky-50 text-sky-800 font-bold border border-sky-200">📅 ${datesMap[base.id]?.displayCheckin} a ${datesMap[base.id]?.displayCheckout} (${datesMap[base.id]?.nights} noites)</span>
                   <span class="text-xs text-slate-400">• ${base.fuso}</span>
                 </div>
                 <div class="text-xs text-slate-500 mt-1 flex flex-wrap gap-x-4 gap-y-1">
@@ -2306,8 +2413,8 @@
                   <button type="button" onclick="openCityGuideModal('${base.id}')" class="inline-flex items-center gap-1.5 text-[11px] font-bold text-indigo-700 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 px-2.5 py-1 rounded-lg transition-colors">
                     <span>📖</span> Ver Guia & Segredos ↗
                   </button>
-                  <a href="${getAirbnbSearchUrl(base)}" target="_blank" class="inline-flex items-center gap-1.5 text-[11px] ${chosen ? 'text-slate-500 hover:text-slate-700 font-medium' : 'text-slate-600 hover:text-slate-900 font-bold bg-slate-100 hover:bg-slate-200 border border-slate-200 px-2.5 py-1 rounded-lg'} transition-colors" title="Buscar no Airbnb">
-                    <span>🔍</span> ${chosen ? 'Outras Opções ↗' : 'Buscar no Airbnb ↗'}
+                  <a href="${getAirbnbSearchUrl(base)}" target="_blank" class="inline-flex items-center gap-1.5 text-[11px] ${chosen ? 'text-slate-500 hover:text-slate-700 font-medium' : 'text-slate-600 hover:text-slate-900 font-bold bg-slate-100 hover:bg-slate-200 border border-slate-200 px-2.5 py-1 rounded-lg'} transition-colors" title="Buscar no Airbnb para ${datesMap[base.id]?.displayCheckin} a ${datesMap[base.id]?.displayCheckout}">
+                    <span>🔍</span> ${chosen ? 'Outros no Airbnb (' + datesMap[base.id]?.displayCheckin + ') ↗' : 'Buscar no Airbnb (' + datesMap[base.id]?.displayCheckin + ') ↗'}
                   </a>
                 </div>
               </div>
@@ -2341,15 +2448,19 @@
       kpiDaily.textContent = formatMoney(dailyAverageUsd) + "/dia";
       kpiWeeks.textContent = totalWeeks + " sem";
 
+      const firstCheckin = datesMap["ba"] ? datesMap["ba"].displayCheckin : "";
+      const lastCheckout = datesMap["caribe"] ? datesMap["caribe"].displayCheckout : "";
+      const datesRangeStr = (firstCheckin && lastCheckout) ? `📅 ${firstCheckin} a ${lastCheckout}` : "";
+
       if (totalWeeks === 30) {
-        kpiWeeksDiff.textContent = "Alocação ideal (exatas 30 sem)";
-        kpiWeeksDiff.className = "text-[11px] text-emerald-600 block mt-0.5";
+        kpiWeeksDiff.textContent = datesRangeStr || "Alocação ideal (exatas 30 sem)";
+        kpiWeeksDiff.className = "text-[11px] text-emerald-600 block mt-0.5 font-bold";
       } else if (totalWeeks > 30) {
-        kpiWeeksDiff.textContent = `+${totalWeeks - 30} sem acima dos 7 meses`;
-        kpiWeeksDiff.className = "text-[11px] text-amber-600 block mt-0.5";
+        kpiWeeksDiff.textContent = `+${totalWeeks - 30} sem • ${datesRangeStr}`;
+        kpiWeeksDiff.className = "text-[11px] text-amber-600 block mt-0.5 font-bold";
       } else {
-        kpiWeeksDiff.textContent = `${30 - totalWeeks} sem disponíveis para alocar`;
-        kpiWeeksDiff.className = "text-[11px] text-sky-600 block mt-0.5";
+        kpiWeeksDiff.textContent = `${30 - totalWeeks} sem livres • ${datesRangeStr}`;
+        kpiWeeksDiff.className = "text-[11px] text-sky-600 block mt-0.5 font-bold";
       }
 
       renderCostTable(grandTotalUsd);
@@ -2570,9 +2681,10 @@
       const maxPrice = Math.round(targetActive * 1.12);
       const priceParam = maxPrice > 0 ? `&price_max=${maxPrice}` : "";
 
-      // 28-night monthly stay to trigger Airbnb's monthly discount algorithm automatically
-      const checkin = "2026-11-01";
-      const checkout = "2026-11-29";
+      const datesMap = calculateAllBaseDates(tripStartDate);
+      const baseDates = datesMap[base.id] || { checkin: "2026-10-01", checkout: "2026-10-29" };
+      const checkin = baseDates.checkin;
+      const checkout = baseDates.checkout;
 
       return `https://www.airbnb.com.br/s/${locationSlug}/homes?adults=2&checkin=${checkin}&checkout=${checkout}&room_types%5B%5D=Entire%20home%2Fapt&amenities%5B%5D=4&amenities%5B%5D=47&amenities%5B%5D=8&search_type=filter_change${priceParam}`;
     }
@@ -2747,7 +2859,10 @@
         if (quickSelect) {
           const optQuick = document.createElement("option");
           optQuick.value = base.id;
-          optQuick.textContent = `${base.flag} ${base.name} (${base.weeks > 0 ? base.weeks + ' sem' : 'Bônus fds'})`;
+          const datesMap = calculateAllBaseDates(tripStartDate);
+          const bDates = datesMap[base.id];
+          const dateStr = bDates ? `${bDates.displayCheckin} a ${bDates.displayCheckout}` : (base.weeks > 0 ? base.weeks + ' sem' : 'Bônus fds');
+          optQuick.textContent = `${base.flag} ${base.name} (${dateStr})`;
           quickSelect.appendChild(optQuick);
         }
       });
@@ -2763,7 +2878,13 @@
       const targetActive = getBaseTargetHospInActiveCurrency(base);
 
       metaHospText.textContent = formatRawMoney(targetActive, currentCurrency);
-      metaDurationText.textContent = base.weeks > 0 ? `${base.weeks} semanas (~${base.weeks * 7} dias)` : "Passeio de fim de semana";
+      const datesMap = calculateAllBaseDates(tripStartDate);
+      const bDates = datesMap[base.id];
+      if (bDates) {
+        metaDurationText.innerHTML = `📅 <strong>${bDates.displayCheckin} a ${bDates.displayCheckout}</strong> (${bDates.nights} noites)`;
+      } else {
+        metaDurationText.textContent = base.weeks > 0 ? `${base.weeks} semanas (~${base.weeks * 7} dias)` : "Passeio de fim de semana";
+      }
       calcLiveComparison();
     }
 
@@ -3457,7 +3578,10 @@
       document.getElementById("quickModalBaseId").value = baseId;
       document.getElementById("quickModalQuoteId").value = quote ? quote.id : "";
       document.getElementById("quickModalTitle").textContent = quote ? `Auditar Airbnb de ${base.name}` : `Vincular & Auditar Airbnb de ${base.name}`;
-      document.getElementById("quickModalSubtitle").textContent = `${base.flag} ${base.name} • ${base.weeks > 0 ? base.weeks + ' semanas' : 'Escapada'}`;
+      const datesMap = calculateAllBaseDates(tripStartDate);
+      const bDates = datesMap[base.id];
+      const dateInfo = bDates ? ` • 📅 ${bDates.displayCheckin} a ${bDates.displayCheckout} (${bDates.nights} noites)` : '';
+      document.getElementById("quickModalSubtitle").innerHTML = `${base.flag} <strong>${base.name}</strong> • ${base.weeks > 0 ? base.weeks + ' semanas' : 'Escapada'}${dateInfo} <a href="${getAirbnbSearchUrl(base)}" target="_blank" class="ml-2 text-sky-600 hover:text-sky-800 underline font-bold">🔍 Abrir busca c/ datas exatas ↗</a>`;
 
       document.getElementById("quickModalUrl").value = quote ? quote.url : "";
       document.getElementById("quickModalName").value = quote ? quote.title : `Airbnb em Análise - ${base.name}`;
@@ -3772,6 +3896,12 @@
       renderAirbnbCards();
       updateAirbnbKPIs();
     });
+
+    tripStartDate = getTripStartDate();
+    const tripStartInput = document.getElementById("tripStartDateInput");
+    if (tripStartInput) {
+      tripStartInput.value = tripStartDate;
+    }
 
     renderBases();
     selectBase(0); // Inicia na Etapa 1: Buenos Aires
