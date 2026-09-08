@@ -564,7 +564,7 @@
 
             <div class="pt-2 flex flex-wrap items-center gap-2">
               <!-- Botão arrastável (Bookmarklet Link) -->
-              <a href="javascript:(function(){try{if(!window.location.hostname.includes('airbnb')){alert('⚠️ Abra um anúncio no Airbnb antes de usar este botão!');return;}const url=window.location.origin+window.location.pathname;const h1=document.querySelector('h1');const title=h1?h1.innerText.trim():document.title.split('-')[0].trim();let price=0,currency='BRL';const text=document.body.innerText;const priceMatch=text.match(/(?:R\$|US\$|\$)\s?([0-9]{1,3}(?:\.[0-9]{3})*(?:,[0-9]{2})?|[0-9]+)/);if(priceMatch){if(priceMatch[0].includes('US$'))currency='USD';price=parseInt(priceMatch[1].replace(/[^0-9]/g,''),10)||0;}let speedMatch=text.match(/([0-9]{2,3})\s*(?:mbps|mega|mb)/i);let speed=speedMatch?parseInt(speedMatch[1],10):0;const payload={title:title,url:url,price:price,currency:currency,periodType:'total',speed:speed,source:'airbnb_bookmarklet'};const jsonStr=JSON.stringify(payload);navigator.clipboard.writeText(jsonStr).then(function(){alert('✅ Anúncio capturado!\n\n📌 '+title+'\n💵 '+(currency==='BRL'?'R$ ':'US$ ')+price+'\n\n👉 Volte ao seu Dashboard e clique em \'📥 Auto-Preencher Anúncio Copiado\'!');}).catch(function(){prompt('Copie os dados abaixo e cole no Dashboard:',jsonStr);});}catch(e){alert('Erro: '+e.message);}})();" 
+              <a href="javascript:(function(){try{if(!window.location.hostname.includes('airbnb')){alert('⚠️ Abra um anúncio no Airbnb antes de usar este botão!');return;}const url=window.location.origin+window.location.pathname;const h1=document.querySelector('h1');const title=h1?h1.innerText.trim():document.title.split('-')[0].trim();let price=0,currency='BRL';const text=document.body.innerText;const priceMatch=text.match(/(?:R\$|US\$|\$)\s?([0-9]{1,3}(?:\.[0-9]{3})*(?:,[0-9]{2})?|[0-9]+)/);if(priceMatch){if(priceMatch[0].includes('US$'))currency='USD';price=parseInt(priceMatch[1].replace(/[^0-9]/g,''),10)||0;}let speedMatch=text.match(/([0-9]{2,3})\s*(?:mbps|mega|mb)/i);let speed=speedMatch?parseInt(speedMatch[1],10):0;const low=text.toLowerCase();let neigh='';const locEl=document.querySelector('button[data-testid*=\'location\']')||document.querySelector('h2');if(locEl)neigh=locEl.innerText.trim();const payload={title:title,url:url,price:price,currency:currency,periodType:'total',speed:speed,neighborhood:neigh,kitchen:low.includes('cozinha')||low.includes('kitchen'),washer:low.includes('lavadora')||low.includes('máquina de lavar')||low.includes('washer'),desk:low.includes('espaço de trabalho')||low.includes('mesa')||low.includes('workspace'),ac:low.includes('ar-condicionado')||low.includes('air conditioning')||low.includes('calefação'),discountApplied:low.includes('desconto')||low.includes('discount'),source:'airbnb_bookmarklet'};const jsonStr=JSON.stringify(payload);navigator.clipboard.writeText(jsonStr).then(function(){alert('✅ Anúncio capturado!\n\n📌 '+title+'\n💵 '+(currency==='BRL'?'R$ ':'US$ ')+price+'\n🏘️ '+(neigh||'Bairro auditável')+'\n\n👉 Volte ao seu Dashboard e clique em \'📥 Auto-Preencher Anúncio Copiado\'!');}).catch(function(){prompt('Copie os dados abaixo e cole no Dashboard:',jsonStr);});}catch(e){alert('Erro: '+e.message);}})();" 
                  title="Arraste este botão para a barra de favoritos do seu navegador"
                  class="px-3 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-900 font-extrabold text-xs inline-flex items-center gap-1.5 transition-all shadow cursor-grab border border-emerald-300">
                 <span>📌</span> Arraste p/ Favoritos: Capturar Airbnb
@@ -1364,7 +1364,7 @@ Para poder confirmar la reserva, necesitamos verificar la estabilidad de interne
         <div class="flex items-center gap-2.5">
           <span class="text-2xl p-2 bg-emerald-50 text-emerald-700 rounded-xl">🏡</span>
           <div>
-            <h3 class="text-base font-black text-slate-900" id="quickModalTitle">Vincular Airbnb da Etapa</h3>
+            <h3 class="text-base font-black text-slate-900" id="quickModalTitle">Auditar & Salvar Airbnb</h3>
             <p class="text-xs text-slate-500" id="quickModalSubtitle">Destino selecionado</p>
           </div>
         </div>
@@ -1377,25 +1377,53 @@ Para poder confirmar la reserva, necesitamos verificar la estabilidad de interne
         <input type="hidden" id="quickModalQuoteId" value="">
         <input type="hidden" id="quickModalBaseId" value="">
 
+        <!-- 1. LINK DO ANÚNCIO -->
         <div>
           <label class="block font-bold text-slate-700 mb-1">🔗 Link do Anúncio no Airbnb <span class="text-rose-500">*</span></label>
-          <input type="url" id="quickModalUrl" required placeholder="https://www.airbnb.com.br/rooms/..." class="w-full px-3 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-sky-500 font-medium text-slate-800">
-          <p class="text-[10px] text-slate-400 mt-1">Cole a URL direta do imóvel encontrado para guardar e abrir com 1 clique.</p>
+          <input type="url" id="quickModalUrl" required oninput="handleQuickModalUrlInput()" placeholder="https://www.airbnb.com.br/rooms/..." class="w-full px-3 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-sky-500 font-medium text-slate-800">
+          <p class="text-[10px] text-slate-400 mt-1">Cole a URL direta do imóvel para guardar e abrir com 1 clique.</p>
         </div>
 
+        <!-- 2. TÍTULO OU APELIDO -->
         <div>
           <label class="block font-bold text-slate-700 mb-1">🏷️ Nome ou Apelido do Imóvel</label>
-          <input type="text" id="quickModalName" placeholder="Ex: Apartamento com Varanda em Colegiales" class="w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-sky-500 font-medium text-slate-800">
+          <input type="text" id="quickModalName" oninput="handleQuickModalAudit()" placeholder="Ex: Apartamento com Varanda em Colegiales" class="w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-sky-500 font-medium text-slate-800">
         </div>
 
+        <!-- 3. AUDITORIA DE BAIRRO E LOCALIZAÇÃO -->
+        <div class="p-3 bg-slate-50 rounded-2xl border border-slate-200 space-y-2">
+          <div class="flex items-center justify-between">
+            <label class="font-bold text-slate-800 flex items-center gap-1.5">
+              <span>🏘️</span> <strong>Auditoria de Bairro / Localização</strong>
+            </label>
+            <span class="text-[10px] text-slate-400">Clique num recomendado</span>
+          </div>
+          <input type="text" id="quickModalNeighborhood" oninput="handleQuickModalAudit()" placeholder="Ex: Colegiales, Palermo Hollywood..." class="w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-sky-500 font-medium text-slate-800 bg-white">
+
+          <!-- CHIPS RECOMENDADOS -->
+          <div>
+            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Bairros Recomendados nesta Cidade:</span>
+            <div id="quickModalNeighborhoodChips" class="flex flex-wrap gap-1.5">
+              <!-- Injetado dinamicamente -->
+            </div>
+          </div>
+
+          <!-- AVISO DE AUDITORIA DO BAIRRO -->
+          <div id="quickModalNeighborhoodAlert" class="p-2.5 rounded-xl text-xs flex items-start gap-2 border hidden">
+            <span id="quickModalNeighborhoodIcon" class="text-sm shrink-0">📍</span>
+            <p id="quickModalNeighborhoodMsg" class="leading-relaxed"></p>
+          </div>
+        </div>
+
+        <!-- 4. VALOR E ORÇAMENTO -->
         <div class="grid grid-cols-2 gap-3">
           <div>
             <label class="block font-bold text-slate-700 mb-1">💰 Valor da Hospedagem</label>
-            <input type="number" id="quickModalPrice" step="any" placeholder="3500" class="w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-sky-500 font-bold text-slate-800">
+            <input type="number" id="quickModalPrice" step="any" oninput="handleQuickModalAudit()" placeholder="3500" class="w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-sky-500 font-bold text-slate-800">
           </div>
           <div>
             <label class="block font-bold text-slate-700 mb-1">Período / Cobrança</label>
-            <select id="quickModalPeriod" class="w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-sky-500 font-medium text-slate-800 bg-white">
+            <select id="quickModalPeriod" onchange="handleQuickModalAudit()" class="w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-sky-500 font-medium text-slate-800 bg-white">
               <option value="total">Valor Total da Estadia</option>
               <option value="month">Valor por Mês (28 noites)</option>
               <option value="night">Valor por Diária</option>
@@ -1406,7 +1434,7 @@ Para poder confirmar la reserva, necesitamos verificar la estabilidad de interne
         <div class="grid grid-cols-2 gap-3">
           <div>
             <label class="block font-bold text-slate-700 mb-1">Moeda</label>
-            <select id="quickModalCurrency" class="w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-sky-500 font-medium text-slate-800 bg-white">
+            <select id="quickModalCurrency" onchange="handleQuickModalAudit()" class="w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-sky-500 font-medium text-slate-800 bg-white">
               <option value="BRL">Reais (R$)</option>
               <option value="USD">Dólares (US$)</option>
             </select>
@@ -1422,6 +1450,46 @@ Para poder confirmar la reserva, necesitamos verificar la estabilidad de interne
           </div>
         </div>
 
+        <!-- AVISO DE AUDITORIA DE PREÇO -->
+        <div id="quickModalPriceAlert" class="p-2.5 rounded-xl text-xs flex items-center justify-between border bg-slate-50 border-slate-200">
+          <span class="text-slate-500">Meta da Etapa: <strong id="quickModalTargetPriceVal" class="text-slate-800">R$ 4.353</strong></span>
+          <span id="quickModalPriceDiffBadge" class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-200 text-slate-600">Aguardando valor</span>
+        </div>
+
+        <!-- 5. CHECKLIST NÔMADE (OUTRAS COISAS) -->
+        <div class="p-3 bg-slate-50 rounded-2xl border border-slate-200 space-y-2">
+          <div class="flex items-center justify-between">
+            <label class="font-bold text-slate-800 flex items-center gap-1.5">
+              <span>📋</span> <strong>Checklist Nômade (Comodidades Essenciais)</strong>
+            </label>
+            <span id="quickModalScoreBadge" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-200 text-slate-700">0/5 Itens</span>
+          </div>
+
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
+            <label class="flex items-center gap-2 p-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 cursor-pointer transition-colors shadow-2xs">
+              <input type="checkbox" id="quickModalKitchen" onchange="handleQuickModalAudit()" class="rounded text-emerald-600 focus:ring-emerald-500">
+              <span class="font-medium text-slate-800">🍳 Cozinha Equipada</span>
+            </label>
+            <label class="flex items-center gap-2 p-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 cursor-pointer transition-colors shadow-2xs">
+              <input type="checkbox" id="quickModalWasher" onchange="handleQuickModalAudit()" class="rounded text-emerald-600 focus:ring-emerald-500">
+              <span class="font-medium text-slate-800">🧺 Lavadora de Roupa</span>
+            </label>
+            <label class="flex items-center gap-2 p-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 cursor-pointer transition-colors shadow-2xs">
+              <input type="checkbox" id="quickModalDesk" onchange="handleQuickModalAudit()" class="rounded text-emerald-600 focus:ring-emerald-500">
+              <span class="font-medium text-slate-800">💻 Mesa / Trabalho</span>
+            </label>
+            <label class="flex items-center gap-2 p-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 cursor-pointer transition-colors shadow-2xs">
+              <input type="checkbox" id="quickModalAc" onchange="handleQuickModalAudit()" class="rounded text-emerald-600 focus:ring-emerald-500">
+              <span class="font-medium text-slate-800" id="quickModalAcLabel">❄️ Ar / Calefação</span>
+            </label>
+            <label class="flex items-center gap-2 p-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 cursor-pointer transition-colors shadow-2xs col-span-2 sm:col-span-2">
+              <input type="checkbox" id="quickModalDiscount" onchange="handleQuickModalAudit()" class="rounded text-emerald-600 focus:ring-emerald-500">
+              <span class="font-medium text-slate-800">🏷️ Desconto Long Stay (>15%)</span>
+            </label>
+          </div>
+          <p id="quickModalCityTip" class="text-[11px] text-slate-500 italic pt-1 border-t border-slate-200/60"></p>
+        </div>
+
         <div>
           <label class="block font-bold text-slate-700 mb-1">📝 Observações (Opcional)</label>
           <input type="text" id="quickModalNotes" placeholder="Ex: Anfitrião deu 20% de desconto para estadia longa, ar split e mesa ampla..." class="w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-sky-500 font-medium text-slate-800">
@@ -1432,7 +1500,7 @@ Para poder confirmar la reserva, necesitamos verificar la estabilidad de interne
             Cancelar
           </button>
           <button type="submit" class="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-sm transition-colors flex items-center gap-1.5">
-            <span>💾</span> Salvar Airbnb
+            <span>💾</span> Salvar & Auditar Airbnb
           </button>
         </div>
       </form>
@@ -1869,6 +1937,215 @@ Para poder confirmar la reserva, necesitamos verificar la estabilidad de interne
   }
 ];
 
+    // GUIA CIRÚRGICO DE BAIRROS E AUDITORIA PARA AS 14 CIDADES
+    const CITY_NEIGHBORHOOD_GUIDE = {
+      ba: {
+        recommended: ["Colegiales", "Palermo Hollywood", "Palermo Soho", "Belgrano", "Villa Crespo", "Chacarita"],
+        avoid: ["San Telmo à noite", "Microcentro", "Constitución", "Retiro", "La Boca", "Once"],
+        tips: "Colegiales e Palermo Hollywood são os bairros mais planos, seguros e arborizados para caminhar a pé e trabalhar.",
+        climateNote: "Verão quente (Jan/Fev): Ar-condicionado split no quarto e sala é essencial.",
+        climateType: "ac"
+      },
+      colonia: {
+        recommended: ["Barrio Histórico", "Centro", "Real de San Carlos"],
+        avoid: ["Áreas afastadas sem acesso a pé"],
+        tips: "Fique dentro das muralhas coloniais ou a até 10 min a pé do terminal Buquebus.",
+        climateNote: "Brisa fresca do Rio da Prata.",
+        climateType: "neutral"
+      },
+      "7lagos": {
+        recommended: ["Centro de Bariloche", "San Martín de los Andes Centro", "Villa La Angostura Centro", "Playa Bonita"],
+        avoid: ["Alto Bariloche", "Periferia sul distante"],
+        tips: "Em San Martín ou La Angostura, fique no miolo plano para caminhar até restaurantes sem carro.",
+        climateNote: "Clima andino de montanha: aquecimento central / calefação potente é indispensável.",
+        climateType: "heat"
+      },
+      mendoza: {
+        recommended: ["Quinta Sección", "Barrio Bombal", "Godoy Cruz (centro)", "Plaza Independencia"],
+        avoid: ["Las Heras", "Guaymallén profundo", "Periferia leste"],
+        tips: "A Quinta Sección é o melhor bairro: arborizada por canais de água, segura e colada ao Parque San Martín.",
+        climateNote: "Semiárido ensolarado: ar-condicionado é essencial para os dias quentes.",
+        climateType: "ac"
+      },
+      santiago_exp: {
+        recommended: ["Providencia", "Lastarria", "Bellas Artes", "Las Condes"],
+        avoid: ["Estación Central", "Recoleta", "La Chimba à noite"],
+        tips: "Providencia (próximo ao metrô Pedro de Valdivia/Los Leones) tem o melhor equilíbrio de segurança e mobilidade.",
+        climateNote: "Proximidade a pé da Linha 1 do metrô é a prioridade #1.",
+        climateType: "ac"
+      },
+      arequipa: {
+        recommended: ["Yanahuara", "Cayma", "Centro Histórico (Santa Catalina)", "Vallecito"],
+        avoid: ["Cerro Colorado", "Paucarpata", "Bustamante y Rivero à noite"],
+        tips: "Yanahuara e Cayma são os bairros mais nobres, seguros e charmosos, com vistas deslumbrantes do vulcão Misti.",
+        climateNote: "Noites frescas e clima muito seco: peça aquecedor portátil se for sensível ao frio.",
+        climateType: "heat"
+      },
+      cusco: {
+        recommended: ["San Blas (parte baixa)", "Centro Histórico (plano)", "Lucrepata", "Ollantaytambo"],
+        avoid: ["San Blas alto (muitas escadarias íngremes)", "Santiago", "Zarzuela"],
+        tips: "ATENÇÃO A ESCADARIAS: a 3.400m de altitude, subir escadarias longas com compras causa exaustão extrema.",
+        climateNote: "Frio andino noturno (4-8°C): calefação elétrica ou lareira é crucial.",
+        climateType: "heat"
+      },
+      lima: {
+        recommended: ["Miraflores (Malecón / Makaha)", "Barranco", "San Isidro"],
+        avoid: ["Centro de Lima à noite", "Callao", "La Victoria", "Surquillo profundo"],
+        tips: "Miraflores próximo ao Malecón ou da descida para a praia Makaha permite surfar diariamente a pé.",
+        climateNote: "Alta umidade costeira: apartamentos em andares mais altos são mais arejados.",
+        climateType: "ac"
+      },
+      huanchaco: {
+        recommended: ["La Curvita", "El Elio", "Avenida Víctor Larco (orla)", "Balneário Centro"],
+        avoid: ["Interior desértico longe da praia", "Bairros periféricos de Trujillo"],
+        tips: "Fique a no máximo 2 quadras da orla para checar a formação das ondas direto da calçada.",
+        climateNote: "Brisa marinha constante: sacada com vista para o mar e chuveiro quente pós-surf.",
+        climateType: "neutral"
+      },
+      organos: {
+        recommended: ["Vichayito", "Punta Veleros", "Los Órganos Centro (praia)"],
+        avoid: ["Beira da Rodovia Panamericana (muito ruído)", "Máncora Centro (baladas 24h)"],
+        tips: "Vichayito e Punta Veleros oferecem tranquilidade total, mar morno (24°C) e tartarugas na areia.",
+        climateNote: "Sol forte e calor o ano todo: ar-condicionado silencioso no quarto é indispensável.",
+        climateType: "ac"
+      },
+      olon_ayampe: {
+        recommended: ["Ayampe (vilarejo)", "Olón Centro", "La Rinconada"],
+        avoid: ["Montañita Centro (festa ensurdecedora 24h)"],
+        tips: "Ayampe é o refúgio perfeito de surf e yoga; Olón tem praia espaçosa e comércio maior.",
+        climateNote: "Clima tropical úmido: telas mosquiteiras nas janelas e ventilador/ar-condicionado.",
+        climateType: "ac"
+      },
+      vulcoes: {
+        recommended: ["Baños Centro (praça/igreja)", "Santa Ana", "Comunidades da Laguna Quilotoa"],
+        avoid: ["Periferia barulhenta perto de oficinas ou rodoviária"],
+        tips: "Em Baños, fique no centro plano para caminhar até termas e restaurantes; em Quilotoa, certifique-se de lareira.",
+        climateNote: "Noites frias de serra: chuveiro a gás com pressão e cobertor térmico.",
+        climateType: "heat"
+      },
+      medellin: {
+        recommended: ["Laureles (Primer ou Segundo Parque)", "Estadio / Florida Nueva", "Manila (El Poblado tranquilo)"],
+        avoid: ["El Centro (La Candelaria) à noite", "Parque Lleras (ruído e assédio)", "Prado"],
+        tips: "Laureles é o melhor bairro da América do Sul: plano, arborizado, seguro e com cafés excepcionais.",
+        climateNote: "Eterna primavera: apartamento arejado em rua residencial tranquila longe de avenidas de motos.",
+        climateType: "ac"
+      },
+      caribe: {
+        recommended: ["Palomino (rua da praia)", "Ecolodges entrada El Zahíno (Tayrona)", "Buritaca"],
+        avoid: ["Rodovia Troncal del Caribe (tráfego de carretas)", "Periferia de Santa Marta"],
+        tips: "Em Palomino, escolha ecolodges ou pousadas com gerador de energia e acesso direto à praia.",
+        climateNote: "Calor tropical caribenho: ar-condicionado ou ventilador potente + repelente.",
+        climateType: "ac"
+      }
+    };
+
+    function auditNeighborhood(baseId, neighborhoodInput, titleInput, urlInput) {
+      const guide = CITY_NEIGHBORHOOD_GUIDE[baseId] || CITY_NEIGHBORHOOD_GUIDE.ba;
+      const combinedText = ((neighborhoodInput || "") + " " + (titleInput || "") + " " + (urlInput || ""))
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "");
+
+      // 1. Check for avoided/caution areas
+      for (let bad of guide.avoid) {
+        const badNorm = bad.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        if (combinedText.includes(badNorm)) {
+          return {
+            status: "danger",
+            badge: "⚠️ Bairro c/ Ressalvas",
+            badgeClass: "bg-rose-100 text-rose-800 border border-rose-300",
+            name: bad,
+            message: `Atenção: A região "${bad}" possui ressalvas de segurança, ruído ou distância. Bairros recomendados: ${guide.recommended.slice(0, 3).join(", ")}.`,
+            tips: guide.tips,
+            climateNote: guide.climateNote
+          };
+        }
+      }
+
+      // 2. Check for recommended areas
+      for (let good of guide.recommended) {
+        const goodNorm = good.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        if (combinedText.includes(goodNorm)) {
+          return {
+            status: "success",
+            badge: "✅ Bairro Recomendado",
+            badgeClass: "bg-emerald-100 text-emerald-800 border border-emerald-300",
+            name: good,
+            message: `Excelente localização! "${good}" é um dos bairros recomendados para esta etapa.`,
+            tips: guide.tips,
+            climateNote: guide.climateNote
+          };
+        }
+      }
+
+      // 3. User entered a specific neighborhood not in our curated lists
+      if (neighborhoodInput && neighborhoodInput.trim().length > 0) {
+        return {
+          status: "neutral",
+          badge: "ℹ️ Bairro a Validar",
+          badgeClass: "bg-sky-100 text-sky-800 border border-sky-300",
+          name: neighborhoodInput.trim(),
+          message: `Bairro informado: "${neighborhoodInput.trim()}". Para esta etapa, os bairros mais recomendados são: ${guide.recommended.join(", ")}.`,
+          tips: guide.tips,
+          climateNote: guide.climateNote
+        };
+      }
+
+      return {
+        status: "unspecified",
+        badge: "📍 Bairro não definido",
+        badgeClass: "bg-slate-100 text-slate-500 border border-slate-300",
+        name: "",
+        message: `Dica de localização: recomendamos priorizar ${guide.recommended.slice(0, 3).join(", ")}.`,
+        tips: guide.tips,
+        climateNote: guide.climateNote
+      };
+    }
+
+    function calcNomadScore(quote, base) {
+      if (!quote) return { score: 0, total: 5, label: "Não avaliado", badgeClass: "bg-slate-100 text-slate-600" };
+      let score = 0;
+      const total = 5;
+
+      // 1. Bairro recomendado
+      const audit = auditNeighborhood(quote.baseId, quote.neighborhood, quote.title, quote.url);
+      if (audit.status === "success") score++;
+
+      // 2. Preço na meta
+      if (base) {
+        const quoteTotal = getQuoteTotal(quote, base);
+        const quoteTotalActive = convertQuotePriceToActive(quoteTotal, quote.currency);
+        const targetActive = getBaseTargetHospInActiveCurrency(base);
+        if (targetActive > 0 && quoteTotalActive <= targetActive * 1.08) {
+          score++;
+        }
+      }
+
+      // 3. Cozinha
+      if (quote.kitchen) score++;
+
+      // 4. Lavadora
+      if (quote.washer) score++;
+
+      // 5. Mesa / Espaço de trabalho
+      if (quote.desk) score++;
+
+      let badgeClass = "bg-slate-100 text-slate-700";
+      let label = `${score}/${total} Validado`;
+      if (score === 5) {
+        badgeClass = "bg-emerald-100 text-emerald-800 font-black border border-emerald-300";
+        label = "🏆 100% Validado";
+      } else if (score >= 3) {
+        badgeClass = "bg-sky-100 text-sky-800 font-bold border border-sky-300";
+        label = `⭐ ${score}/${total} Aprovado`;
+      } else {
+        badgeClass = "bg-amber-100 text-amber-800 font-bold border border-amber-300";
+        label = `⚠️ ${score}/${total} Pendente`;
+      }
+
+      return { score, total, label, badgeClass, audit };
+    }
+
     let currentCurrency = "BRL";
     let usdRate = 5.50;
     let profileMultiplier = 0.82;
@@ -1924,6 +2201,13 @@ Para poder confirmar la reserva, necesitamos verificar la estabilidad de interne
         ? (airbnbQuotes.find(q => q.baseId === base.id && (q.status === 'booked' || q.status === 'approved')) 
            || airbnbQuotes.find(q => q.baseId === base.id && q.status !== 'discarded') 
            || null)
+        : null;
+
+      const auditResult = chosenAirbnb 
+        ? auditNeighborhood(base.id, chosenAirbnb.neighborhood, chosenAirbnb.title, chosenAirbnb.url)
+        : null;
+      const nomadScore = chosenAirbnb 
+        ? calcNomadScore(chosenAirbnb, base)
         : null;
 
       let effectiveHospCost = baseHospCost;
@@ -2030,23 +2314,28 @@ Para poder confirmar la reserva, necesitamos verificar la estabilidad de interne
             </div>
           </div>
 
-          <!-- SEÇÃO DO AIRBNB DEFINIDO / VINCULADO NESTA ETAPA -->
-          <div class="p-3.5 rounded-2xl border ${chosenAirbnb ? 'bg-emerald-50/80 border-emerald-300 shadow-2xs' : 'bg-slate-50 border-slate-200'} space-y-2.5">
+          <!-- SEÇÃO DO AIRBNB DEFINIDO / VINCULADO NESTA ETAPA COM AUDITORIA NÔMADE -->
+          <div class="p-3.5 rounded-2xl border ${chosenAirbnb ? (auditResult && auditResult.status === 'danger' ? 'bg-amber-50/70 border-amber-300' : 'bg-emerald-50/80 border-emerald-300 shadow-2xs') : 'bg-slate-50 border-slate-200'} space-y-2.5">
             <div class="flex items-center justify-between">
               <span class="text-xs font-bold text-slate-900 flex items-center gap-1.5">
                 <span class="text-base">🏡</span> <strong>Airbnb Desta Etapa</strong>
               </span>
               ${chosenAirbnb ? `
-              <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${STATUS_MAP[chosenAirbnb.status]?.badgeClass || 'bg-emerald-100 text-emerald-800'}">
-                ${STATUS_MAP[chosenAirbnb.status]?.label || 'Definido'}
-              </span>
+              <div class="flex items-center gap-1.5">
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${nomadScore.badgeClass}">
+                  ${nomadScore.label}
+                </span>
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${STATUS_MAP[chosenAirbnb.status]?.badgeClass || 'bg-emerald-100 text-emerald-800'}">
+                  ${STATUS_MAP[chosenAirbnb.status]?.label || 'Definido'}
+                </span>
+              </div>
               ` : `
               <span class="text-[11px] text-slate-400 font-medium">Nenhum imóvel vinculado</span>
               `}
             </div>
 
             ${chosenAirbnb ? `
-            <div class="bg-white p-3 rounded-xl border border-emerald-200 shadow-2xs space-y-2">
+            <div class="bg-white p-3 rounded-xl border ${auditResult && auditResult.status === 'danger' ? 'border-amber-200' : 'border-emerald-200'} shadow-2xs space-y-2.5">
               <div class="flex items-start justify-between gap-2">
                 <div class="min-w-0">
                   <h4 class="text-xs font-bold text-slate-900 truncate" title="${chosenAirbnb.title}">${chosenAirbnb.title}</h4>
@@ -2064,6 +2353,42 @@ Para poder confirmar la reserva, necesitamos verificar la estabilidad de interne
                 </a>
               </div>
 
+              <!-- AUDITORIA DO BAIRRO -->
+              <div class="p-2.5 rounded-xl border ${auditResult.status === 'success' ? 'bg-emerald-50/70 border-emerald-200 text-emerald-900' : (auditResult.status === 'danger' ? 'bg-rose-50/80 border-rose-200 text-rose-900' : 'bg-slate-50 border-slate-200 text-slate-700')} text-[11px] space-y-1">
+                <div class="flex items-center justify-between">
+                  <span class="font-bold flex items-center gap-1">
+                    <span>${auditResult.status === 'success' ? '✅' : (auditResult.status === 'danger' ? '⚠️' : '📍')}</span>
+                    Bairro: <strong>${chosenAirbnb.neighborhood || auditResult.name || 'Não informado'}</strong>
+                  </span>
+                  <span class="px-2 py-0.5 rounded text-[10px] font-bold ${auditResult.badgeClass}">
+                    ${auditResult.badge}
+                  </span>
+                </div>
+                <p class="text-[10px] leading-relaxed opacity-90">
+                  ${auditResult.message}
+                </p>
+              </div>
+
+              <!-- CHECKLIST DE COMODIDADES NÔMADES VALIDADAS -->
+              <div class="flex items-center gap-1.5 flex-wrap pt-0.5 text-[10px]">
+                <span class="font-bold text-slate-400">Comodidades:</span>
+                <span class="px-2 py-0.5 rounded-md font-bold ${chosenAirbnb.kitchen ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-400 line-through'}">
+                  🍳 Cozinha
+                </span>
+                <span class="px-2 py-0.5 rounded-md font-bold ${chosenAirbnb.washer ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-400 line-through'}">
+                  🧺 Lavadora
+                </span>
+                <span class="px-2 py-0.5 rounded-md font-bold ${chosenAirbnb.desk ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-400 line-through'}">
+                  💻 Mesa
+                </span>
+                <span class="px-2 py-0.5 rounded-md font-bold ${chosenAirbnb.ac ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-400 line-through'}">
+                  ❄️ Clima
+                </span>
+                <span class="px-2 py-0.5 rounded-md font-bold ${chosenAirbnb.discountApplied ? 'bg-purple-100 text-purple-800' : 'bg-slate-100 text-slate-400'}">
+                  🏷️ Long Stay
+                </span>
+              </div>
+
               ${chosenAirbnb.notes ? `
               <p class="text-[11px] text-slate-600 bg-slate-50 p-2 rounded-lg border border-slate-100 italic">
                 "${chosenAirbnb.notes}"
@@ -2072,7 +2397,7 @@ Para poder confirmar la reserva, necesitamos verificar la estabilidad de interne
 
               <div class="flex items-center justify-between pt-2 border-t border-slate-100 text-[11px]">
                 <button type="button" onclick="openQuickAirbnbModal('${base.id}', '${chosenAirbnb.id}')" class="text-sky-700 hover:text-sky-900 font-bold flex items-center gap-1">
-                  ✏️ Editar link / valor
+                  ✏️ Reauditar / Editar dados
                 </button>
                 <button type="button" onclick="deleteAirbnbQuote('${chosenAirbnb.id}')" class="text-rose-600 hover:text-rose-800 font-bold">
                   ✕ Desvincular
@@ -2084,13 +2409,13 @@ Para poder confirmar la reserva, necesitamos verificar la estabilidad de interne
               <div class="flex gap-1.5">
                 <input type="url" id="inspectorAirbnbUrlInput" onkeydown="if(event.key==='Enter') quickSaveAirbnbUrl('${base.id}')" placeholder="Cole o link do Airbnb (ex: https://airbnb.com/rooms/...)" class="flex-1 text-xs px-3 py-2 rounded-xl border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-sky-500 text-slate-800 placeholder-slate-400 shadow-2xs">
                 <button type="button" onclick="quickSaveAirbnbUrl('${base.id}')" class="px-3.5 py-2 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs shrink-0 transition-colors shadow-xs flex items-center gap-1">
-                  <span>💾</span> Salvar Link
+                  <span>💾</span> Salvar & Auditar
                 </button>
               </div>
               <div class="flex items-center justify-between text-[11px] text-slate-400 px-0.5">
-                <span>Cole a URL direta do imóvel para abrir direto daqui.</span>
+                <span>Cole o link do imóvel para auditar bairro e comodidades.</span>
                 <button type="button" onclick="openQuickAirbnbModal('${base.id}')" class="text-sky-600 hover:text-sky-800 font-bold hover:underline">
-                  + Detalhes e valor
+                  + Auditar Bairro & Detalhes
                 </button>
               </div>
             </div>
@@ -2451,6 +2776,7 @@ Para poder confirmar la reserva, necesitamos verificar la estabilidad de interne
         baseId: "ba",
         title: "Loft c/ Varanda & Home Office em Palermo Soho",
         url: "https://www.airbnb.com.br/rooms/sample-palermo",
+        neighborhood: "Palermo Soho",
         price: 3800,
         currency: "BRL",
         periodType: "total",
@@ -2461,7 +2787,8 @@ Para poder confirmar la reserva, necesitamos verificar la estabilidad de interne
         ac: true,
         kitchen: true,
         washer: true,
-        notes: "Speedtest enviado pelo anfitrião (iPlan Fibra 280 Mbps). Mesa ampla de jantar com tomadas próximas e cadeiras confortáveis.",
+        discountApplied: true,
+        notes: "Mesa ampla de jantar com tomadas próximas e cadeiras confortáveis. Bairro arborizado.",
         createdAt: "2026-09-08"
       },
       {
@@ -2469,6 +2796,7 @@ Para poder confirmar la reserva, necesitamos verificar la estabilidad de interne
         baseId: "huanchaco",
         title: "Apartamento Vista Mar Pé na Areia (La Curvita)",
         url: "https://www.airbnb.com.br/rooms/sample-huanchaco",
+        neighborhood: "La Curvita",
         price: 2150,
         currency: "BRL",
         periodType: "total",
@@ -2479,7 +2807,8 @@ Para poder confirmar la reserva, necesitamos verificar la estabilidad de interne
         ac: false,
         kitchen: true,
         washer: true,
-        notes: "Dá para ver a formação das esquerdas direto da sacada! Claro Fibra com router na sala. Desconto mensal de 22% confirmado.",
+        discountApplied: true,
+        notes: "Dá para ver a formação das esquerdas direto da sacada! Desconto mensal de 22% confirmado.",
         createdAt: "2026-09-08"
       },
       {
@@ -2487,6 +2816,7 @@ Para poder confirmar la reserva, necesitamos verificar la estabilidad de interne
         baseId: "organos",
         title: "Bungalô Tropical c/ Piscina & Deck em Vichayito",
         url: "https://www.airbnb.com.br/rooms/sample-vichayito",
+        neighborhood: "Vichayito",
         price: 2900,
         currency: "BRL",
         periodType: "total",
@@ -2497,7 +2827,8 @@ Para poder confirmar la reserva, necesitamos verificar la estabilidad de interne
         ac: true,
         kitchen: true,
         washer: true,
-        notes: "Perguntamos se aceitam pagamento em dólares cash para economizar taxa de serviço. Deck excelente para yoga e descanso.",
+        discountApplied: false,
+        notes: "Deck excelente para yoga e descanso a 2 min a pé da praia de Vichayito.",
         createdAt: "2026-09-08"
       }
     ];
@@ -2593,7 +2924,7 @@ Para poder confirmar la reserva, necesitamos verificar la estabilidad de interne
     }
 
     function copyBookmarkletCode() {
-      const code = "javascript:(function(){try{if(!window.location.hostname.includes('airbnb')){alert('⚠️ Abra um anúncio no Airbnb antes de usar este botão!');return;}const url=window.location.origin+window.location.pathname;const h1=document.querySelector('h1');const title=h1?h1.innerText.trim():document.title.split('-')[0].trim();let price=0,currency='BRL';const text=document.body.innerText;const priceMatch=text.match(/(?:R\\$|US\\$|\\$)\\s?([0-9]{1,3}(?:\\.[0-9]{3})*(?:,[0-9]{2})?|[0-9]+)/);if(priceMatch){if(priceMatch[0].includes('US$'))currency='USD';price=parseInt(priceMatch[1].replace(/[^0-9]/g,''),10)||0;}let speedMatch=text.match(/([0-9]{2,3})\\s*(?:mbps|mega|mb)/i);let speed=speedMatch?parseInt(speedMatch[1],10):0;const payload={title:title,url:url,price:price,currency:currency,periodType:'total',speed:speed,source:'airbnb_bookmarklet'};const jsonStr=JSON.stringify(payload);navigator.clipboard.writeText(jsonStr).then(function(){alert('✅ Anúncio capturado!\\n\\n📌 '+title+'\\n💵 '+(currency==='BRL'?'R$ ':'US$ ')+price+'\\n\\n👉 Volte ao seu Dashboard e clique em \\'📥 Auto-Preencher Anúncio Copiado\\'!');}).catch(function(){prompt('Copie os dados abaixo e cole no Dashboard:',jsonStr);});}catch(e){alert('Erro: '+e.message);}})();";
+      const code = "javascript:(function(){try{if(!window.location.hostname.includes('airbnb')){alert('⚠️ Abra um anúncio no Airbnb antes de usar este botão!');return;}const url=window.location.origin+window.location.pathname;const h1=document.querySelector('h1');const title=h1?h1.innerText.trim():document.title.split('-')[0].trim();let price=0,currency='BRL';const text=document.body.innerText;const priceMatch=text.match(/(?:R\\$|US\\$|\\$)\\s?([0-9]{1,3}(?:\\.[0-9]{3})*(?:,[0-9]{2})?|[0-9]+)/);if(priceMatch){if(priceMatch[0].includes('US$'))currency='USD';price=parseInt(priceMatch[1].replace(/[^0-9]/g,''),10)||0;}let speedMatch=text.match(/([0-9]{2,3})\\s*(?:mbps|mega|mb)/i);let speed=speedMatch?parseInt(speedMatch[1],10):0;const low=text.toLowerCase();let neigh='';const locEl=document.querySelector('button[data-testid*=\\'location\\']')||document.querySelector('h2');if(locEl)neigh=locEl.innerText.trim();const payload={title:title,url:url,price:price,currency:currency,periodType:'total',speed:speed,neighborhood:neigh,kitchen:low.includes('cozinha')||low.includes('kitchen'),washer:low.includes('lavadora')||low.includes('máquina de lavar')||low.includes('washer'),desk:low.includes('espaço de trabalho')||low.includes('mesa')||low.includes('workspace'),ac:low.includes('ar-condicionado')||low.includes('air conditioning')||low.includes('calefação'),discountApplied:low.includes('desconto')||low.includes('discount'),source:'airbnb_bookmarklet'};const jsonStr=JSON.stringify(payload);navigator.clipboard.writeText(jsonStr).then(function(){alert('✅ Anúncio capturado!\\n\\n📌 '+title+'\\n💵 '+(currency==='BRL'?'R$ ':'US$ ')+price+'\\n🏘️ '+(neigh||'Bairro auditável')+'\\n\\n👉 Volte ao seu Dashboard e clique em \\'📥 Auto-Preencher Anúncio Copiado\\'!');}).catch(function(){prompt('Copie os dados abaixo e cole no Dashboard:',jsonStr);});}catch(e){alert('Erro: '+e.message);}})();";
       navigator.clipboard.writeText(code).then(() => {
         alert("📋 Código do Bookmarklet copiado!\n\nPara instalar manualmente no seu navegador:\n1. Crie um novo favorito no Chrome/Safari;\n2. Edite o favorito, mude o nome para '📌 Capturar Airbnb';\n3. No campo de URL, cole este código copiado e salve!");
       });
@@ -2626,11 +2957,18 @@ Para poder confirmar la reserva, necesitamos verificar la estabilidad de interne
             if (data.periodType) document.getElementById("formPeriodType").value = data.periodType;
             if (data.speed) document.getElementById("formSpeed").value = data.speed;
 
-            // Auto-detect base by name in title or url
+            if (data.kitchen !== undefined) document.getElementById("formKitchen").checked = !!data.kitchen;
+            if (data.washer !== undefined) document.getElementById("formWasher").checked = !!data.washer;
+            if (data.desk !== undefined) document.getElementById("formDesk").checked = !!data.desk;
+            if (data.ac !== undefined) document.getElementById("formAc").checked = !!data.ac;
+
+            // Auto-detect base by name in title, neighborhood or url
+            let matchedBase = null;
             for (let b of baseData) {
               const nameLow = b.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-              const searchBlob = (data.title + " " + data.url).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+              const searchBlob = ((data.title || "") + " " + (data.neighborhood || "") + " " + (data.url || "")).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
               if (searchBlob.includes(nameLow) || searchBlob.includes(b.id)) {
+                matchedBase = b;
                 document.getElementById("formCitySelect").value = b.id;
                 break;
               }
@@ -2638,7 +2976,23 @@ Para poder confirmar la reserva, necesitamos verificar la estabilidad de interne
 
             updateFormBudgetMeta();
             calcLiveComparison();
-            showToast("✨ Dados do anúncio preenchidos automaticamente!");
+
+            // Se o modal rápido estiver aberto na tela, atualiza ele também
+            const quickModal = document.getElementById("quickAirbnbModal");
+            if (quickModal && !quickModal.classList.contains("hidden")) {
+              if (data.url) document.getElementById("quickModalUrl").value = data.url;
+              if (data.title) document.getElementById("quickModalName").value = data.title;
+              if (data.price) document.getElementById("quickModalPrice").value = data.price;
+              if (data.neighborhood) document.getElementById("quickModalNeighborhood").value = data.neighborhood;
+              if (data.kitchen !== undefined) document.getElementById("quickModalKitchen").checked = !!data.kitchen;
+              if (data.washer !== undefined) document.getElementById("quickModalWasher").checked = !!data.washer;
+              if (data.desk !== undefined) document.getElementById("quickModalDesk").checked = !!data.desk;
+              if (data.ac !== undefined) document.getElementById("quickModalAc").checked = !!data.ac;
+              if (data.discountApplied !== undefined) document.getElementById("quickModalDiscount").checked = !!data.discountApplied;
+              handleQuickModalAudit();
+            }
+
+            showToast(`✨ Anúncio "${data.title}" capturado e auditado com sucesso!`);
             return;
           } catch (jsonErr) {
             console.warn("Erro ao fazer parse do JSON:", jsonErr);
@@ -2647,7 +3001,10 @@ Para poder confirmar la reserva, necesitamos verificar la estabilidad de interne
 
         // 2. If single URL
         if (text.includes("airbnb.")) {
-          document.getElementById("formUrl").value = text;
+          let cleanUrl = text;
+          const urlMatch = text.match(/https?:\/\/[^\s]+/i);
+          if (urlMatch) cleanUrl = urlMatch[0].split("?")[0];
+          document.getElementById("formUrl").value = cleanUrl;
           showToast("🔗 Link do Airbnb inserido! Preencha o valor cotado.");
           return;
         }
@@ -2837,11 +3194,16 @@ Para poder confirmar la reserva, necesitamos verificar la estabilidad de interne
       const washer = document.getElementById("formWasher").checked;
       const notes = document.getElementById("formNotes").value.trim();
 
+      const base = baseData.find(b => b.id === baseId);
+      const audit = auditNeighborhood(baseId, "", title, url);
+      const detectedNeigh = (audit.status === "success" || audit.status === "danger") ? audit.name : "";
+
       const newQuote = {
         id: "quote-" + Date.now(),
         baseId,
         title,
         url,
+        neighborhood: detectedNeigh,
         price,
         currency,
         periodType,
@@ -2852,6 +3214,7 @@ Para poder confirmar la reserva, necesitamos verificar la estabilidad de interne
         ac,
         kitchen,
         washer,
+        discountApplied: base ? base.weeks >= 3 : true,
         notes,
         createdAt: new Date().toISOString().slice(0, 10)
       };
@@ -3324,22 +3687,41 @@ Para poder confirmar la reserva, necesitamos verificar la estabilidad de interne
     function quickSaveAirbnbUrl(baseId) {
       const input = document.getElementById("inspectorAirbnbUrlInput");
       if (!input) return;
-      let url = input.value.trim();
-      if (!url) {
+      let rawText = input.value.trim();
+      if (!rawText) {
         alert("Por favor, cole a URL do anúncio no Airbnb.");
         input.focus();
         return;
       }
-      if (!/^https?:\/\//i.test(url)) {
-        url = "https://" + url;
+
+      // Extrai URL limpa se colaram mensagem inteira de compartilhamento
+      let url = rawText;
+      const urlMatch = rawText.match(/https?:\/\/[^\s]+/i);
+      if (urlMatch) {
+        url = urlMatch[0].split("?")[0];
+      } else if (!/^https?:\/\//i.test(url)) {
+        url = "https://" + url.split("?")[0];
+      } else {
+        url = url.split("?")[0];
       }
 
       const base = baseData.find(b => b.id === baseId);
       const baseName = base ? base.name : "Destino";
+      const guide = CITY_NEIGHBORHOOD_GUIDE[baseId] || CITY_NEIGHBORHOOD_GUIDE.ba;
+
+      // Tenta detectar bairro pelo link ou texto colado
+      const audit = auditNeighborhood(baseId, "", "", rawText);
+      let detectedNeigh = "";
+      if (audit.status === "success" || audit.status === "danger") {
+        detectedNeigh = audit.name;
+      }
 
       let quote = airbnbQuotes.find(q => q.baseId === baseId && q.status !== 'discarded');
       if (quote) {
         quote.url = url;
+        if (detectedNeigh && (!quote.neighborhood || quote.neighborhood.trim().length === 0)) {
+          quote.neighborhood = detectedNeigh;
+        }
         quote.status = "booked";
       } else {
         const defaultPrice = base ? Math.round(getBaseTargetHospInActiveCurrency(base)) : 3500;
@@ -3348,6 +3730,7 @@ Para poder confirmar la reserva, necesitamos verificar la estabilidad de interne
           baseId: baseId,
           title: `Airbnb Escolhido em ${baseName}`,
           url: url,
+          neighborhood: detectedNeigh,
           price: defaultPrice,
           currency: currentCurrency,
           periodType: "total",
@@ -3355,9 +3738,10 @@ Para poder confirmar la reserva, necesitamos verificar la estabilidad de interne
           dist: "Imóvel selecionado",
           status: "booked",
           desk: true,
-          ac: false,
+          ac: guide.climateType === 'ac',
           kitchen: true,
           washer: true,
+          discountApplied: base ? base.weeks >= 3 : true,
           notes: "Definido diretamente pelo Inspetor da Expedição.",
           createdAt: new Date().toISOString().split("T")[0]
         };
@@ -3370,11 +3754,21 @@ Para poder confirmar la reserva, necesitamos verificar la estabilidad de interne
       updateAirbnbKPIs();
       updateAirbnbBadge();
       renderBases();
+
+      // Se o bairro não foi detectado automaticamente pelo link, abre o modal com chips para 1 clique
+      if (!quote.neighborhood) {
+        showToast("🔗 Link salvo! Selecione o bairro nos chips para completar a auditoria.");
+        openQuickAirbnbModal(baseId, quote.id);
+      } else {
+        showToast(`✅ Link salvo e auditado: Bairro "${quote.neighborhood}"!`);
+      }
     }
 
     function openQuickAirbnbModal(baseId, quoteId) {
       const base = baseData.find(b => b.id === baseId);
       if (!base) return;
+
+      const guide = CITY_NEIGHBORHOOD_GUIDE[baseId] || CITY_NEIGHBORHOOD_GUIDE.ba;
 
       const quote = quoteId 
         ? airbnbQuotes.find(q => q.id === quoteId) 
@@ -3383,11 +3777,12 @@ Para poder confirmar la reserva, necesitamos verificar la estabilidad de interne
 
       document.getElementById("quickModalBaseId").value = baseId;
       document.getElementById("quickModalQuoteId").value = quote ? quote.id : "";
-      document.getElementById("quickModalTitle").textContent = quote ? `Editar Airbnb de ${base.name}` : `Vincular Airbnb de ${base.name}`;
+      document.getElementById("quickModalTitle").textContent = quote ? `Auditar Airbnb de ${base.name}` : `Vincular & Auditar Airbnb de ${base.name}`;
       document.getElementById("quickModalSubtitle").textContent = `${base.flag} ${base.name} • ${base.weeks > 0 ? base.weeks + ' semanas' : 'Escapada'}`;
 
       document.getElementById("quickModalUrl").value = quote ? quote.url : "";
       document.getElementById("quickModalName").value = quote ? quote.title : `Airbnb Escolhido em ${base.name}`;
+      document.getElementById("quickModalNeighborhood").value = quote && quote.neighborhood ? quote.neighborhood : "";
       
       const defaultPrice = base ? Math.round(getBaseTargetHospInActiveCurrency(base)) : 3500;
       document.getElementById("quickModalPrice").value = quote ? quote.price : defaultPrice;
@@ -3395,6 +3790,45 @@ Para poder confirmar la reserva, necesitamos verificar la estabilidad de interne
       document.getElementById("quickModalCurrency").value = quote ? quote.currency : currentCurrency;
       document.getElementById("quickModalStatus").value = quote ? quote.status : "booked";
       document.getElementById("quickModalNotes").value = quote && quote.notes ? quote.notes : "";
+
+      // Checkboxes de comodidades essenciais
+      document.getElementById("quickModalKitchen").checked = quote ? (quote.kitchen !== false) : true;
+      document.getElementById("quickModalWasher").checked = quote ? (quote.washer !== false) : true;
+      document.getElementById("quickModalDesk").checked = quote ? (quote.desk !== false) : true;
+      document.getElementById("quickModalAc").checked = quote ? (quote.ac !== false) : (guide.climateType === 'ac');
+      document.getElementById("quickModalDiscount").checked = quote ? (quote.discountApplied !== false) : (base.weeks >= 3);
+
+      // Label dinâmico Clima (Ar vs Calefação)
+      const acLabel = document.getElementById("quickModalAcLabel");
+      if (acLabel) {
+        acLabel.textContent = guide.climateType === 'heating' ? "🔥 Calefação / Aquecedor" : "❄️ Ar-condicionado";
+      }
+
+      // Chips dinâmicos de bairros recomendados
+      const chipsContainer = document.getElementById("quickModalNeighborhoodChips");
+      if (chipsContainer) {
+        chipsContainer.innerHTML = "";
+        guide.recommended.forEach(neigh => {
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "px-2.5 py-1 rounded-lg text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200 hover:bg-emerald-100 hover:border-emerald-300 transition-colors flex items-center gap-1 cursor-pointer";
+          btn.innerHTML = `<span>📍</span> ${neigh}`;
+          btn.onclick = () => {
+            document.getElementById("quickModalNeighborhood").value = neigh;
+            handleQuickModalAudit();
+          };
+          chipsContainer.appendChild(btn);
+        });
+      }
+
+      // Dica contextual da cidade
+      const tipEl = document.getElementById("quickModalCityTip");
+      if (tipEl) {
+        tipEl.innerHTML = `💡 <strong>Dica para ${base.name}:</strong> ${guide.tips} <span class="text-slate-400">(${guide.climateNote})</span>`;
+      }
+
+      // Dispara auditoria imediata
+      handleQuickModalAudit();
 
       const modal = document.getElementById("quickAirbnbModal");
       if (modal) {
@@ -3417,24 +3851,157 @@ Para poder confirmar la reserva, necesitamos verificar la estabilidad de interne
       }
     }
 
+    function handleQuickModalUrlInput() {
+      const urlInput = document.getElementById("quickModalUrl");
+      if (!urlInput) return;
+      let raw = urlInput.value.trim();
+      if (!raw) return;
+
+      // Se colou link com texto ou tracking params
+      const urlMatch = raw.match(/https?:\/\/[^\s]+/i);
+      if (urlMatch) {
+        urlInput.value = urlMatch[0].split("?")[0];
+      }
+
+      const baseId = document.getElementById("quickModalBaseId").value;
+      const neighInput = document.getElementById("quickModalNeighborhood");
+      if (neighInput && (!neighInput.value || neighInput.value.trim().length === 0)) {
+        const audit = auditNeighborhood(baseId, "", "", raw);
+        if (audit.status === "success" || audit.status === "danger") {
+          neighInput.value = audit.name;
+        }
+      }
+
+      handleQuickModalAudit();
+    }
+
+    function handleQuickModalAudit() {
+      const baseId = document.getElementById("quickModalBaseId").value;
+      const base = baseData.find(b => b.id === baseId);
+      if (!base) return;
+
+      const neigh = document.getElementById("quickModalNeighborhood").value.trim();
+      const title = document.getElementById("quickModalName").value.trim();
+      const url = document.getElementById("quickModalUrl").value.trim();
+      const price = parseFloat(document.getElementById("quickModalPrice").value) || 0;
+      const periodType = document.getElementById("quickModalPeriod").value;
+      const currency = document.getElementById("quickModalCurrency").value;
+
+      const kitchen = document.getElementById("quickModalKitchen").checked;
+      const washer = document.getElementById("quickModalWasher").checked;
+      const desk = document.getElementById("quickModalDesk").checked;
+      const ac = document.getElementById("quickModalAc").checked;
+      const discountApplied = document.getElementById("quickModalDiscount").checked;
+
+      // 1. Auditoria de Bairro
+      const audit = auditNeighborhood(baseId, neigh, title, url);
+      const alertEl = document.getElementById("quickModalNeighborhoodAlert");
+      const iconEl = document.getElementById("quickModalNeighborhoodIcon");
+      const msgEl = document.getElementById("quickModalNeighborhoodMsg");
+
+      if (alertEl && iconEl && msgEl) {
+        alertEl.classList.remove("hidden");
+        if (audit.status === "success") {
+          alertEl.className = "p-2.5 rounded-xl text-xs flex items-start gap-2 border bg-emerald-50 text-emerald-900 border-emerald-200";
+          iconEl.textContent = "✅";
+        } else if (audit.status === "danger") {
+          alertEl.className = "p-2.5 rounded-xl text-xs flex items-start gap-2 border bg-rose-50 text-rose-900 border-rose-300";
+          iconEl.textContent = "⚠️";
+        } else if (audit.status === "neutral") {
+          alertEl.className = "p-2.5 rounded-xl text-xs flex items-start gap-2 border bg-sky-50 text-sky-900 border-sky-200";
+          iconEl.textContent = "📍";
+        } else {
+          alertEl.className = "p-2.5 rounded-xl text-xs flex items-start gap-2 border bg-slate-50 text-slate-700 border-slate-200";
+          iconEl.textContent = "ℹ️";
+        }
+        msgEl.innerHTML = `<strong>${audit.badge}:</strong> ${audit.message}`;
+      }
+
+      // 2. Auditoria de Preço vs Meta da Etapa
+      const targetActive = getBaseTargetHospInActiveCurrency(base);
+      const targetPriceEl = document.getElementById("quickModalTargetPriceVal");
+      if (targetPriceEl) {
+        targetPriceEl.textContent = formatCurrency(targetActive, currentCurrency);
+      }
+
+      const mockQuote = { price, periodType, currency };
+      const quoteTotalInQuoteCurr = getQuoteTotal(mockQuote, base);
+      const quoteTotalInActiveCurr = convertQuotePriceToActive(quoteTotalInQuoteCurr, currency);
+      const diffBadgeEl = document.getElementById("quickModalPriceDiffBadge");
+
+      if (diffBadgeEl) {
+        if (price <= 0) {
+          diffBadgeEl.className = "px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-200 text-slate-600";
+          diffBadgeEl.textContent = "Aguardando valor";
+        } else if (quoteTotalInActiveCurr <= targetActive) {
+          const diff = targetActive - quoteTotalInActiveCurr;
+          diffBadgeEl.className = "px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300";
+          diffBadgeEl.textContent = `✅ Dentro da Meta (-${formatCurrency(diff, currentCurrency)})`;
+        } else if (quoteTotalInActiveCurr <= targetActive * 1.15) {
+          const over = quoteTotalInActiveCurr - targetActive;
+          diffBadgeEl.className = "px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-300";
+          diffBadgeEl.textContent = `🟡 Pouco acima (+${formatCurrency(over, currentCurrency)})`;
+        } else {
+          const over = quoteTotalInActiveCurr - targetActive;
+          diffBadgeEl.className = "px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800 border border-rose-300";
+          diffBadgeEl.textContent = `⚠️ Excede Meta (+${formatCurrency(over, currentCurrency)})`;
+        }
+      }
+
+      // 3. Nomad Score Badge
+      const mockQuoteFull = {
+        baseId,
+        neighborhood: neigh,
+        title,
+        url,
+        price,
+        periodType,
+        currency,
+        kitchen,
+        washer,
+        desk,
+        ac,
+        discountApplied
+      };
+      const scoreRes = calcNomadScore(mockQuoteFull, base);
+      const scoreBadge = document.getElementById("quickModalScoreBadge");
+      if (scoreBadge) {
+        scoreBadge.className = `px-2.5 py-0.5 rounded-full text-[10px] font-bold ${scoreRes.badgeClass}`;
+        scoreBadge.textContent = scoreRes.label;
+      }
+    }
+
     function handleQuickAirbnbSubmit(event) {
       event.preventDefault();
       const baseId = document.getElementById("quickModalBaseId").value;
       const quoteId = document.getElementById("quickModalQuoteId").value;
       let url = document.getElementById("quickModalUrl").value.trim();
       const title = document.getElementById("quickModalName").value.trim() || "Airbnb Selecionado";
+      const neighborhood = document.getElementById("quickModalNeighborhood").value.trim();
       const price = parseFloat(document.getElementById("quickModalPrice").value) || 0;
       const periodType = document.getElementById("quickModalPeriod").value;
       const currency = document.getElementById("quickModalCurrency").value;
       const status = document.getElementById("quickModalStatus").value;
       const notes = document.getElementById("quickModalNotes").value.trim();
 
+      const kitchen = document.getElementById("quickModalKitchen").checked;
+      const washer = document.getElementById("quickModalWasher").checked;
+      const desk = document.getElementById("quickModalDesk").checked;
+      const ac = document.getElementById("quickModalAc").checked;
+      const discountApplied = document.getElementById("quickModalDiscount").checked;
+
       if (!url) {
         alert("Por favor, informe a URL do anúncio no Airbnb.");
         return;
       }
-      if (!/^https?:\/\//i.test(url)) {
-        url = "https://" + url;
+
+      const urlMatch = url.match(/https?:\/\/[^\s]+/i);
+      if (urlMatch) {
+        url = urlMatch[0].split("?")[0];
+      } else if (!/^https?:\/\//i.test(url)) {
+        url = "https://" + url.split("?")[0];
+      } else {
+        url = url.split("?")[0];
       }
 
       if (quoteId) {
@@ -3442,10 +4009,16 @@ Para poder confirmar la reserva, necesitamos verificar la estabilidad de interne
         if (quote) {
           quote.url = url;
           quote.title = title;
+          quote.neighborhood = neighborhood;
           quote.price = price;
           quote.periodType = periodType;
           quote.currency = currency;
           quote.status = status;
+          quote.kitchen = kitchen;
+          quote.washer = washer;
+          quote.desk = desk;
+          quote.ac = ac;
+          quote.discountApplied = discountApplied;
           quote.notes = notes;
         }
       } else {
@@ -3454,16 +4027,18 @@ Para poder confirmar la reserva, necesitamos verificar la estabilidad de interne
           baseId: baseId,
           title: title,
           url: url,
+          neighborhood: neighborhood,
           price: price,
           currency: currency,
           periodType: periodType,
           speed: 0,
           dist: "Imóvel selecionado",
           status: status,
-          desk: true,
-          ac: false,
-          kitchen: true,
-          washer: true,
+          desk: desk,
+          ac: ac,
+          kitchen: kitchen,
+          washer: washer,
+          discountApplied: discountApplied,
           notes: notes,
           createdAt: new Date().toISOString().split("T")[0]
         };
@@ -3477,6 +4052,8 @@ Para poder confirmar la reserva, necesitamos verificar la estabilidad de interne
       updateAirbnbKPIs();
       updateAirbnbBadge();
       renderBases();
+
+      showToast("🎉 Airbnb auditado e salvo com sucesso!");
     }
 
     document.addEventListener("keydown", (event) => {
