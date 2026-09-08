@@ -1,0 +1,1214 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Expedição 7 Meses: Rota 3.0 Definitiva com Mapa</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: rgba(0,0,0,0.05); }
+    ::-webkit-scrollbar-thumb { background: rgba(100,116,139,0.3); border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(100,116,139,0.5); }
+    .tab-active { border-bottom: 2px solid #0284c7; color: #0284c7; font-weight: 600; }
+    .map-pin { cursor: pointer; transition: transform 0.2s ease, filter 0.2s ease; }
+    .map-pin:hover { transform: scale(1.25); filter: drop-shadow(0 4px 8px rgba(0,0,0,0.4)); }
+    .route-flight { stroke-dasharray: 6 5; animation: dashFlight 30s linear infinite; }
+    .route-land { stroke-dasharray: 4 3; animation: dashLand 20s linear infinite; }
+    .route-ferry { stroke-dasharray: 3 3; animation: dashFerry 10s linear infinite; }
+    @keyframes dashFlight { to { stroke-dashoffset: -1000; } }
+    @keyframes dashLand { to { stroke-dashoffset: -1000; } }
+    @keyframes dashFerry { to { stroke-dashoffset: -500; } }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased min-h-screen p-3 md:p-6">
+  <div class="max-w-7xl mx-auto space-y-6">
+
+    <!-- HEADER & INTRODUÇÃO -->
+    <header class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+      <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+        <div>
+          <div class="flex items-center gap-2 mb-1 flex-wrap">
+            <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800">Rota 3.0 Definitiva</span>
+            <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-sky-100 text-sky-800">7 Países: BR, AR, UY, CL, PE, EC, CO</span>
+            <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-800">Longboard + Caribe Colombiano</span>
+          </div>
+          <h1 class="text-2xl md:text-3xl font-bold text-slate-900">Expedição América do Sul: O Roteiro Definitivo</h1>
+          <p class="text-slate-500 text-sm mt-1">Patagônia dos Lagos → Longboard no Pacífico → Vulcões do Equador → Paraíso Caribeño (30 Semanas)</p>
+        </div>
+
+        <!-- CONTROLES GLOBAIS DE SIMULAÇÃO -->
+        <div class="flex flex-wrap items-center gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200">
+          <div>
+            <label class="block text-[11px] font-medium text-slate-500 uppercase tracking-wider">Moeda</label>
+            <select id="currencySelect" class="text-sm font-semibold bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 text-slate-700 focus:outline-none focus:ring-2 focus:ring-sky-500">
+              <option value="BRL" selected>R$ (BRL)</option>
+              <option value="USD">US$ (USD)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-[11px] font-medium text-slate-500 uppercase tracking-wider">Câmbio USD</label>
+            <input type="number" id="usdRate" value="5.50" step="0.05" class="w-20 text-sm font-semibold bg-white border border-slate-300 rounded-lg px-2 py-1.5 text-slate-700 focus:outline-none focus:ring-2 focus:ring-sky-500 text-center">
+          </div>
+          <div>
+            <label class="block text-[11px] font-medium text-slate-500 uppercase tracking-wider">Perfil Gasto</label>
+            <select id="profileSelect" class="text-sm font-semibold bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 text-slate-700 focus:outline-none focus:ring-2 focus:ring-sky-500">
+              <option value="budget" selected>Econômico Inteligente</option>
+              <option value="realist">Nômade Confortável</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- KPI METRICS SUMMARY -->
+      <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mt-6 pt-5 border-t border-slate-100">
+        <div class="bg-slate-50 p-3.5 rounded-xl">
+          <span class="text-xs text-slate-500 font-medium block">Total Estimado (Casal)</span>
+          <span id="kpiTotal" class="text-xl md:text-2xl font-black text-emerald-700">R$ 0</span>
+          <span class="text-[11px] text-slate-400 block mt-0.5">7 meses completos</span>
+        </div>
+        <div class="bg-slate-50 p-3.5 rounded-xl">
+          <span class="text-xs text-slate-500 font-medium block">Média Mensal (Casal)</span>
+          <span id="kpiMonthly" class="text-xl md:text-2xl font-black text-sky-700">R$ 0</span>
+          <span class="text-[11px] text-slate-400 block mt-0.5">~30 dias tudo incluso</span>
+        </div>
+        <div class="bg-slate-50 p-3.5 rounded-xl">
+          <span class="text-xs text-slate-500 font-medium block">Por Dia (Casal)</span>
+          <span id="kpiDaily" class="text-xl md:text-2xl font-black text-slate-900">R$ 0</span>
+          <span class="text-[11px] text-slate-400 block mt-0.5">hosp + comida + transp</span>
+        </div>
+        <div class="bg-slate-50 p-3.5 rounded-xl">
+          <span class="text-xs text-slate-500 font-medium block">Total Semanas Alocadas</span>
+          <span id="kpiWeeks" class="text-xl md:text-2xl font-black text-indigo-700">30 sem</span>
+          <span id="kpiWeeksDiff" class="text-[11px] text-emerald-600 block mt-0.5">Meta: exatas 30 sem</span>
+        </div>
+        <div class="bg-slate-50 p-3.5 rounded-xl col-span-2 md:col-span-1">
+          <span class="text-xs text-slate-500 font-medium block">Etapas & Picos</span>
+          <span class="text-xl md:text-2xl font-black text-amber-700">14 Paradas</span>
+          <span class="text-[11px] text-amber-600 block mt-0.5">+ UY, Vulcões & Caribe</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- NAVEGAÇÃO DE ABAS -->
+    <div class="flex border-b border-slate-200 bg-white rounded-t-xl px-4 pt-2 gap-4 text-sm font-medium overflow-x-auto">
+      <button onclick="switchTab('map')" id="tab-map" class="py-3 px-2 tab-active transition-colors whitespace-nowrap">🗺️ Mapa Completo da Rota</button>
+      <button onclick="switchTab('itinerary')" id="tab-itinerary" class="py-3 px-2 text-slate-500 hover:text-slate-800 transition-colors whitespace-nowrap">📋 Cronograma & Ajustador</button>
+      <button onclick="switchTab('costs')" id="tab-costs" class="py-3 px-2 text-slate-500 hover:text-slate-800 transition-colors whitespace-nowrap">💰 Custos Reais Detalhados</button>
+      <button onclick="switchTab('surf')" id="tab-surf" class="py-3 px-2 text-slate-500 hover:text-slate-800 transition-colors whitespace-nowrap">🏄 O Circuito do Longboard</button>
+      <button onclick="switchTab('savings')" id="tab-savings" class="py-3 px-2 text-slate-500 hover:text-slate-800 transition-colors whitespace-nowrap">📉 Economia de R$ 16.000</button>
+      <button onclick="switchTab('wifi')" id="tab-wifi" class="py-3 px-2 text-slate-500 hover:text-slate-800 transition-colors whitespace-nowrap">📶 Checklist de Conexão</button>
+    </div>
+
+    <!-- CONTEÚDO DAS ABAS -->
+
+    <!-- ABA 0: MAPA DA ROTA -->
+    <div id="content-map" class="space-y-4">
+      <!-- CONTROLES DO MAPA -->
+      <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-wrap items-center justify-between gap-3 text-xs">
+        <div class="flex items-center gap-2 flex-wrap">
+          <span class="font-bold text-slate-700">Filtrar mapa:</span>
+          <button onclick="filterMap('all')" id="mapBtn-all" class="px-3 py-1.5 rounded-lg bg-sky-600 text-white font-semibold transition-colors">Todos os Pontos (14)</button>
+          <button onclick="filterMap('surf')" id="mapBtn-surf" class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold transition-colors">🏄 Picos de Longboard (5)</button>
+          <button onclick="filterMap('beach')" id="mapBtn-beach" class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold transition-colors">🏖️ Paraísos de Praia Morna (4)</button>
+          <button onclick="filterMap('andes')" id="mapBtn-andes" class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold transition-colors">🏔️ Andes, Lagos & Vulcões (5)</button>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="startTour()" id="tourBtn" class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold flex items-center gap-1.5 transition-colors shadow-sm">
+            <span>▶️</span> Reproduzir Tour da Viagem
+          </button>
+        </div>
+      </div>
+
+      <!-- GRID MAPA + INSPETOR DE BASE -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <!-- ÁREA DO MAPA SVG (7 COLUNAS) -->
+        <div class="lg:col-span-7 bg-slate-900 rounded-2xl p-4 md:p-6 shadow-md border border-slate-800 relative overflow-hidden flex items-center justify-center">
+          
+          <!-- LEGENDA FLUTUANTE -->
+          <div class="absolute top-4 left-4 bg-slate-800/90 backdrop-blur-sm border border-slate-700 rounded-xl p-3 text-[11px] text-slate-300 space-y-1.5 shadow-lg pointer-events-none z-10">
+            <div class="flex items-center gap-2">
+              <span class="w-3 h-0.5 bg-sky-400 border border-sky-400 route-flight inline-block"></span>
+              <span>Voos Estratégicos</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="w-3 h-0.5 bg-emerald-400 border border-emerald-400 route-land inline-block"></span>
+              <span>Ônibus Leito / Carro</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="w-3 h-0.5 bg-indigo-400 border border-indigo-400 route-ferry inline-block"></span>
+              <span>Ferry Buquebus (Uruguai)</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-amber-400 inline-block shadow-[0_0_8px_#f59e0b]"></span>
+              <span>Picos de Longboard</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-rose-400 inline-block shadow-[0_0_8px_#f43f5e]"></span>
+              <span>Caribe Colombiano</span>
+            </div>
+          </div>
+
+          <!-- SVG DO MAPA DA AMÉRICA DO SUL -->
+          <svg viewBox="0 0 760 960" class="w-full h-auto max-h-[720px] select-none" id="southAmericaMap">
+            <defs>
+              <radialGradient id="oceanGlow" cx="30%" cy="50%" r="70%">
+                <stop offset="0%" stop-color="#0f172a"/>
+                <stop offset="100%" stop-color="#020617"/>
+              </radialGradient>
+              <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+                <feGaussianBlur stdDeviation="3" result="blur"/>
+                <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+              </filter>
+            </defs>
+
+            <!-- CONTORNO DO CONTINENTE SUL-AMERICANO -->
+            <path d="
+              M 100,70
+              C 140,65 180,60 210,55
+              C 240,50 280,70 320,75
+              C 400,95 440,120 490,150
+              C 550,180 580,220 620,240
+              C 670,250 710,285 690,320
+              C 670,360 650,400 620,470
+              C 580,520 540,540 525,565
+              C 485,605 450,635 430,650
+              C 395,650 375,685 345,725
+              C 330,760 300,810 290,860
+              C 260,890 240,875 230,840
+              C 220,780 200,710 195,650
+              C 190,615 185,520 180,450
+              C 185,395 170,380 135,345
+              C 130,335 105,290 98,280
+              C 82,235 95,225 82,205
+              C 80,190 95,155 105,120
+              Z
+            " fill="#1e293b" stroke="#334155" stroke-width="2.5" />
+
+            <!-- CORDILLERA DOS ANDES -->
+            <path d="
+              M 185,55
+              L 145,120
+              L 98,175
+              L 120,240
+              L 145,320
+              L 205,365
+              L 190,400
+              L 220,530
+              L 225,625
+              L 215,715
+              L 230,820
+            " fill="none" stroke="#475569" stroke-width="12" stroke-linecap="round" stroke-opacity="0.35" />
+
+            <!-- ROTAS -->
+            <!-- 1. VOO FLORIANÓPOLIS -> BUENOS AIRES -->
+            <path d="M 525,565 Q 460,590 395,650" fill="none" stroke="#38bdf8" stroke-width="2.5" class="route-flight" filter="url(#glow)"/>
+            <!-- FERRY BUENOS AIRES <-> COLONIA DEL SACRAMENTO (URUGUAI) -->
+            <path d="M 395,650 L 415,638" fill="none" stroke="#818cf8" stroke-width="2.5" class="route-ferry"/>
+            <!-- 2. VOO BUENOS AIRES -> BARILOCHE (7 LAGOS) -->
+            <path d="M 395,650 Q 300,670 220,715" fill="none" stroke="#38bdf8" stroke-width="2.5" class="route-flight" filter="url(#glow)"/>
+            <!-- 3. VOO BARILOCHE -> MENDOZA -->
+            <path d="M 220,715 Q 210,660 250,615" fill="none" stroke="#38bdf8" stroke-width="2.5" class="route-flight" filter="url(#glow)"/>
+            <!-- 4. ÔNIBUS CÊNICO MENDOZA -> SANTIAGO -->
+            <path d="M 250,615 L 200,620" fill="none" stroke="#34d399" stroke-width="3" class="route-land"/>
+            <!-- 5. VOO SANTIAGO -> AREQUIPA -->
+            <path d="M 200,620 Q 180,500 190,400" fill="none" stroke="#38bdf8" stroke-width="2.5" class="route-flight" filter="url(#glow)"/>
+            <!-- 6. ÔNIBUS LEITO NOTURNO AREQUIPA -> CUSCO -->
+            <path d="M 190,400 L 205,365" fill="none" stroke="#34d399" stroke-width="3" class="route-land"/>
+            <!-- 7. VOO CUSCO -> LIMA -->
+            <path d="M 205,365 Q 165,345 130,335" fill="none" stroke="#38bdf8" stroke-width="2.5" class="route-flight" filter="url(#glow)"/>
+            <!-- 8. ÔNIBUS LEITO LIMA -> HUANCHACO -->
+            <path d="M 130,335 L 105,290" fill="none" stroke="#f59e0b" stroke-width="3" class="route-land"/>
+            <!-- 9. ÔNIBUS LEITO HUANCHACO -> LOS ÓRGANOS / VICHAYITO -->
+            <path d="M 105,290 L 82,235" fill="none" stroke="#f59e0b" stroke-width="3.5" class="route-land"/>
+            <!-- 10. VAN TRANSFRONTEIRIÇA LOS ÓRGANOS -> OLÓN & AYAMPE -->
+            <path d="M 82,235 L 82,205" fill="none" stroke="#f59e0b" stroke-width="3.5" class="route-land"/>
+            <!-- 11. SUBIDA DA COSTA PARA QUILOTOA & BAÑOS (VULCÕES) -->
+            <path d="M 82,205 L 98,175" fill="none" stroke="#34d399" stroke-width="3" class="route-land"/>
+            <!-- 12. VOO EQUADOR -> MEDELLÍN (sem prancha) -->
+            <path d="M 98,175 Q 115,145 145,120" fill="none" stroke="#38bdf8" stroke-width="2.5" class="route-flight" filter="url(#glow)"/>
+            <!-- 13. VOO MEDELLÍN -> CARIBE COLOMBIANO (SANTA MARTA / TAYRONA) -->
+            <path d="M 145,120 L 185,55" fill="none" stroke="#f43f5e" stroke-width="2.5" class="route-flight" filter="url(#glow)"/>
+            <!-- RETORNO: CARIBE COLOMBIANO -> FLORIANÓPOLIS -->
+            <path d="M 185,55 Q 400,280 525,565" fill="none" stroke="#fbbf24" stroke-width="2" stroke-dasharray="5 7" opacity="0.5"/>
+
+            <!-- MARCADORES DAS BASES -->
+            <!-- 0. FLORIANÓPOLIS -->
+            <g class="map-pin" onclick="selectBase(0)" id="pin-0">
+              <circle cx="525" cy="565" r="7" fill="#fbbf24"/>
+              <circle cx="525" cy="565" r="14" fill="#fbbf24" opacity="0.25"/>
+              <text x="540" y="570" fill="#f8fafc" font-size="11" font-weight="bold">Florianópolis 🏠</text>
+            </g>
+
+            <!-- 1. BUENOS AIRES -->
+            <g class="map-pin" onclick="selectBase(1)" id="pin-1">
+              <circle cx="395" cy="650" r="8" fill="#38bdf8"/>
+              <text x="395" y="654" fill="#0f172a" font-size="10" font-weight="black" text-anchor="middle">1</text>
+              <text x="350" y="665" fill="#cbd5e1" font-size="11" font-weight="600">Buenos Aires</text>
+            </g>
+
+            <!-- 2. COLONIA DEL SACRAMENTO (URUGUAI) -->
+            <g class="map-pin" onclick="selectBase(2)" id="pin-2">
+              <circle cx="415" cy="638" r="7" fill="#818cf8"/>
+              <text x="415" y="642" fill="#0f172a" font-size="9" font-weight="black" text-anchor="middle">2</text>
+              <text x="428" y="636" fill="#c7d2fe" font-size="10" font-weight="bold">Colonia (UY) 🚢</text>
+            </g>
+
+            <!-- 3. SETE LAGOS (BARILOCHE) -->
+            <g class="map-pin" onclick="selectBase(3)" id="pin-3">
+              <circle cx="220" cy="715" r="9" fill="#10b981"/>
+              <text x="220" y="719" fill="#0f172a" font-size="10" font-weight="black" text-anchor="middle">3</text>
+              <text x="130" y="720" fill="#a7f3d0" font-size="11" font-weight="bold">🏔️ Sete Lagos</text>
+            </g>
+
+            <!-- 4. MENDOZA -->
+            <g class="map-pin" onclick="selectBase(4)" id="pin-4">
+              <circle cx="250" cy="615" r="8" fill="#a855f7"/>
+              <text x="250" y="619" fill="#ffffff" font-size="10" font-weight="black" text-anchor="middle">4</text>
+              <text x="265" y="618" fill="#e9d5ff" font-size="11" font-weight="600">Mendoza 🍇</text>
+            </g>
+
+            <!-- 5. SANTIAGO EXPRESS -->
+            <g class="map-pin" onclick="selectBase(5)" id="pin-5">
+              <circle cx="200" cy="620" r="7" fill="#64748b"/>
+              <text x="200" y="624" fill="#ffffff" font-size="9" font-weight="black" text-anchor="middle">5</text>
+              <text x="135" y="615" fill="#94a3b8" font-size="10">Santiago (3d)</text>
+            </g>
+
+            <!-- 6. AREQUIPA -->
+            <g class="map-pin" onclick="selectBase(6)" id="pin-6">
+              <circle cx="190" cy="400" r="8" fill="#38bdf8"/>
+              <text x="190" y="404" fill="#0f172a" font-size="10" font-weight="black" text-anchor="middle">6</text>
+              <text x="205" y="404" fill="#cbd5e1" font-size="11" font-weight="600">Arequipa</text>
+            </g>
+
+            <!-- 7. CUSCO & MACHU PICCHU -->
+            <g class="map-pin" onclick="selectBase(7)" id="pin-7">
+              <circle cx="205" cy="365" r="8" fill="#10b981"/>
+              <text x="205" y="369" fill="#0f172a" font-size="10" font-weight="black" text-anchor="middle">7</text>
+              <text x="220" y="368" fill="#a7f3d0" font-size="11" font-weight="bold">Cusco ⛰️</text>
+            </g>
+
+            <!-- 8. LIMA (MAKAHA) -->
+            <g class="map-pin" onclick="selectBase(8)" id="pin-8">
+              <circle cx="130" cy="335" r="9" fill="#f59e0b"/>
+              <text x="130" y="339" fill="#0f172a" font-size="10" font-weight="black" text-anchor="middle">8</text>
+              <text x="45" y="338" fill="#fde68a" font-size="11" font-weight="bold">🏄 Lima</text>
+            </g>
+
+            <!-- 9. HUANCHACO -->
+            <g class="map-pin" onclick="selectBase(9)" id="pin-9">
+              <circle cx="105" cy="290" r="10" fill="#f59e0b"/>
+              <circle cx="105" cy="290" r="16" fill="#f59e0b" opacity="0.25"/>
+              <text x="105" y="294" fill="#0f172a" font-size="10" font-weight="black" text-anchor="middle">9</text>
+              <text x="10" y="293" fill="#fde68a" font-size="11" font-weight="bold">🏄 Huanchaco (QG)</text>
+            </g>
+
+            <!-- 10. LOS ÓRGANOS & VICHAYITO -->
+            <g class="map-pin" onclick="selectBase(10)" id="pin-10">
+              <circle cx="82" cy="235" r="9" fill="#f59e0b"/>
+              <text x="82" y="239" fill="#0f172a" font-size="10" font-weight="black" text-anchor="middle">10</text>
+              <text x="5" y="248" fill="#fde68a" font-size="10" font-weight="bold">Los Órganos 🐢</text>
+            </g>
+
+            <!-- 11. OLÓN & AYAMPE -->
+            <g class="map-pin" onclick="selectBase(11)" id="pin-11">
+              <circle cx="82" cy="205" r="9" fill="#f59e0b"/>
+              <text x="82" y="209" fill="#0f172a" font-size="10" font-weight="black" text-anchor="middle">11</text>
+              <text x="10" y="210" fill="#fde68a" font-size="10" font-weight="bold">Olón & Ayampe 🌴</text>
+            </g>
+
+            <!-- 12. QUILOTOA & BAÑOS (VULCÕES & AMAZÔNIA) -->
+            <g class="map-pin" onclick="selectBase(12)" id="pin-12">
+              <circle cx="98" cy="175" r="8" fill="#10b981"/>
+              <text x="98" y="179" fill="#ffffff" font-size="9" font-weight="black" text-anchor="middle">12</text>
+              <text x="110" y="178" fill="#6ee7b7" font-size="10" font-weight="bold">🌋 Baños / Quilotoa</text>
+            </g>
+
+            <!-- 13. MEDELLÍN -->
+            <g class="map-pin" onclick="selectBase(13)" id="pin-13">
+              <circle cx="145" cy="120" r="9" fill="#38bdf8"/>
+              <text x="145" y="124" fill="#0f172a" font-size="10" font-weight="black" text-anchor="middle">13</text>
+              <text x="160" y="124" fill="#e0f2fe" font-size="11" font-weight="bold">Medellín ☕</text>
+            </g>
+
+            <!-- 14. CARIBE COLOMBIANO (TAYRONA / SANTA MARTA) -->
+            <g class="map-pin" onclick="selectBase(14)" id="pin-14">
+              <circle cx="185" cy="55" r="10" fill="#f43f5e"/>
+              <circle cx="185" cy="55" r="16" fill="#f43f5e" opacity="0.3"/>
+              <text x="185" y="59" fill="#ffffff" font-size="10" font-weight="black" text-anchor="middle">14</text>
+              <text x="200" y="58" fill="#fecdd3" font-size="11" font-weight="bold">🏝️ Tayrona (Caribe!)</text>
+            </g>
+          </svg>
+        </div>
+
+        <!-- ÁREA DO INSPETOR DE BASE (5 COLUNAS) -->
+        <div class="lg:col-span-5 bg-white rounded-2xl p-6 shadow-sm border border-slate-200 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
+              <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Inspetor da Expedição</span>
+              <span id="inspectorIndex" class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-sky-100 text-sky-800">Etapa 9 de 14</span>
+            </div>
+
+            <!-- CARD PRINCIPAL DINÂMICO -->
+            <div id="inspectorCard"></div>
+          </div>
+
+          <!-- AÇÕES DO INSPETOR -->
+          <div class="pt-4 border-t border-slate-100 flex items-center justify-between mt-6">
+            <button onclick="prevBase()" class="px-3 py-1.5 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50 text-xs font-bold transition-colors">← Anterior</button>
+            <span class="text-[11px] text-slate-400">Clique nos marcadores no mapa</span>
+            <button onclick="nextBase()" class="px-3 py-1.5 rounded-lg bg-sky-600 hover:bg-sky-700 text-white text-xs font-bold transition-colors shadow-sm">Próxima →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ABA 1: ROTEIRO & AJUSTADOR -->
+    <div id="content-itinerary" class="hidden space-y-4">
+      <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-4 text-sm text-emerald-900 flex flex-col md:flex-row md:items-center justify-between gap-3">
+        <div>
+          <strong class="font-semibold">✨ Rota 3.0 Definitiva:</strong> 30 semanas calibradas com exatidão, incorporando <strong>Colonia del Sacramento (Uruguai)</strong>, <strong>Quilotoa & Baños (Vulcões e Amazônia)</strong> e o fechamento dos sonhos nas águas mornas cristalinas do <strong>Caribe Colombiano (Tayrona / Palomino)</strong>!
+        </div>
+        <div class="text-xs bg-white text-emerald-800 px-3 py-1.5 rounded-lg font-medium border border-emerald-200 shadow-sm shrink-0">
+          Você pode ajustar as semanas de cada base:
+        </div>
+      </div>
+
+      <div class="space-y-3" id="basesListContainer"></div>
+    </div>
+
+    <!-- ABA 2: CUSTOS REAIS DETALHADOS -->
+    <div id="content-costs" class="hidden space-y-6">
+      <div class="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
+        <h2 class="text-lg font-bold text-slate-900 mb-2">Composição de Custos da Rota 3.0 (Casal)</h2>
+        <p class="text-sm text-slate-500 mb-6">Custos reais baseados em apartamentos completos privativos, almoços executivos locais (*menú del día*) e feiras livres.</p>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm text-left">
+            <thead class="text-xs text-slate-500 uppercase bg-slate-50 border-b border-slate-200">
+              <tr>
+                <th class="py-3 px-4">Base / Cidade</th>
+                <th class="py-3 px-3">Semanas</th>
+                <th class="py-3 px-3">Hospedagem</th>
+                <th class="py-3 px-3">Alimentação</th>
+                <th class="py-3 px-3">Transporte Chegada</th>
+                <th class="py-3 px-3">Lazer / Extras</th>
+                <th class="py-3 px-4 font-bold text-slate-700 text-right">Subtotal Base</th>
+              </tr>
+            </thead>
+            <tbody id="costTableBody" class="divide-y divide-slate-100"></tbody>
+            <tfoot class="bg-slate-50 font-bold border-t-2 border-slate-300 text-slate-900">
+              <tr>
+                <td class="py-3.5 px-4" colspan="2">TOTAL BASES (HOSP + ALIM + TRANS)</td>
+                <td id="tableSumHosp" class="py-3.5 px-3 font-semibold text-slate-700">--</td>
+                <td id="tableSumAlim" class="py-3.5 px-3 font-semibold text-slate-700">--</td>
+                <td id="tableSumTrans" class="py-3.5 px-3 font-semibold text-slate-700">--</td>
+                <td id="tableSumExtras" class="py-3.5 px-3 font-semibold text-slate-700">--</td>
+                <td id="tableSumTotal" class="py-3.5 px-4 text-right text-base text-emerald-800">--</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+
+      <!-- DESPESAS FIXAS GLOBAIS -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="text-xl">🛡️</span>
+            <h3 class="font-bold text-slate-900 text-sm">Seguro Viagem Nômade (7 Meses)</h3>
+          </div>
+          <p class="text-xs text-slate-500 mb-3">SafetyWing ou cartão Black nos primeiros meses + apólice esportiva amadora.</p>
+          <div class="text-lg font-bold text-slate-800" id="costInsurance">R$ 4.180 (US$ 760)</div>
+          <span class="text-[11px] text-slate-400">~R$ 597/mês para o casal</span>
+        </div>
+
+        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="text-xl">🏄</span>
+            <h3 class="font-bold text-slate-900 text-sm">Equipamento de Longboard (Líquido)</h3>
+          </div>
+          <p class="text-xs text-slate-500 mb-3">Wetsuits de Floripa + Pranchão usado 9'0" comprado em Lima/Huanchaco e revendido no Equador.</p>
+          <div class="text-lg font-bold text-slate-800" id="costSurfGear">R$ 990 (US$ 180 líquido)</div>
+          <span class="text-[11px] text-slate-400">Custo líquido de 3 meses de mar</span>
+        </div>
+
+        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="text-xl">📲</span>
+            <h3 class="font-bold text-slate-900 text-sm">Chips Locais & 4G Backup</h3>
+          </div>
+          <p class="text-xs text-slate-500 mb-3">Pacotes de 30-50GB Claro, Movistar e Tigo para redundância ininterrupta de trabalho.</p>
+          <div class="text-lg font-bold text-slate-800" id="costSims">R$ 1.375 (US$ 250)</div>
+          <span class="text-[11px] text-slate-400">~US$ 18/mês por pessoa</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ABA 3: O CIRCUITO MUNDIAL DO LONGBOARD -->
+    <div id="content-surf" class="hidden space-y-6">
+      <div class="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
+        <h2 class="text-lg font-bold text-slate-900 mb-2">🌊 O Circuito do Longboard da Rota 3.0</h2>
+        <p class="text-sm text-slate-500 mb-6">Aproveitando a melhor janela de South Swell do planeta (Maio, Junho e Julho) nas esquerdas mais longas e perfeitas da América do Sul.</p>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
+            <span class="text-xs font-bold text-sky-700 uppercase block mb-1">1. Lima (Makaha)</span>
+            <h4 class="font-bold text-slate-900 text-sm mb-2">Aclimatação & Compra</h4>
+            <p class="text-xs text-slate-600 leading-relaxed">
+              Descida diária das falésias de Miraflores ao amanhecer. Ondas gordas e lentas sobre fundo de cascalho. Compra do longboard 9'0" usado em Miraflores. Água fria (3/2mm selado).
+            </p>
+          </div>
+
+          <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
+            <span class="text-xs font-bold text-emerald-700 uppercase block mb-1">2. Huanchaco (La Curvita)</span>
+            <h4 class="font-bold text-slate-900 text-sm mb-2">O QG Sagrado (3 Semanas)</h4>
+            <p class="text-xs text-slate-600 leading-relaxed">
+              A residência de evolução técnica. Esquerda regularíssima sobre cascalho e areia. Paredes longas e previsíveis para treinar noseride e cross-stepping sem crowd agressivo. Bate-volta no sábado a Chicama!
+            </p>
+          </div>
+
+          <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
+            <span class="text-xs font-bold text-amber-700 uppercase block mb-1">3. Los Órganos & Vichayito</span>
+            <h4 class="font-bold text-slate-900 text-sm mb-2">Água Morna & Point Break</h4>
+            <p class="text-xs text-slate-600 leading-relaxed">
+              O momento em que a roupa de borracha é guardada! Deserto costeiro, sol todos os dias, tartarugas marinhas e point break macio de fundo de areia em Los Órganos.
+            </p>
+          </div>
+
+          <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
+            <span class="text-xs font-bold text-rose-700 uppercase block mb-1">4. Olón & Ayampe, Equador</span>
+            <h4 class="font-bold text-slate-900 text-sm mb-2">Selva no Mar & Vibe Boho</h4>
+            <p class="text-xs text-slate-600 leading-relaxed">
+              Ayampe é a jóia ecológica do Equador: selva tropical tocando a praia, cafés saudáveis com Starlink, comunidade nômade e valas de areia com água morna. Revenda do pranchão aqui!
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ABA 4: COMO ECONOMIZAMOS R$ 16.000 -->
+    <div id="content-savings" class="hidden space-y-6">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+          <div class="text-emerald-600 font-bold text-xl mb-1">- R$ 6.000</div>
+          <h4 class="font-bold text-slate-900 text-sm mb-2">Sete Lagos em vez de Extremo Sul</h4>
+          <p class="text-xs text-slate-600 leading-relaxed">
+            Eliminamos os voos de alta temporada para El Calafate (Aerolíneas) e as diárias caríssimas de pico em El Chaltén. Focamos no melhor verão alpino de Bariloche, Angostura e San Martín.
+          </p>
+        </div>
+
+        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+          <div class="text-emerald-600 font-bold text-xl mb-1">- R$ 3.000</div>
+          <h4 class="font-bold text-slate-900 text-sm mb-2">Santiago Express (3-4 dias)</h4>
+          <p class="text-xs text-slate-600 leading-relaxed">
+            Santiago tem aluguéis de US$ 950+/mês e alimentação europeia. Cortamos 2 semanas de permanência cara e aproveitamos apenas a linda travessia cênica de ônibus e a conexão aérea.
+          </p>
+        </div>
+
+        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+          <div class="text-emerald-600 font-bold text-xl mb-1">- R$ 7.000</div>
+          <h4 class="font-bold text-slate-900 text-sm mb-2">Migração para Litoral & Caribe</h4>
+          <p class="text-xs text-slate-600 leading-relaxed">
+            Transferimos semanas para Huanchaco, Los Órganos, Ayampe e Caribe Colombiano, onde apartamentos de frente pro mar custam US$ 400-550/mês e o <em>menú del día</em> farto com peixe fresco sai por US$ 3,50 a 4,50.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ABA 5: CHECKLIST DE CONEXÃO -->
+    <div id="content-wifi" class="hidden space-y-6">
+      <div class="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
+        <h2 class="text-lg font-bold text-slate-900 mb-2">Protocolo de Validação de Internet</h2>
+        <p class="text-sm text-slate-500 mb-4">Script em espanhol para copiar e enviar ao anfitrião antes de fechar qualquer reserva.</p>
+        <div class="bg-slate-900 text-emerald-400 p-4 rounded-xl text-xs font-mono leading-relaxed relative">
+          <button onclick="copyWifiScript()" class="absolute top-2 right-2 bg-slate-800 hover:bg-slate-700 text-white text-[11px] px-2.5 py-1 rounded border border-slate-700 transition-colors">Copiar Mensagem</button>
+          <p id="wifiScriptText">
+"¡Hola [Nombre]! Estamos muy interesados en su departamento para una estancia de [X semanas]. Somos una pareja de profesionales que trabajamos 100% en remoto para empresas de Brasil con videollamadas diarias.<br><br>
+Para poder confirmar la reserva, necesitamos verificar la estabilidad de internet:<br>
+1. ¿Podría enviarnos una captura de pantalla de un test de velocidad reciente (Speedtest.net o Fast.com)?<br>
+2. ¿La conexión es de Fibra Óptica directa (FTTH) o satelital Starlink? ¿Cuál es la empresa proveedora?<br>
+3. ¿El router se encuentra dentro del propio departamento?<br>
+4. ¿Cuentan con mesa y sillas cómodas adecuadas para trabajar con laptop?<br><br>
+¡Muchas gracias por su ayuda!"
+          </p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // BASE DATA CONFIGURATION - ROTA 3.0 DEFINITIVA (30 SEMANAS / 14 ETAPAS)
+    const baseData = [
+      {
+        id: "floripa",
+        name: "Florianópolis",
+        country: "Brasil",
+        flag: "🇧🇷",
+        weeks: 0,
+        role: "Origem & Retorno",
+        hospUsdMonth: 0,
+        alimUsdMonth: 0,
+        transUsd: 0,
+        transType: "Início e fim da expedição",
+        extrasUsdMonth: 0,
+        wifiProvider: "Base residencial própria",
+        fuso: "UTC-3 (Brasília)",
+        surfNotes: "Treino no quintal de casa antes de partir",
+        temp: "Verão de Floripa",
+        isSurf: false,
+        isBeach: true,
+        isAndes: false,
+        desc: "O ponto de partida do casal. Aqui você empacota os wetsuits selados 3/2mm e leashes para levar na bagagem, deixando o pranchão para ser comprado diretamente no Peru."
+      },
+      {
+        id: "ba",
+        name: "Buenos Aires",
+        country: "Argentina",
+        flag: "🇦🇷",
+        weeks: 4,
+        role: "Adaptação Nômade & Fuso",
+        hospUsdMonth: 780,
+        alimUsdMonth: 440,
+        transUsd: 170,
+        transType: "Voo Florianópolis -> BA",
+        extrasUsdMonth: 140,
+        wifiProvider: "iPlan Liv / Movistar Fibra (300+ Mbps)",
+        fuso: "UTC-3 (Idêntico a Brasília)",
+        surfNotes: "Sem surfe - treino físico e adaptação",
+        temp: "Verão quente (26-32°C)",
+        isSurf: false,
+        isBeach: false,
+        isAndes: false,
+        desc: "Primeiro mês para criar a rotina de trabalho remoto, comprar chips locais Claro/Movistar, entender o câmbio Dólar MEP nos cartões e abastecer a despensa em feiras livres de Palermo e Colegiales."
+      },
+      {
+        id: "colonia",
+        name: "Colonia del Sacramento",
+        country: "Uruguai",
+        flag: "🇺🇾",
+        weeks: 0, // Fim de semana durante a base de BA
+        role: "Escapada pelo Rio da Prata",
+        hospUsdMonth: 0,
+        alimUsdMonth: 0,
+        transUsd: 90, // Ferry Buquebus casal
+        transType: "Ferry rápido Buquebus (1h15 de travessia)",
+        extrasUsdMonth: 0,
+        wifiProvider: "Wi-Fi hotel boutique / 4G Antel",
+        fuso: "UTC-3",
+        surfNotes: "Passeio romântico de fim de semana",
+        temp: "Brisa fresca do Rio da Prata (22-28°C)",
+        isSurf: false,
+        isBeach: false,
+        isAndes: false,
+        desc: "BÔNUS DE FIM DE SEMANA: Travessia rápida de ferry saindo de Puerto Madero em Buenos Aires. Ruas coloniais de pedra portuguesas tombadas pela UNESCO, farol antigo, vinhos uruguaios e carnes sem perder nenhum minuto de trabalho."
+      },
+      {
+        id: "7lagos",
+        name: "Rota dos Sete Lagos (Bariloche a San Martín)",
+        country: "Patagônia Argentina",
+        flag: "🇦🇷",
+        weeks: 3,
+        role: "Verão Alpino & Praias de Lago",
+        hospUsdMonth: 950,
+        alimUsdMonth: 520,
+        transUsd: 320,
+        transType: "Voo BA -> Bariloche + 6 dias de carro alugado",
+        extrasUsdMonth: 200,
+        wifiProvider: "Fibra nas cidades / desconexão nos lagos",
+        fuso: "UTC-3",
+        surfNotes: "Caiaque, stand-up paddle e banho de lago cristalino",
+        temp: "Verão fresco alpino (12-25°C)",
+        isSurf: false,
+        isBeach: true,
+        isAndes: true,
+        desc: "O auge da natureza andina. Em vez do extremo sul caro, vocês curtem 3 semanas entre Bariloche, Villa La Angostura e San Martín de los Andes. Águas transparentes, cervejarias artesanais e trilhas gratuitas."
+      },
+      {
+        id: "mendoza",
+        name: "Mendoza (Quinta Sección / Godoy Cruz)",
+        country: "Argentina",
+        flag: "🇦🇷",
+        weeks: 3,
+        role: "Safra da Vindima & Cordilheira",
+        hospUsdMonth: 650,
+        alimUsdMonth: 420,
+        transUsd: 120,
+        transType: "Voo Bariloche -> Mendoza",
+        extrasUsdMonth: 150,
+        wifiProvider: "Claro Fibra / Supercanal (150-300 Mbps)",
+        fuso: "UTC-3",
+        surfNotes: "Sem mar - caminhadas no Parque San Martín",
+        temp: "Outono seco e ensolarado (18-28°C)",
+        isSurf: false,
+        isBeach: false,
+        isAndes: true,
+        desc: "A época de ouro da colheita da uva (Festa da Vindima). Vida tranquila de bairro, internet fibra rápida e passeios de bicicleta pelas vinícolas de Luján de Cuyo nos fins de semana."
+      },
+      {
+        id: "santiago_exp",
+        name: "Santiago Express (3-4 dias)",
+        country: "Chile",
+        flag: "🇨🇱",
+        weeks: 1,
+        role: "Travessia Cênica dos Andes & Conexão",
+        hospUsdMonth: 900,
+        alimUsdMonth: 550,
+        transUsd: 40,
+        transType: "Ônibus internacional cênico diurno (Passo Libertadores)",
+        extrasUsdMonth: 150,
+        wifiProvider: "Entel / Movistar Fibra (500+ Mbps)",
+        fuso: "UTC-3",
+        surfNotes: "Escala urbana antes do Pacífico",
+        temp: "Outono ameno (15-24°C)",
+        isSurf: false,
+        isBeach: false,
+        isAndes: true,
+        desc: "Cruzam a Cordilheira dos Andes de ônibus no sábado (7h de viagem deslumbrante). Ficam 3-4 dias em Santiago para compras rápidas e conectividade antes de voar para o Peru, economizando milhares de reais."
+      },
+      {
+        id: "arequipa",
+        name: "Arequipa (Yanahuara / Cayma)",
+        country: "Peru",
+        flag: "🇵🇪",
+        weeks: 2,
+        role: "Aclimatação Suave 2.300m & Picanterías",
+        hospUsdMonth: 500,
+        alimUsdMonth: 350,
+        transUsd: 160,
+        transType: "Voo Santiago -> Arequipa",
+        extrasUsdMonth: 100,
+        wifiProvider: "WIN Fibra / Claro Fibra (200-400 Mbps)",
+        fuso: "UTC-5 (-2h Brasília) - Expediente 07h-16h",
+        surfNotes: "Sem surfe - aclimatação sem soroche",
+        temp: "Sol constante e ar seco (12-23°C)",
+        isSurf: false,
+        isBeach: false,
+        isAndes: true,
+        desc: "A Cidade Branca. A 2.300m de altitude, permite ao casal se aclimatar suavemente aos Andes sem sofrer com dor de cabeça. Almoços nas picanterías tradicionais por 14 soles (R$ 20)."
+      },
+      {
+        id: "cusco",
+        name: "Cusco & Vale Sagrado",
+        country: "Peru",
+        flag: "🇵🇪",
+        weeks: 1,
+        role: "Machu Picchu via Hidroeléctrica",
+        hospUsdMonth: 550,
+        alimUsdMonth: 380,
+        transUsd: 35,
+        transType: "Ônibus noturno Cruz del Sur leito",
+        extrasUsdMonth: 220,
+        wifiProvider: "Claro Fibra / Cafés Starlink",
+        fuso: "UTC-5 (-2h Brasília)",
+        surfNotes: "Sem surfe - caminhada nos trilhos incas",
+        temp: "Frio noturno, sol diurno (5-20°C)",
+        isSurf: false,
+        isBeach: false,
+        isAndes: true,
+        desc: "Uma semana focada no império Inca. No fim de semana, bate-volta a Machu Picchu pela rota da Hidrelétrica: van no sábado cedo, caminhada cênica pelos trilhos e entrada na cidadela no domingo."
+      },
+      {
+        id: "lima",
+        name: "Lima (Miraflores / Makaha)",
+        country: "Peru",
+        flag: "🇵🇪",
+        weeks: 1,
+        role: "Compra da Prancha & Treino na Costa Verde",
+        hospUsdMonth: 850,
+        alimUsdMonth: 460,
+        transUsd: 65,
+        transType: "Voo Cusco -> Lima (LATAM/Sky)",
+        extrasUsdMonth: 120,
+        wifiProvider: "WIN Fibra óptica (300-500 Mbps)",
+        fuso: "UTC-5 (-2h Brasília) - Mar às 06h",
+        surfNotes: "Makaha/Waikiki (cascalho). Compra do pranchão 9'0\".",
+        temp: "Neblina amena de outono (18-22°C, água 17°C com 3/2mm)",
+        isSurf: true,
+        isBeach: false,
+        isAndes: false,
+        desc: "Início oficial da temporada de mar! O surfista surfa em Makaha enquanto o outro desfruta do Malecón florido e da alta gastronomia de Miraflores. Compra de pranchão clássico usado por ~US$ 250."
+      },
+      {
+        id: "huanchaco",
+        name: "Huanchaco (La Curvita / El Elio)",
+        country: "Peru",
+        flag: "🇵🇪",
+        weeks: 3,
+        role: "O QG Mundial do Longboard + Chicama",
+        hospUsdMonth: 440,
+        alimUsdMonth: 330,
+        transUsd: 35,
+        transType: "Cruz del Sur leito (prancha no bagageiro)",
+        extrasUsdMonth: 110,
+        wifiProvider: "Claro Fibra / Provedores locais (100-200 Mbps)",
+        fuso: "UTC-5 (-2h Brasília) - Tarde inteira de mar",
+        surfNotes: "Esquerda lendária perfeita. Bate-volta no sábado a Chicama!",
+        temp: "Clima seco de praia (18-24°C, água 16°C com 3/2mm)",
+        isSurf: true,
+        isBeach: false,
+        isAndes: false,
+        desc: "A grande base técnica da viagem. Três semanas morando na orla pé no mar. O surfista surfa na maré cheia no meio do dia enquanto o outro trabalha na varanda com vista pro mar. No sábado, bate-volta épico a Chicama!"
+      },
+      {
+        id: "organos",
+        name: "Los Órganos & Vichayito",
+        country: "Norte do Peru",
+        flag: "🇵🇪",
+        weeks: 3,
+        role: "Água Morna 24°C, Bermuda & Tartarugas",
+        hospUsdMonth: 640,
+        alimUsdMonth: 380,
+        transUsd: 35,
+        transType: "Ônibus noturno Civa ou Cruz del Sur",
+        extrasUsdMonth: 120,
+        wifiProvider: "Fibra óptica local / Claro 4.5G backup",
+        fuso: "UTC-5 (-2h Brasília)",
+        surfNotes: "Point break macio sobre areia. Surfe de bermuda!",
+        temp: "Sol tropical e deserto (24-30°C, água 23°C)",
+        isSurf: true,
+        isBeach: true,
+        isAndes: false,
+        desc: "O 'Caribe do Pacífico'! Aqui os DOIS são 100% felizes: sol todo dia, água morna e transparente, nadar com tartarugas marinhas e espreguiçadeiras pé na areia enquanto o surfista pega o point break macio de Los Órganos."
+      },
+      {
+        id: "olon_ayampe",
+        name: "Olón & Ayampe",
+        country: "Equador",
+        flag: "🇪🇨",
+        weeks: 3,
+        role: "Selva no Mar, Vibe Boho & Starlink",
+        hospUsdMonth: 580,
+        alimUsdMonth: 390,
+        transUsd: 50,
+        transType: "Van transfronteiriça Máncora -> Olón",
+        extrasUsdMonth: 110,
+        wifiProvider: "Starlink / Netlife Fibra (150-300 Mbps)",
+        fuso: "UTC-5 (-2h Brasília)",
+        surfNotes: "Beach breaks extensos, água quente e fundo de areia",
+        temp: "Tropical quente (24-28°C)",
+        isSurf: true,
+        isBeach: true,
+        isAndes: false,
+        desc: "A jóia ecológica do Equador: selva tropical descendo até a praia, cafés charmosos com Starlink, aulas de ioga, massagens e piscinas naturais na maré baixa. Temporada de baleias jubarte! Revenda do pranchão por ~US$ 200 aqui."
+      },
+      {
+        id: "vulcoes",
+        name: "Quilotoa & Baños de Agua Santa",
+        country: "Equador",
+        flag: "🇪🇨",
+        weeks: 1,
+        role: "Cratera Vulcânica & Beira da Amazônia",
+        hospUsdMonth: 480,
+        alimUsdMonth: 320,
+        transUsd: 40,
+        transType: "Ônibus interprovincial equatoriano",
+        extrasUsdMonth: 120,
+        wifiProvider: "Fibra óptica urbana / Wi-Fi pousadas",
+        fuso: "UTC-5 (-2h Brasília)",
+        surfNotes: "Sem mar - cachoeiras gigantes e termas vulcânicas",
+        temp: "Clima de montanha e selva (14-22°C)",
+        isSurf: false,
+        isBeach: false,
+        isAndes: true,
+        desc: "Uma das paisagens mais impactantes do continente: a lagoa verde-esmeralda na cratera do vulcão Quilotoa a 3.900m + a cidade de Baños com cachoeiras colossais (Pailón del Diablo) na porta de entrada da Amazônia."
+      },
+      {
+        id: "medellin",
+        name: "Medellín (Laureles) & Eje Cafetero",
+        country: "Colômbia",
+        flag: "🇨🇴",
+        weeks: 3,
+        role: "Polo Nômade Urbano & Fazendas de Café",
+        hospUsdMonth: 850,
+        alimUsdMonth: 450,
+        transUsd: 170,
+        transType: "Voo Quito -> Medellín (sem prancha)",
+        extrasUsdMonth: 180,
+        wifiProvider: "Tigo Fibra / Claro Fibra (300-600 Mbps)",
+        fuso: "UTC-5 (-2h Brasília) - Polo nômade #1",
+        surfNotes: "Sem surfe - vida urbana, cafés e Salento",
+        temp: "Eterna primavera (18-27°C)",
+        isSurf: false,
+        isBeach: false,
+        isAndes: true,
+        desc: "A melhor infraestrutura de trabalho remoto da América Latina. Bairro Laureles com ruas planas e arborizadas. No fim de semana, viagem inesquecível ao Eje Cafetero (Salento e as palmeiras gigantes do Valle de Cocora)."
+      },
+      {
+        id: "caribe",
+        name: "Caribe Colombiano: Tayrona & Palomino",
+        country: "Colômbia",
+        flag: "🇨🇴",
+        weeks: 2,
+        role: "O Paraíso do Caribe: Mar Cristalino & Coqueirais",
+        hospUsdMonth: 720,
+        alimUsdMonth: 400,
+        transUsd: 60,
+        transType: "Voo rápido Medellín -> Santa Marta",
+        extrasUsdMonth: 160,
+        wifiProvider: "Starlink / Fibra em ecolodges de Palomino",
+        fuso: "UTC-5 (-2h Brasília)",
+        surfNotes: "Mar calmo caribenho a 28°C para relaxar a dois",
+        temp: "Calor tropical caribenho (27-32°C, mar 28°C)",
+        isSurf: false,
+        isBeach: true,
+        isAndes: false,
+        desc: "O GRAN FINALE DOS SONHOS! O parceiro que ama praia é coroado com o verdadeiro mar do Caribe: água verde-esmeralda a 28°C, areia branca, trilhas em praias preservadas do Parque Tayrona e o clima relaxante de Palomino antes do retorno ao Brasil."
+      }
+    ];
+
+    let currentCurrency = "BRL";
+    let usdRate = 5.50;
+    let profileMultiplier = 0.82;
+    let currentSelectedBaseIndex = 9;
+    let tourInterval = null;
+
+    const currencySelect = document.getElementById("currencySelect");
+    const usdRateInput = document.getElementById("usdRate");
+    const profileSelect = document.getElementById("profileSelect");
+    const basesListContainer = document.getElementById("basesListContainer");
+    const costTableBody = document.getElementById("costTableBody");
+
+    const kpiTotal = document.getElementById("kpiTotal");
+    const kpiMonthly = document.getElementById("kpiMonthly");
+    const kpiDaily = document.getElementById("kpiDaily");
+    const kpiWeeks = document.getElementById("kpiWeeks");
+    const kpiWeeksDiff = document.getElementById("kpiWeeksDiff");
+
+    function formatMoney(amountInUsd) {
+      const adjusted = amountInUsd * profileMultiplier;
+      if (currentCurrency === "BRL") {
+        const val = adjusted * usdRate;
+        return "R$ " + Math.round(val).toLocaleString("pt-BR");
+      } else {
+        return "US$ " + Math.round(adjusted).toLocaleString("en-US");
+      }
+    }
+
+    function selectBase(index) {
+      currentSelectedBaseIndex = index;
+      const base = baseData[index];
+      const inspectorCard = document.getElementById("inspectorCard");
+      const inspectorIndex = document.getElementById("inspectorIndex");
+
+      if (index === 0) {
+        inspectorIndex.textContent = "Ponto de Partida";
+        inspectorIndex.className = "px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-800";
+      } else if (index === 2) {
+        inspectorIndex.textContent = "Bônus Fim de Semana";
+        inspectorIndex.className = "px-2.5 py-0.5 rounded-full text-xs font-bold bg-indigo-100 text-indigo-800";
+      } else {
+        inspectorIndex.textContent = `Etapa ${index} de 14`;
+        inspectorIndex.className = "px-2.5 py-0.5 rounded-full text-xs font-bold bg-sky-100 text-sky-800";
+      }
+
+      const baseHospCost = (base.hospUsdMonth / 4.33) * base.weeks;
+      const baseAlimCost = (base.alimUsdMonth / 4.33) * base.weeks;
+      const baseTotalCost = baseHospCost + baseAlimCost + base.transUsd + ((base.extrasUsdMonth / 4.33) * base.weeks);
+
+      inspectorCard.innerHTML = `
+        <div class="space-y-4">
+          <div class="flex items-start gap-3">
+            <span class="text-3xl p-2.5 bg-slate-100 rounded-xl shrink-0">${base.flag}</span>
+            <div>
+              <div class="flex items-center gap-2 flex-wrap">
+                <h3 class="text-xl font-bold text-slate-900">${base.name}</h3>
+                <span class="text-xs px-2 py-0.5 rounded bg-emerald-50 text-emerald-800 font-bold border border-emerald-200">${base.role}</span>
+              </div>
+              <p class="text-xs text-slate-500 mt-1">${base.country} • ${base.weeks > 0 ? base.weeks + ' semanas alocadas' : 'Escapada / Conexão'}</p>
+            </div>
+          </div>
+
+          <p class="text-xs text-slate-600 leading-relaxed bg-slate-50 p-3 rounded-xl border border-slate-200">
+            ${base.desc}
+          </p>
+
+          <div class="grid grid-cols-2 gap-3 text-xs">
+            <div class="p-3 bg-slate-50 rounded-xl border border-slate-200">
+              <span class="text-[11px] text-slate-400 block font-semibold">ORÇAMENTO BASE (${base.weeks > 0 ? base.weeks + ' sem' : 'Passeio'})</span>
+              <span class="text-base font-black text-emerald-700">${index > 0 ? formatMoney(baseTotalCost) : 'R$ 0'}</span>
+              <span class="text-[10px] text-slate-400 block mt-0.5">hosp + comida + transporte</span>
+            </div>
+
+            <div class="p-3 bg-slate-50 rounded-xl border border-slate-200">
+              <span class="text-[11px] text-slate-400 block font-semibold">FUSO HORÁRIO</span>
+              <span class="text-sm font-bold text-slate-800">${base.fuso}</span>
+              <span class="text-[10px] text-slate-400 block mt-0.5">alinhamento com Brasil</span>
+            </div>
+          </div>
+
+          <div class="space-y-2 text-xs">
+            <div class="flex items-center justify-between p-2.5 rounded-lg border border-slate-100 bg-slate-50">
+              <span class="text-slate-500">📶 <strong>Conexão:</strong></span>
+              <span class="font-medium text-slate-800 text-right">${base.wifiProvider}</span>
+            </div>
+            <div class="flex items-center justify-between p-2.5 rounded-lg border border-slate-100 bg-slate-50">
+              <span class="text-slate-500">🏄 <strong>Mar / Lazer:</strong></span>
+              <span class="font-medium text-slate-800 text-right">${base.surfNotes}</span>
+            </div>
+            <div class="flex items-center justify-between p-2.5 rounded-lg border border-slate-100 bg-slate-50">
+              <span class="text-slate-500">🚌 <strong>Transporte:</strong></span>
+              <span class="font-medium text-slate-800 text-right">${base.transType}</span>
+            </div>
+            <div class="flex items-center justify-between p-2.5 rounded-lg border border-slate-100 bg-slate-50">
+              <span class="text-slate-500">🌡️ <strong>Clima:</strong></span>
+              <span class="font-medium text-slate-800 text-right">${base.temp}</span>
+            </div>
+          </div>
+        </div>
+      `;
+
+      baseData.forEach((_, i) => {
+        const pin = document.getElementById("pin-" + i);
+        if (pin) {
+          if (i === index) {
+            pin.style.filter = "drop-shadow(0 0 12px #38bdf8)";
+            pin.style.transform = "scale(1.3)";
+          } else {
+            pin.style.filter = "none";
+            pin.style.transform = "scale(1)";
+          }
+        }
+      });
+    }
+
+    function prevBase() {
+      const newIndex = (currentSelectedBaseIndex - 1 + baseData.length) % baseData.length;
+      selectBase(newIndex);
+    }
+
+    function nextBase() {
+      const newIndex = (currentSelectedBaseIndex + 1) % baseData.length;
+      selectBase(newIndex);
+    }
+
+    function filterMap(type) {
+      document.getElementById("mapBtn-all").className = "px-3 py-1.5 rounded-lg text-slate-700 bg-slate-100 font-semibold";
+      document.getElementById("mapBtn-surf").className = "px-3 py-1.5 rounded-lg text-slate-700 bg-slate-100 font-semibold";
+      document.getElementById("mapBtn-beach").className = "px-3 py-1.5 rounded-lg text-slate-700 bg-slate-100 font-semibold";
+      document.getElementById("mapBtn-andes").className = "px-3 py-1.5 rounded-lg text-slate-700 bg-slate-100 font-semibold";
+
+      if (type === "all") {
+        document.getElementById("mapBtn-all").className = "px-3 py-1.5 rounded-lg bg-sky-600 text-white font-semibold";
+        baseData.forEach((_, i) => {
+          const pin = document.getElementById("pin-" + i);
+          if (pin) pin.style.opacity = "1";
+        });
+      } else if (type === "surf") {
+        document.getElementById("mapBtn-surf").className = "px-3 py-1.5 rounded-lg bg-amber-600 text-white font-semibold";
+        baseData.forEach((b, i) => {
+          const pin = document.getElementById("pin-" + i);
+          if (pin) pin.style.opacity = b.isSurf ? "1" : "0.2";
+        });
+      } else if (type === "beach") {
+        document.getElementById("mapBtn-beach").className = "px-3 py-1.5 rounded-lg bg-rose-600 text-white font-semibold";
+        baseData.forEach((b, i) => {
+          const pin = document.getElementById("pin-" + i);
+          if (pin) pin.style.opacity = b.isBeach ? "1" : "0.2";
+        });
+      } else if (type === "andes") {
+        document.getElementById("mapBtn-andes").className = "px-3 py-1.5 rounded-lg bg-emerald-600 text-white font-semibold";
+        baseData.forEach((b, i) => {
+          const pin = document.getElementById("pin-" + i);
+          if (pin) pin.style.opacity = b.isAndes ? "1" : "0.2";
+        });
+      }
+    }
+
+    function startTour() {
+      const btn = document.getElementById("tourBtn");
+      if (tourInterval) {
+        clearInterval(tourInterval);
+        tourInterval = null;
+        btn.innerHTML = "<span>▶️</span> Reproduzir Tour da Viagem";
+        btn.className = "px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold flex items-center gap-1.5 transition-colors shadow-sm";
+        return;
+      }
+
+      btn.innerHTML = "<span>⏹️</span> Pausar Tour";
+      btn.className = "px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-700 text-white font-bold flex items-center gap-1.5 transition-colors shadow-sm";
+
+      let step = 0;
+      selectBase(step);
+      tourInterval = setInterval(() => {
+        step = (step + 1) % baseData.length;
+        selectBase(step);
+      }, 2400);
+    }
+
+    function renderBases() {
+      basesListContainer.innerHTML = "";
+      let totalWeeks = 0;
+      let totalCostUsd = 0;
+
+      baseData.forEach((base, index) => {
+        if (index === 0 || base.weeks === 0) return; // Pula Floripa e bônus fds no total de semanas
+        totalWeeks += base.weeks;
+        const baseHospCost = (base.hospUsdMonth / 4.33) * base.weeks;
+        const baseAlimCost = (base.alimUsdMonth / 4.33) * base.weeks;
+        const baseTotalCost = baseHospCost + baseAlimCost + base.transUsd + ((base.extrasUsdMonth / 4.33) * base.weeks);
+        totalCostUsd += baseTotalCost;
+
+        const card = document.createElement("div");
+        card.className = "bg-white rounded-xl p-4 md:p-5 border border-slate-200 shadow-sm transition-all hover:border-slate-300";
+        card.innerHTML = `
+          <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+            <div class="flex items-start gap-3">
+              <span class="text-2xl p-2 bg-slate-100 rounded-lg shrink-0">${base.flag}</span>
+              <div>
+                <div class="flex items-center gap-2 flex-wrap">
+                  <h3 class="text-base font-bold text-slate-900">${index}. ${base.name}</h3>
+                  <span class="text-xs px-2 py-0.5 rounded bg-emerald-50 text-emerald-800 font-medium border border-emerald-100">${base.role}</span>
+                  <span class="text-xs text-slate-400">• ${base.fuso}</span>
+                </div>
+                <div class="text-xs text-slate-500 mt-1 flex flex-wrap gap-x-4 gap-y-1">
+                  <span>📶 <strong>Conexão:</strong> ${base.wifiProvider}</span>
+                  <span>🌊 <strong>Mar/Lazer:</strong> ${base.surfNotes}</span>
+                  <span>🌡️ <strong>Clima:</strong> ${base.temp}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between md:justify-end gap-4 pt-3 md:pt-0 border-t md:border-t-0 border-slate-100">
+              <div class="text-right">
+                <span class="text-xs text-slate-400 block">Custo Casal (${base.weeks} sem)</span>
+                <span class="text-base font-bold text-emerald-800">${formatMoney(baseTotalCost)}</span>
+              </div>
+
+              <div class="flex items-center gap-1.5 bg-slate-100 p-1 rounded-lg border border-slate-200">
+                <button onclick="updateWeeks(${index}, -1)" class="w-7 h-7 rounded bg-white text-slate-700 hover:bg-slate-200 font-bold text-sm shadow-xs flex items-center justify-center transition-colors">−</button>
+                <span class="w-12 text-center text-xs font-bold text-slate-800">${base.weeks} sem</span>
+                <button onclick="updateWeeks(${index}, 1)" class="w-7 h-7 rounded bg-white text-slate-700 hover:bg-slate-200 font-bold text-sm shadow-xs flex items-center justify-center transition-colors">+</button>
+              </div>
+            </div>
+          </div>
+        `;
+        basesListContainer.appendChild(card);
+      });
+
+      // Fixed costs
+      const fixedCostsUsd = (4180 / 5.50) + 180 + 250;
+      const grandTotalUsd = totalCostUsd + fixedCostsUsd;
+      const monthlyAverageUsd = (grandTotalUsd / totalWeeks) * 4.33;
+      const dailyAverageUsd = grandTotalUsd / (totalWeeks * 7);
+
+      kpiTotal.textContent = formatMoney(grandTotalUsd);
+      kpiMonthly.textContent = formatMoney(monthlyAverageUsd) + "/mês";
+      kpiDaily.textContent = formatMoney(dailyAverageUsd) + "/dia";
+      kpiWeeks.textContent = totalWeeks + " sem";
+
+      if (totalWeeks === 30) {
+        kpiWeeksDiff.textContent = "Alocação ideal (exatas 30 sem)";
+        kpiWeeksDiff.className = "text-[11px] text-emerald-600 block mt-0.5";
+      } else if (totalWeeks > 30) {
+        kpiWeeksDiff.textContent = `+${totalWeeks - 30} sem acima dos 7 meses`;
+        kpiWeeksDiff.className = "text-[11px] text-amber-600 block mt-0.5";
+      } else {
+        kpiWeeksDiff.textContent = `${30 - totalWeeks} sem disponíveis para alocar`;
+        kpiWeeksDiff.className = "text-[11px] text-sky-600 block mt-0.5";
+      }
+
+      renderCostTable(grandTotalUsd);
+    }
+
+    function renderCostTable(grandTotalUsd) {
+      costTableBody.innerHTML = "";
+      let sumHosp = 0;
+      let sumAlim = 0;
+      let sumTrans = 0;
+      let sumExtras = 0;
+      let sumBasesTotal = 0;
+
+      baseData.forEach((base, index) => {
+        if (index === 0) return;
+        const hosp = (base.hospUsdMonth / 4.33) * base.weeks;
+        const alim = (base.alimUsdMonth / 4.33) * base.weeks;
+        const trans = base.transUsd;
+        const extras = (base.extrasUsdMonth / 4.33) * base.weeks;
+        const total = hosp + alim + trans + extras;
+
+        sumHosp += hosp;
+        sumAlim += alim;
+        sumTrans += trans;
+        sumExtras += extras;
+        sumBasesTotal += total;
+
+        const tr = document.createElement("tr");
+        tr.className = "hover:bg-slate-50 transition-colors";
+        tr.innerHTML = `
+          <td class="py-3 px-4 font-medium text-slate-800">
+            ${base.flag} ${base.name}
+            <span class="block text-[11px] text-slate-400">${base.transType}</span>
+          </td>
+          <td class="py-3 px-3 font-semibold text-slate-600">${base.weeks > 0 ? base.weeks + ' sem' : 'Bônus fds'}</td>
+          <td class="py-3 px-3 text-slate-600">${formatMoney(hosp)}</td>
+          <td class="py-3 px-3 text-slate-600">${formatMoney(alim)}</td>
+          <td class="py-3 px-3 text-slate-600">${formatMoney(trans)}</td>
+          <td class="py-3 px-3 text-slate-600">${formatMoney(extras)}</td>
+          <td class="py-3 px-4 font-bold text-slate-800 text-right">${formatMoney(total)}</td>
+        `;
+        costTableBody.appendChild(tr);
+      });
+
+      document.getElementById("tableSumHosp").textContent = formatMoney(sumHosp);
+      document.getElementById("tableSumAlim").textContent = formatMoney(sumAlim);
+      document.getElementById("tableSumTrans").textContent = formatMoney(sumTrans);
+      document.getElementById("tableSumExtras").textContent = formatMoney(sumExtras);
+      document.getElementById("tableSumTotal").textContent = formatMoney(sumBasesTotal);
+    }
+
+    function updateWeeks(index, delta) {
+      if (baseData[index].weeks + delta >= 1) {
+        baseData[index].weeks += delta;
+        renderBases();
+        selectBase(index);
+      }
+    }
+
+    function switchTab(tabId) {
+      const tabs = ["map", "itinerary", "costs", "surf", "savings", "wifi"];
+      tabs.forEach(t => {
+        const btn = document.getElementById("tab-" + t);
+        const content = document.getElementById("content-" + t);
+        if (t === tabId) {
+          btn.className = "py-3 px-2 tab-active transition-colors whitespace-nowrap";
+          content.classList.remove("hidden");
+        } else {
+          btn.className = "py-3 px-2 text-slate-500 hover:text-slate-800 transition-colors whitespace-nowrap";
+          content.classList.add("hidden");
+        }
+      });
+    }
+
+    function copyWifiScript() {
+      const text = document.getElementById("wifiScriptText").innerText;
+      navigator.clipboard.writeText(text).then(() => {
+        alert("Mensagem copiada para a área de transferência!");
+      });
+    }
+
+    currencySelect.addEventListener("change", (e) => {
+      currentCurrency = e.target.value;
+      renderBases();
+      selectBase(currentSelectedBaseIndex);
+    });
+
+    usdRateInput.addEventListener("input", (e) => {
+      usdRate = parseFloat(e.target.value) || 5.50;
+      renderBases();
+      selectBase(currentSelectedBaseIndex);
+    });
+
+    profileSelect.addEventListener("change", (e) => {
+      profileMultiplier = e.target.value === "budget" ? 0.82 : 1.0;
+      renderBases();
+      selectBase(currentSelectedBaseIndex);
+    });
+
+    renderBases();
+    selectBase(10); // Começa destacando Los Órganos
+  </script>
+</body>
+</html>
