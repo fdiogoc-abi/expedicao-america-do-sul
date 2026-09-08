@@ -1797,16 +1797,31 @@
       }
 
       const days = base.weeks > 0 ? base.weeks * 7 : (base.id === "colonia" ? 2 : 1);
-      const baseHospCost = (base.hospUsdMonth / 4.33) * base.weeks;
-      const baseAlimCost = (base.alimUsdMonth / 4.33) * base.weeks;
-      const baseTransCost = base.transUsd;
-      const baseExtrasCost = (base.extrasUsdMonth / 4.33) * base.weeks;
+      const multiplier = profileMultiplier;
+      const rate = currentCurrency === "BRL" ? usdRate : 1;
 
-      const chosenAirbnb = (typeof airbnbQuotes !== "undefined" && airbnbQuotes.length > 0)
-        ? (airbnbQuotes.find(q => q.baseId === base.id && (q.status === 'booked' || q.status === 'approved')) 
-           || airbnbQuotes.find(q => q.baseId === base.id && q.status !== 'discarded') 
-           || null)
-        : null;
+      // Metas base planejadas na moeda ativa (com profileMultiplier aplicado)
+      const plannedHosp = (base.hospUsdMonth / 4.33) * base.weeks * multiplier * rate;
+      const plannedAlim = (base.alimUsdMonth / 4.33) * base.weeks * multiplier * rate;
+      const plannedTrans = base.transUsd * multiplier * rate;
+      const plannedExtras = (base.extrasUsdMonth / 4.33) * base.weeks * multiplier * rate;
+
+      // Busca cotações ativas da etapa
+      const activeQuotes = (typeof airbnbQuotes !== "undefined" && airbnbQuotes.length > 0)
+        ? airbnbQuotes.filter(q => q.baseId === base.id && q.status !== 'discarded')
+        : [];
+
+      // Prioridade: 1. Reservado ('booked') > 2. Aprovado ('approved') > 3. Em Análise ('analyzing'/'contacted')
+      const bookedQuote = activeQuotes.find(q => q.status === 'booked');
+      const approvedQuote = activeQuotes.find(q => q.status === 'approved');
+      const analyzingQuote = activeQuotes.find(q => q.status === 'analyzing' || q.status === 'contacted') || activeQuotes[0];
+
+      const confirmedQuote = bookedQuote || approvedQuote || null;
+      const chosenAirbnb = confirmedQuote || analyzingQuote || null;
+
+      const isBooked = !!bookedQuote;
+      const isApproved = !bookedQuote && !!approvedQuote;
+      const isAnalyzing = !confirmedQuote && !!analyzingQuote;
 
       const auditResult = chosenAirbnb 
         ? auditNeighborhood(base.id, chosenAirbnb.neighborhood, chosenAirbnb.title, chosenAirbnb.url)
@@ -1815,15 +1830,42 @@
         ? calcNomadScore(chosenAirbnb, base)
         : null;
 
-      let effectiveHospCost = baseHospCost;
-      if (chosenAirbnb && chosenAirbnb.price > 0) {
-        const rawQuoteCost = getQuoteTotal(chosenAirbnb, base);
-        effectiveHospCost = convertQuotePriceToActive(rawQuoteCost, chosenAirbnb.currency);
-      }
-      const baseTotalCost = effectiveHospCost + baseAlimCost + baseTransCost + baseExtrasCost;
+      // Cálculo de Hospedagem:
+      // Se reservado ou aprovado, usa o valor real da cotação.
+      // Se em análise, exibe o valor da cotação na moeda ativa com aviso explícito de que ainda não foi reservado.
+      let effectiveHospCost = plannedHosp;
+      let hospBadgeText = base.weeks > 0 ? '~' + formatRawMoney(plannedHosp / days, currentCurrency) + '/dia' : 'Incluso em BA';
+      let hospBadgeClass = 'text-slate-400';
+      let hospSubtitleText = base.weeks > 0 ? 'Meta planejada (privativo)' : 'Bate-e-volta';
+      let hospSubtitleClass = 'text-slate-400';
 
+      if (isBooked) {
+        const rawQuoteCost = getQuoteTotal(bookedQuote, base);
+        effectiveHospCost = convertQuotePriceToActive(rawQuoteCost, bookedQuote.currency);
+        hospBadgeText = '✅ Reserva Confirmada';
+        hospBadgeClass = 'text-purple-700 font-bold';
+        hospSubtitleText = `🎉 ${bookedQuote.title}`;
+        hospSubtitleClass = 'text-purple-700 font-bold';
+      } else if (isApproved) {
+        const rawQuoteCost = getQuoteTotal(approvedQuote, base);
+        effectiveHospCost = convertQuotePriceToActive(rawQuoteCost, approvedQuote.currency);
+        hospBadgeText = '⭐ Opção Aprovada';
+        hospBadgeClass = 'text-emerald-700 font-bold';
+        hospSubtitleText = `🏠 ${approvedQuote.title}`;
+        hospSubtitleClass = 'text-emerald-700 font-bold';
+      } else if (isAnalyzing) {
+        const rawQuoteCost = getQuoteTotal(analyzingQuote, base);
+        const candidateActive = convertQuotePriceToActive(rawQuoteCost, analyzingQuote.currency);
+        effectiveHospCost = candidateActive;
+        hospBadgeText = '🟡 Em Validação (Não reservado)';
+        hospBadgeClass = 'text-amber-700 font-bold';
+        hospSubtitleText = `Meta da etapa: ${formatRawMoney(plannedHosp, currentCurrency)}`;
+        hospSubtitleClass = 'text-amber-700 font-medium';
+      }
+
+      const baseTotalCost = effectiveHospCost + plannedAlim + plannedTrans + plannedExtras;
       const dailyHosp = days > 0 ? effectiveHospCost / days : 0;
-      const dailyAlim = days > 0 ? baseAlimCost / days : 0;
+      const dailyAlim = days > 0 ? plannedAlim / days : 0;
       const dailyTotal = days > 0 ? baseTotalCost / days : 0;
 
       inspectorCard.innerHTML = `
@@ -1870,30 +1912,30 @@
               <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Detalhamento Financeiro (${base.weeks > 0 ? base.weeks + ' sem' : 'Passeio'})</span>
               <div class="text-right">
                 <span class="text-xs text-slate-400 block font-medium">Total da Etapa:</span>
-                <span class="text-base font-black text-emerald-700">${formatMoney(baseTotalCost)}</span>
+                <span class="text-base font-black text-emerald-700">${formatRawMoney(baseTotalCost, currentCurrency)}</span>
               </div>
             </div>
 
             <div class="grid grid-cols-2 gap-2 text-xs">
               <!-- 1. HOSPEDAGEM -->
-              <div class="p-2.5 bg-white rounded-xl border ${chosenAirbnb ? 'border-emerald-300 ring-1 ring-emerald-300 bg-emerald-50/20' : 'border-slate-200'} shadow-2xs">
+              <div class="p-2.5 bg-white rounded-xl border ${isBooked ? 'border-purple-300 ring-1 ring-purple-300 bg-purple-50/20' : (isApproved ? 'border-emerald-300 ring-1 ring-emerald-300 bg-emerald-50/20' : (isAnalyzing ? 'border-amber-300 ring-1 ring-amber-300 bg-amber-50/20' : 'border-slate-200'))} shadow-2xs">
                 <div class="flex items-center justify-between">
                   <span class="text-[10px] text-sky-800 font-bold flex items-center gap-1">🏡 Hospedagem</span>
-                  <span class="text-[10px] ${chosenAirbnb ? 'text-emerald-700 font-bold' : 'text-slate-400'}">${chosenAirbnb ? 'Valor Confirmado' : (base.weeks > 0 ? '~' + formatMoney(dailyHosp) + '/dia' : 'Incluso em BA')}</span>
+                  <span class="text-[10px] ${hospBadgeClass}">${hospBadgeText}</span>
                 </div>
-                <span class="text-sm font-black ${chosenAirbnb ? 'text-emerald-700' : 'text-slate-900'} block mt-1">${formatMoney(effectiveHospCost)}</span>
-                <span class="text-[10px] ${chosenAirbnb ? 'text-emerald-600 font-bold' : 'text-slate-400'} block truncate" title="${chosenAirbnb ? chosenAirbnb.title : ''}">
-                  ${chosenAirbnb ? '🎉 Airbnb vinculado' : (base.weeks > 0 ? 'Apartamento privativo' : 'Bate-e-volta')}
+                <span class="text-sm font-black ${isBooked ? 'text-purple-700' : (isApproved ? 'text-emerald-700' : (isAnalyzing ? 'text-amber-800' : 'text-slate-900'))} block mt-1">${formatRawMoney(effectiveHospCost, currentCurrency)}</span>
+                <span class="text-[10px] ${hospSubtitleClass} block truncate" title="${chosenAirbnb ? chosenAirbnb.title : ''}">
+                  ${hospSubtitleText}
                 </span>
               </div>
 
-              <!-- 2. ALIMENTAÇÃO / COMIDA (DESTACADA E SEPARADA!) -->
+              <!-- 2. ALIMENTAÇÃO -->
               <div class="p-2.5 bg-amber-50/70 rounded-xl border border-amber-200 shadow-2xs">
                 <div class="flex items-center justify-between">
                   <span class="text-[10px] text-amber-900 font-bold flex items-center gap-1">🍳 Alimentação</span>
-                  <span class="text-[10px] text-amber-700 font-semibold">${base.weeks > 0 ? '~' + formatMoney(dailyAlim) + '/dia' : 'Refeições locais'}</span>
+                  <span class="text-[10px] text-amber-700 font-semibold">${base.weeks > 0 ? '~' + formatRawMoney(dailyAlim, currentCurrency) + '/dia' : 'Refeições locais'}</span>
                 </div>
-                <span class="text-sm font-black text-amber-900 block mt-1">${formatMoney(baseAlimCost)}</span>
+                <span class="text-sm font-black text-amber-900 block mt-1">${formatRawMoney(plannedAlim, currentCurrency)}</span>
                 <span class="text-[10px] text-amber-700 block">Casal (mercados + menús)</span>
               </div>
 
@@ -1903,7 +1945,7 @@
                   <span class="text-[10px] text-emerald-800 font-bold flex items-center gap-1">🚌 Transporte</span>
                   <span class="text-[10px] text-slate-400">Deslocamento</span>
                 </div>
-                <span class="text-sm font-black text-slate-900 block mt-1">${formatMoney(baseTransCost)}</span>
+                <span class="text-sm font-black text-slate-900 block mt-1">${formatRawMoney(plannedTrans, currentCurrency)}</span>
                 <span class="text-[10px] text-slate-500 block truncate" title="${base.transType}">${base.weeks > 0 ? 'Voo / Ônibus leito' : 'Ferry Buquebus'}</span>
               </div>
 
@@ -1913,14 +1955,14 @@
                   <span class="text-[10px] text-purple-800 font-bold flex items-center gap-1">🎟️ Lazer / Extras</span>
                   <span class="text-[10px] text-slate-400">${base.weeks > 0 ? base.weeks + ' sem' : 'Passeio'}</span>
                 </div>
-                <span class="text-sm font-black text-slate-900 block mt-1">${formatMoney(baseExtrasCost)}</span>
+                <span class="text-sm font-black text-slate-900 block mt-1">${formatRawMoney(plannedExtras, currentCurrency)}</span>
                 <span class="text-[10px] text-slate-400 block">Passeios e compras</span>
               </div>
             </div>
           </div>
 
           <!-- SEÇÃO DO AIRBNB DEFINIDO / VINCULADO NESTA ETAPA COM AUDITORIA NÔMADE -->
-          <div class="p-3.5 rounded-2xl border ${chosenAirbnb ? (auditResult && auditResult.status === 'danger' ? 'bg-amber-50/70 border-amber-300' : 'bg-emerald-50/80 border-emerald-300 shadow-2xs') : 'bg-slate-50 border-slate-200'} space-y-2.5">
+          <div class="p-3.5 rounded-2xl border ${chosenAirbnb ? (isBooked ? 'bg-purple-50/60 border-purple-300' : (isApproved ? 'bg-emerald-50/80 border-emerald-300 shadow-2xs' : (auditResult && auditResult.status === 'danger' ? 'bg-rose-50/70 border-rose-300' : 'bg-amber-50/60 border-amber-300'))) : 'bg-slate-50 border-slate-200'} space-y-2.5">
             <div class="flex items-center justify-between">
               <span class="text-xs font-bold text-slate-900 flex items-center gap-1.5">
                 <span class="text-base">🏡</span> <strong>Airbnb Desta Etapa</strong>
@@ -1930,8 +1972,8 @@
                 <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${nomadScore.badgeClass}">
                   ${nomadScore.label}
                 </span>
-                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${STATUS_MAP[chosenAirbnb.status]?.badgeClass || 'bg-emerald-100 text-emerald-800'}">
-                  ${STATUS_MAP[chosenAirbnb.status]?.label || 'Definido'}
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${isBooked ? 'bg-purple-100 text-purple-800 border-purple-300' : (isApproved ? 'bg-emerald-100 text-emerald-800 border-emerald-300' : 'bg-amber-100 text-amber-800 border-amber-300')}">
+                  ${isBooked ? '🎉 Reservado' : (isApproved ? '✅ Aprovado' : '🟡 Em Análise')}
                 </span>
               </div>
               ` : `
@@ -1940,20 +1982,25 @@
             </div>
 
             ${chosenAirbnb ? `
-            <div class="bg-white p-3 rounded-xl border ${auditResult && auditResult.status === 'danger' ? 'border-amber-200' : 'border-emerald-200'} shadow-2xs space-y-2.5">
+            <div class="bg-white p-3 rounded-xl border ${isBooked ? 'border-purple-200' : (isApproved ? 'border-emerald-200' : (auditResult && auditResult.status === 'danger' ? 'border-rose-200' : 'border-amber-200'))} shadow-2xs space-y-2.5">
               <div class="flex items-start justify-between gap-2">
                 <div class="min-w-0">
                   <h4 class="text-xs font-bold text-slate-900 truncate" title="${chosenAirbnb.title}">${chosenAirbnb.title}</h4>
                   <div class="flex items-center gap-2 mt-0.5 flex-wrap">
-                    <span class="text-xs font-black text-emerald-700">
+                    <span class="text-xs font-black ${isBooked ? 'text-purple-700' : (isApproved ? 'text-emerald-700' : 'text-amber-800')}">
                       ${formatRawMoney(chosenAirbnb.price, chosenAirbnb.currency)}
                     </span>
                     <span class="text-[10px] text-slate-400">
                       (${chosenAirbnb.periodType === 'month' ? 'por mês' : (chosenAirbnb.periodType === 'night' ? 'por diária' : 'valor total')})
                     </span>
+                    ${base.weeks > 0 ? `
+                      <span class="text-[10px] text-slate-500 font-medium">
+                        • Meta: ${formatRawMoney(plannedHosp, currentCurrency)}
+                      </span>
+                    ` : ''}
                   </div>
                 </div>
-                <a href="${chosenAirbnb.url}" target="_blank" class="shrink-0 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center gap-1 transition-colors shadow-xs">
+                <a href="${chosenAirbnb.url}" target="_blank" class="shrink-0 px-3 py-1.5 rounded-xl ${isBooked ? 'bg-purple-600 hover:bg-purple-700' : (isApproved ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-amber-600 hover:bg-amber-700')} text-white font-bold text-xs flex items-center gap-1 transition-colors shadow-xs">
                   <span>Abrir no Airbnb</span> ↗
                 </a>
               </div>
@@ -2000,13 +2047,30 @@
               </p>
               ` : ''}
 
-              <div class="flex items-center justify-between pt-2 border-t border-slate-100 text-[11px]">
-                <button type="button" onclick="openQuickAirbnbModal('${base.id}', '${chosenAirbnb.id}')" class="text-sky-700 hover:text-sky-900 font-bold flex items-center gap-1">
-                  ✏️ Reauditar / Editar dados
-                </button>
-                <button type="button" onclick="unlinkAirbnbFromBase('${base.id}')" class="text-rose-600 hover:text-rose-800 font-bold hover:underline flex items-center gap-1 cursor-pointer">
-                  <span>✕</span> Desvincular Imóvel
-                </button>
+              <!-- AÇÕES DE STATUS E DESVINCULAÇÃO -->
+              <div class="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-100 text-[11px]">
+                <div class="flex items-center gap-1.5 flex-wrap">
+                  ${isAnalyzing ? `
+                    <button type="button" onclick="setAirbnbStatus('${chosenAirbnb.id}', 'approved')" class="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold transition-colors shadow-2xs cursor-pointer">
+                      ⭐ Aprovar Opção
+                    </button>
+                    <button type="button" onclick="setAirbnbStatus('${chosenAirbnb.id}', 'booked')" class="px-2.5 py-1 rounded-lg bg-purple-600 hover:bg-purple-700 text-white font-bold transition-colors shadow-2xs cursor-pointer">
+                      ✅ Confirmar Reserva
+                    </button>
+                  ` : `
+                    <button type="button" onclick="setAirbnbStatus('${chosenAirbnb.id}', 'analyzing')" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold transition-colors cursor-pointer">
+                      🟡 Voltar para Análise
+                    </button>
+                  `}
+                </div>
+                <div class="flex items-center gap-3">
+                  <button type="button" onclick="openQuickAirbnbModal('${base.id}', '${chosenAirbnb.id}')" class="text-sky-700 hover:text-sky-900 font-bold flex items-center gap-1 cursor-pointer">
+                    ✏️ Reauditar / Editar dados
+                  </button>
+                  <button type="button" onclick="unlinkAirbnbFromBase('${base.id}', '${chosenAirbnb.id}')" class="text-rose-600 hover:text-rose-800 font-bold hover:underline flex items-center gap-1 cursor-pointer">
+                    <span>✕</span> Desvincular Imóvel
+                  </button>
+                </div>
               </div>
             </div>
             ` : `
@@ -2829,19 +2893,35 @@
     }
 
     function changeQuoteStatus(quoteId, newStatus) {
+      setAirbnbStatus(quoteId, newStatus);
+    }
+
+    function setAirbnbStatus(quoteId, newStatus) {
       const quote = airbnbQuotes.find(q => q.id === quoteId);
       if (!quote) return;
       quote.status = newStatus;
       saveAirbnbQuotes();
+      selectBase(currentSelectedBaseIndex);
       renderAirbnbCards();
       updateAirbnbKPIs();
-      selectBase(currentSelectedBaseIndex);
+      updateAirbnbBadge();
       renderBases();
+      if (newStatus === 'booked') {
+        showToast("🎉 Imóvel marcado como Reservado / Confirmado!");
+      } else if (newStatus === 'approved') {
+        showToast("⭐ Imóvel definido como Opção Aprovada!");
+      } else {
+        showToast("🟡 Imóvel em validação / análise.");
+      }
     }
 
-    function unlinkAirbnbFromBase(baseId) {
-      if (!baseId) return;
-      airbnbQuotes = airbnbQuotes.filter(q => q.baseId !== baseId);
+    function unlinkAirbnbFromBase(baseId, quoteId) {
+      if (!baseId && !quoteId) return;
+      if (quoteId) {
+        airbnbQuotes = airbnbQuotes.filter(q => q.id !== quoteId);
+      } else {
+        airbnbQuotes = airbnbQuotes.filter(q => q.baseId !== baseId);
+      }
       saveAirbnbQuotes();
       selectBase(currentSelectedBaseIndex);
       renderAirbnbCards();
@@ -3317,10 +3397,11 @@
       let quote = airbnbQuotes.find(q => q.baseId === baseId && q.status !== 'discarded');
       if (quote) {
         quote.url = url;
-        if (detectedNeigh && (!quote.neighborhood || quote.neighborhood.trim().length === 0)) {
+        if (detectedNeigh) {
           quote.neighborhood = detectedNeigh;
         }
-        quote.status = quote.status || "analyzing";
+        quote.status = "analyzing";
+        quote.title = `Airbnb em Análise - ${baseName}`;
       } else {
         const defaultPrice = base ? Math.round(getBaseTargetHospInActiveCurrency(base)) : 3500;
         quote = {
