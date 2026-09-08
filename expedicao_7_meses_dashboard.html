@@ -67,7 +67,7 @@
           <div class="flex items-end gap-1.5 pt-1 sm:pt-0">
             <button type="button" onclick="openCloudModal()" title="Central de Nuvem & Sincronização Multi-PC" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 hover:border-sky-400 transition-colors shadow-2xs cursor-pointer">
               <span id="headerCloudIcon" class="text-sm">☁️</span>
-              <span id="headerCloudText" class="hidden sm:inline">Nuvem Ativa</span>
+              <span id="headerCloudText" class="hidden sm:inline">Nuvem</span>
             </button>
             <button type="button" onclick="lockApp()" title="Bloquear Painel com Senha" class="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-bold bg-slate-100 hover:bg-slate-200 border border-slate-300 text-slate-700 transition-colors shadow-2xs cursor-pointer">
               <span>🔒</span>
@@ -1129,95 +1129,71 @@
   </div>
 
   <!-- ========================================== -->
-  <!-- 🔒 TELA DE BLOQUEIO / AUTH OVERLAY (E2EE) -->
+  <!-- 🔒 TELA DE BLOQUEIO MINIMALISTA -->
   <!-- ========================================== -->
-  <div id="authLockOverlay" class="fixed inset-0 z-[9999] bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4 transition-all duration-300">
-    <div class="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl border border-slate-200 text-center relative overflow-hidden">
-      <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-sky-500 to-indigo-600 text-white mx-auto flex items-center justify-center text-3xl shadow-lg shadow-sky-500/30 mb-4">
-        <span id="lockIconDisplay">🔐</span>
+  <div id="authLockOverlay" class="fixed inset-0 z-[9999] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 transition-opacity">
+    <div class="bg-white rounded-2xl p-6 max-w-xs w-full shadow-xl border border-slate-200 text-center">
+      
+      <div class="w-10 h-10 rounded-full bg-slate-100 text-slate-700 mx-auto flex items-center justify-center text-lg mb-3">
+        🔒
       </div>
       
-      <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-sky-50 text-sky-800 border border-sky-200 mb-2">
-        <span>🛡️</span> Criptografia AES-GCM 256-bit
-      </div>
-      <h2 class="text-2xl font-black text-slate-900 tracking-tight" id="lockTitle">Expedição América do Sul</h2>
-      <p class="text-xs text-slate-500 mt-1 mb-6 leading-relaxed" id="lockSubtitle">
-        Painel de Rota & Finanças protegido. Digite sua senha para descriptografar os dados.
-      </p>
+      <h2 class="text-base font-bold text-slate-800" id="lockTitle">Acesso ao Roteiro</h2>
 
-      <!-- FORMULÁRIO DE DESBLOQUEIO (SE JÁ TEM SENHA DEFINIDA) -->
-      <form id="unlockForm" onsubmit="handleUnlockSubmit(event)" class="space-y-4">
-        <div class="text-left">
-          <label class="block text-xs font-bold text-slate-700 mb-1.5">Senha Mestra / PIN</label>
-          <div class="relative">
-            <input type="password" id="unlockPasswordInput" required autocomplete="current-password" placeholder="Digite sua senha..." class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-sky-500 font-medium text-slate-900 pr-10 text-sm">
-            <button type="button" onclick="togglePasswordVisibility('unlockPasswordInput', this)" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-sm p-1">
-              👁️
-            </button>
-          </div>
+      <!-- FORMULÁRIO DE DESBLOQUEIO -->
+      <form id="unlockForm" onsubmit="handleUnlockSubmit(event)" class="mt-4 space-y-3">
+        <div class="relative">
+          <input type="password" id="unlockPasswordInput" required autocomplete="current-password" placeholder="Digite sua senha..." class="w-full px-3.5 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-800 text-sm font-medium text-slate-800 pr-9">
+          <button type="button" onclick="togglePasswordVisibility('unlockPasswordInput', this)" class="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs p-1">
+            👁️
+          </button>
         </div>
 
-        <div class="flex items-center justify-between text-xs pt-1">
-          <label class="flex items-center gap-2 cursor-pointer select-none text-slate-600 font-medium">
-            <input type="checkbox" id="rememberDeviceCheck" checked class="rounded text-sky-600 focus:ring-sky-500">
-            <span>Lembrar neste computador</span>
+        <div class="flex items-center justify-between text-xs text-slate-500">
+          <label class="flex items-center gap-1.5 cursor-pointer select-none">
+            <input type="checkbox" id="rememberDeviceCheck" checked class="rounded text-slate-800 focus:ring-slate-800">
+            <span>Lembrar</span>
           </label>
-          <button type="button" onclick="promptResetPassword()" class="text-slate-400 hover:text-rose-600 underline transition-colors cursor-pointer">
+          <button type="button" onclick="promptResetPassword()" class="text-slate-400 hover:text-slate-700 underline cursor-pointer">
             Redefinir
           </button>
         </div>
 
-        <div id="authErrorMessage" class="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-bold hidden flex items-center gap-2 text-left">
-          <span>⚠️</span> <span id="authErrorText">Senha incorreta. Tente novamente.</span>
+        <div id="authErrorMessage" class="text-xs text-rose-600 font-medium hidden">
+          <span id="authErrorText">Senha incorreta</span>
         </div>
 
-        <button type="submit" id="unlockSubmitBtn" class="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-700 hover:to-indigo-700 text-white font-black text-sm shadow-md shadow-sky-600/20 transition-all active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer">
-          <span>🔓</span> Desbloquear Painel
+        <button type="submit" id="unlockSubmitBtn" class="w-full py-2 px-4 rounded-xl bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs transition-colors cursor-pointer">
+          Entrar
         </button>
       </form>
 
-      <!-- FORMULÁRIO DE PRIMEIRO ACESSO (SE AINDA NÃO TEM SENHA) -->
-      <form id="setupPasswordForm" onsubmit="handleSetupPasswordSubmit(event)" class="space-y-4 hidden">
-        <div class="p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs text-left leading-relaxed">
-          <strong>👋 Primeiro Acesso:</strong> Escolha uma Senha Mestra ou PIN. Ela será usada para criptografar todos os seus dados antes de salvá-los no Pantry Cloud e proteger o acesso em qualquer computador.
+      <!-- FORMULÁRIO DE PRIMEIRO ACESSO -->
+      <form id="setupPasswordForm" onsubmit="handleSetupPasswordSubmit(event)" class="mt-4 space-y-3 hidden text-left">
+        <p class="text-xs text-slate-500 text-center">Crie uma senha para este roteiro:</p>
+        <div>
+          <input type="password" id="setupPasswordInput" required placeholder="Nova senha" class="w-full px-3.5 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-800 text-sm font-medium text-slate-800">
+        </div>
+        <div>
+          <input type="password" id="setupPasswordConfirm" required placeholder="Confirme a senha" class="w-full px-3.5 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-800 text-sm font-medium text-slate-800">
         </div>
 
-        <div class="text-left space-y-3">
-          <div>
-            <label class="block text-xs font-bold text-slate-700 mb-1">Crie sua Senha Mestra / PIN</label>
-            <div class="relative">
-              <input type="password" id="setupPasswordInput" required placeholder="Mínimo 4 caracteres (ex: 2026)" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-sky-500 font-medium text-slate-900 pr-10 text-sm">
-              <button type="button" onclick="togglePasswordVisibility('setupPasswordInput', this)" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-sm p-1">
-                👁️
-              </button>
-            </div>
-          </div>
-          <div>
-            <label class="block text-xs font-bold text-slate-700 mb-1">Confirme a Senha</label>
-            <input type="password" id="setupPasswordConfirm" required placeholder="Repita a mesma senha" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-sky-500 font-medium text-slate-900 text-sm">
-          </div>
-        </div>
-
-        <div class="flex items-center text-xs text-slate-600 pt-1">
-          <label class="flex items-center gap-2 cursor-pointer select-none font-medium">
-            <input type="checkbox" id="setupRememberDeviceCheck" checked class="rounded text-sky-600 focus:ring-sky-500">
+        <div class="flex items-center text-xs text-slate-500">
+          <label class="flex items-center gap-1.5 cursor-pointer select-none">
+            <input type="checkbox" id="setupRememberDeviceCheck" checked class="rounded text-slate-800 focus:ring-slate-800">
             <span>Lembrar neste computador</span>
           </label>
         </div>
 
-        <div id="setupErrorMessage" class="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-bold hidden flex items-center gap-2 text-left">
-          <span>⚠️</span> <span id="setupErrorText">As senhas não coincidem.</span>
+        <div id="setupErrorMessage" class="text-xs text-rose-600 font-medium hidden">
+          <span id="setupErrorText">As senhas não coincidem.</span>
         </div>
 
-        <button type="submit" class="w-full py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-sm shadow-md shadow-emerald-600/20 transition-all active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer">
-          <span>🛡️</span> Criar Senha & Entrar no Painel
+        <button type="submit" class="w-full py-2 px-4 rounded-xl bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs transition-colors cursor-pointer">
+          Salvar Senha & Entrar
         </button>
       </form>
 
-      <div class="mt-6 pt-4 border-t border-slate-100 flex items-center justify-center gap-2 text-[11px] text-slate-400">
-        <span>☁️ Sincronização Nuvem:</span>
-        <span class="font-semibold text-slate-600">Pantry Cloud Ativo</span>
-      </div>
     </div>
   </div>
 
@@ -1228,15 +1204,10 @@
     <div class="bg-white rounded-3xl p-6 sm:p-8 max-w-xl w-full shadow-2xl border border-slate-200 space-y-6">
       
       <!-- CABEÇALHO DO MODAL -->
-      <div class="flex items-start justify-between">
-        <div class="flex items-center gap-3">
-          <div class="w-12 h-12 rounded-2xl bg-sky-100 text-sky-700 flex items-center justify-center text-2xl font-black shrink-0">
-            ☁️
-          </div>
-          <div>
-            <h3 class="text-lg font-black text-slate-900">Nuvem & Segurança Multi-PC</h3>
-            <p class="text-xs text-slate-500">Sincronização em tempo real entre seus computadores com Criptografia E2EE</p>
-          </div>
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+        <div>
+          <h3 class="text-base font-bold text-slate-900">Sincronização em Nuvem</h3>
+          <p class="text-xs text-slate-500">Mantenha os dados sincronizados entre seus computadores</p>
         </div>
         <button type="button" onclick="closeCloudModal()" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold flex items-center justify-center text-sm transition-colors cursor-pointer">
           ✕
@@ -1244,38 +1215,32 @@
       </div>
 
       <!-- STATUS ATUAL -->
-      <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div class="space-y-1">
-          <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Status da Sincronização</span>
+      <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div class="space-y-0.5">
           <div class="flex items-center gap-2">
             <span id="modalCloudStatusDot" class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
-            <span id="modalCloudStatusText" class="text-sm font-black text-slate-800">Conectado & Sincronizado</span>
+            <span id="modalCloudStatusText" class="text-sm font-bold text-slate-800">Sincronizado</span>
           </div>
-          <span id="modalCloudLastSync" class="text-[11px] text-slate-500 block">Aguardando primeira sincronização</span>
+          <span id="modalCloudLastSync" class="text-xs text-slate-500 block">Última sincronização</span>
         </div>
-        <div class="flex items-center gap-2 flex-wrap">
-          <button type="button" onclick="syncToCloud(true)" class="px-3.5 py-2 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer">
-            <span>📤</span> Sincronizar Agora
+        <div class="flex items-center gap-2">
+          <button type="button" onclick="syncToCloud(true)" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs transition-colors cursor-pointer">
+            Enviar
           </button>
-          <button type="button" onclick="fetchFromCloud(true)" class="px-3.5 py-2 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold text-xs transition-colors flex items-center gap-1.5 cursor-pointer">
-            <span>📥</span> Baixar da Nuvem
+          <button type="button" onclick="fetchFromCloud(true)" class="px-3 py-1.5 rounded-lg bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold text-xs transition-colors cursor-pointer">
+            Baixar
           </button>
         </div>
       </div>
 
       <!-- BOTÃO DE PAREAMENTO: COPIAR LINK PARA OUTRO PC -->
-      <div class="p-4 rounded-2xl bg-gradient-to-r from-sky-50 to-indigo-50 border border-sky-200 space-y-2">
-        <div class="flex items-center justify-between">
-          <span class="text-xs font-black text-sky-900 flex items-center gap-1.5">
-            <span>💻</span> Abrir no Segundo Computador / Celular
-          </span>
-          <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-sky-200 text-sky-800">1-Clique</span>
-        </div>
-        <p class="text-xs text-sky-700 leading-relaxed">
-          Copie este link e abra no seu outro computador. O novo PC configurará automaticamente o acesso ao mesmo cesto na nuvem!
+      <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
+        <span class="text-xs font-bold text-slate-700 block">Abrir no Segundo Computador</span>
+        <p class="text-xs text-slate-500">
+          Copie este link para abrir no seu outro computador e sincronizar os mesmos dados:
         </p>
-        <button type="button" onclick="copyPairingLink()" class="w-full py-2.5 px-4 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-black text-xs shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer">
-          <span>🔗</span> Copiar Link de Acesso com Nuvem
+        <button type="button" onclick="copyPairingLink()" class="w-full py-2 px-3 rounded-lg bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer">
+          <span>🔗</span> Copiar Link para Outro PC
         </button>
       </div>
 
@@ -2093,26 +2058,26 @@
 
       if (status === "synced") {
         if (headerIcon) headerIcon.textContent = "☁️";
-        if (headerText) headerText.textContent = "Nuvem Ativa";
+        if (headerText) headerText.textContent = "Nuvem";
         if (modalDot) modalDot.className = "w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse";
-        if (modalText) modalText.textContent = "Conectado & Sincronizado";
+        if (modalText) modalText.textContent = "Sincronizado";
         if (modalLast) modalLast.textContent = `Última sincronização: ${timeStr}`;
       } else if (status === "syncing") {
         if (headerIcon) headerIcon.textContent = "🔄";
-        if (headerText) headerText.textContent = "Sincronizando...";
+        if (headerText) headerText.textContent = "Salvando...";
         if (modalDot) modalDot.className = "w-2.5 h-2.5 rounded-full bg-sky-500 animate-spin";
-        if (modalText) modalText.textContent = "Criptografando & Enviando...";
+        if (modalText) modalText.textContent = "Sincronizando...";
       } else if (status === "error") {
         if (headerIcon) headerIcon.textContent = "⚠️";
-        if (headerText) headerText.textContent = "Falha Nuvem";
+        if (headerText) headerText.textContent = "Offline";
         if (modalDot) modalDot.className = "w-2.5 h-2.5 rounded-full bg-rose-500";
-        if (modalText) modalText.textContent = "Falha de Conexão com a Nuvem";
-        if (modalLast) modalLast.textContent = errorMsg ? `Erro: ${errorMsg}` : "Verifique sua conexão ou Pantry ID";
+        if (modalText) modalText.textContent = "Falha de Conexão";
+        if (modalLast) modalLast.textContent = errorMsg ? `Erro: ${errorMsg}` : "Verifique a conexão";
       } else {
         if (headerIcon) headerIcon.textContent = "💾";
-        if (headerText) headerText.textContent = "Modo Local";
+        if (headerText) headerText.textContent = "Local";
         if (modalDot) modalDot.className = "w-2.5 h-2.5 rounded-full bg-slate-400";
-        if (modalText) modalText.textContent = "Salvo apenas no computador";
+        if (modalText) modalText.textContent = "Salvo localmente";
       }
     }
 
