@@ -1440,12 +1440,12 @@ Para poder confirmar la reserva, necesitamos verificar la estabilidad de interne
             </select>
           </div>
           <div>
-            <label class="block font-bold text-slate-700 mb-1">Status</label>
+            <label class="block font-bold text-slate-700 mb-1">Status do Imóvel</label>
             <select id="quickModalStatus" class="w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-sky-500 font-bold text-slate-800 bg-white">
-              <option value="booked">🎉 Reservado / Fechado</option>
-              <option value="approved">✅ Aprovado (Favorito)</option>
-              <option value="contacted">💬 Em Negociação</option>
-              <option value="analyzing">🟡 Em Análise</option>
+              <option value="analyzing" selected>🟡 Em Análise / Validação</option>
+              <option value="approved">✅ Aprovado (Opção Favorita)</option>
+              <option value="contacted">💬 Em Negociação com Anfitrião</option>
+              <option value="booked">🎉 Reservado / Fechado Oficialmente</option>
             </select>
           </div>
         </div>
@@ -2399,8 +2399,8 @@ Para poder confirmar la reserva, necesitamos verificar la estabilidad de interne
                 <button type="button" onclick="openQuickAirbnbModal('${base.id}', '${chosenAirbnb.id}')" class="text-sky-700 hover:text-sky-900 font-bold flex items-center gap-1">
                   ✏️ Reauditar / Editar dados
                 </button>
-                <button type="button" onclick="deleteAirbnbQuote('${chosenAirbnb.id}')" class="text-rose-600 hover:text-rose-800 font-bold">
-                  ✕ Desvincular
+                <button type="button" onclick="unlinkAirbnbFromBase('${base.id}')" class="text-rose-600 hover:text-rose-800 font-bold hover:underline flex items-center gap-1 cursor-pointer">
+                  <span>✕</span> Desvincular Imóvel
                 </button>
               </div>
             </div>
@@ -2834,10 +2834,10 @@ Para poder confirmar la reserva, necesitamos verificar la estabilidad de interne
     ];
 
     const STATUS_MAP = {
-      analyzing: { label: "🟡 Em Análise", badgeClass: "bg-amber-100 text-amber-800 border-amber-300" },
+      analyzing: { label: "🟡 Em Validação / Análise", badgeClass: "bg-amber-100 text-amber-800 border-amber-300" },
       contacted: { label: "💬 Mensagem Enviada", badgeClass: "bg-sky-100 text-sky-800 border-sky-300" },
-      approved: { label: "✅ Aprovado (WiFi & Preço OK)", badgeClass: "bg-emerald-100 text-emerald-800 border-emerald-300" },
-      booked: { label: "🎉 Reservado!", badgeClass: "bg-purple-100 text-purple-800 border-purple-300" },
+      approved: { label: "✅ Aprovado (Opção Favorita)", badgeClass: "bg-emerald-100 text-emerald-800 border-emerald-300" },
+      booked: { label: "🎉 Reservado / Fechado", badgeClass: "bg-purple-100 text-purple-800 border-purple-300" },
       discarded: { label: "❌ Descartado", badgeClass: "bg-slate-100 text-slate-500 border-slate-300 line-through" }
     };
 
@@ -3241,17 +3241,29 @@ Para poder confirmar la reserva, necesitamos verificar la estabilidad de interne
       renderBases();
     }
 
+    function unlinkAirbnbFromBase(baseId) {
+      if (!baseId) return;
+      airbnbQuotes = airbnbQuotes.filter(q => q.baseId !== baseId);
+      saveAirbnbQuotes();
+      selectBase(currentSelectedBaseIndex);
+      renderAirbnbCards();
+      updateAirbnbKPIs();
+      updateAirbnbBadge();
+      renderBases();
+      showToast("🗑️ Imóvel desvinculado desta etapa!");
+    }
+
     function deleteAirbnbQuote(quoteId) {
       const quote = airbnbQuotes.find(q => q.id === quoteId);
       if (!quote) return;
-      if (confirm(`Deseja realmente remover a cotação "${quote.title}"?`)) {
-        airbnbQuotes = airbnbQuotes.filter(q => q.id !== quoteId);
-        saveAirbnbQuotes();
-        renderAirbnbCards();
-        updateAirbnbKPIs();
-        selectBase(currentSelectedBaseIndex);
-        renderBases();
-      }
+      airbnbQuotes = airbnbQuotes.filter(q => q.id !== quoteId);
+      saveAirbnbQuotes();
+      renderAirbnbCards();
+      updateAirbnbKPIs();
+      updateAirbnbBadge();
+      selectBase(currentSelectedBaseIndex);
+      renderBases();
+      showToast("🗑️ Cotação removida!");
     }
 
     function copyQuoteToWhatsApp(quoteId) {
@@ -3722,27 +3734,27 @@ Para poder confirmar la reserva, necesitamos verificar la estabilidad de interne
         if (detectedNeigh && (!quote.neighborhood || quote.neighborhood.trim().length === 0)) {
           quote.neighborhood = detectedNeigh;
         }
-        quote.status = "booked";
+        quote.status = quote.status || "analyzing";
       } else {
         const defaultPrice = base ? Math.round(getBaseTargetHospInActiveCurrency(base)) : 3500;
         quote = {
           id: "quote-" + Date.now(),
           baseId: baseId,
-          title: `Airbnb Escolhido em ${baseName}`,
+          title: `Airbnb em Análise - ${baseName}`,
           url: url,
           neighborhood: detectedNeigh,
           price: defaultPrice,
           currency: currentCurrency,
           periodType: "total",
           speed: 0,
-          dist: "Imóvel selecionado",
-          status: "booked",
+          dist: "Imóvel em análise",
+          status: "analyzing",
           desk: true,
           ac: guide.climateType === 'ac',
           kitchen: true,
           washer: true,
           discountApplied: base ? base.weeks >= 3 : true,
-          notes: "Definido diretamente pelo Inspetor da Expedição.",
+          notes: "Link colado para validação e auditoria.",
           createdAt: new Date().toISOString().split("T")[0]
         };
         airbnbQuotes.unshift(quote);
@@ -3757,10 +3769,10 @@ Para poder confirmar la reserva, necesitamos verificar la estabilidad de interne
 
       // Se o bairro não foi detectado automaticamente pelo link, abre o modal com chips para 1 clique
       if (!quote.neighborhood) {
-        showToast("🔗 Link salvo! Selecione o bairro nos chips para completar a auditoria.");
+        showToast("🔍 Imóvel adicionado em análise! Selecione o bairro para validar.");
         openQuickAirbnbModal(baseId, quote.id);
       } else {
-        showToast(`✅ Link salvo e auditado: Bairro "${quote.neighborhood}"!`);
+        showToast(`🔍 Imóvel em validação: Bairro "${quote.neighborhood}" auditado!`);
       }
     }
 
@@ -3781,14 +3793,14 @@ Para poder confirmar la reserva, necesitamos verificar la estabilidad de interne
       document.getElementById("quickModalSubtitle").textContent = `${base.flag} ${base.name} • ${base.weeks > 0 ? base.weeks + ' semanas' : 'Escapada'}`;
 
       document.getElementById("quickModalUrl").value = quote ? quote.url : "";
-      document.getElementById("quickModalName").value = quote ? quote.title : `Airbnb Escolhido em ${base.name}`;
+      document.getElementById("quickModalName").value = quote ? quote.title : `Airbnb em Análise - ${base.name}`;
       document.getElementById("quickModalNeighborhood").value = quote && quote.neighborhood ? quote.neighborhood : "";
       
       const defaultPrice = base ? Math.round(getBaseTargetHospInActiveCurrency(base)) : 3500;
       document.getElementById("quickModalPrice").value = quote ? quote.price : defaultPrice;
       document.getElementById("quickModalPeriod").value = quote ? quote.periodType : "total";
       document.getElementById("quickModalCurrency").value = quote ? quote.currency : currentCurrency;
-      document.getElementById("quickModalStatus").value = quote ? quote.status : "booked";
+      document.getElementById("quickModalStatus").value = quote ? quote.status : "analyzing";
       document.getElementById("quickModalNotes").value = quote && quote.notes ? quote.notes : "";
 
       // Checkboxes de comodidades essenciais
