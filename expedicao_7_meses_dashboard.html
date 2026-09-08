@@ -1007,6 +1007,240 @@
   </div>
 
   <!-- ========================================== -->
+  <!-- 🚌 MODAL RÁPIDO DE COTAÇÃO DE TRANSPORTE -->
+  <!-- ========================================== -->
+  <div id="quickTransportModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-3 md:p-6 overflow-y-auto" onclick="handleTransportModalBackdrop(event)">
+    <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 relative my-auto space-y-4" onclick="event.stopPropagation()">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <div class="flex items-center gap-2.5">
+          <span class="text-2xl p-2 bg-sky-50 text-sky-700 rounded-xl" id="quickTransHeaderIcon">✈️</span>
+          <div>
+            <h3 class="text-base font-black text-slate-900" id="quickTransModalTitle">Cotar Transporte da Etapa</h3>
+            <p class="text-xs text-slate-500" id="quickTransModalSubtitle">Destino selecionado</p>
+          </div>
+        </div>
+        <button type="button" onclick="closeQuickTransportModal()" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold flex items-center justify-center text-sm transition-colors cursor-pointer">
+          ✕
+        </button>
+      </div>
+
+      <!-- ATALHOS RÁPIDOS DE BUSCA DE PASSAGENS -->
+      <div class="p-3 bg-sky-50/70 rounded-2xl border border-sky-200 space-y-1.5">
+        <div class="flex items-center justify-between">
+          <span class="text-[10px] font-bold text-sky-900 uppercase tracking-wider">Atalhos de Busca Rápida:</span>
+          <span class="text-[10px] text-sky-700 font-semibold" id="quickTransTravelDateText">Data estimada</span>
+        </div>
+        <div class="flex flex-wrap gap-2" id="quickTransSearchLinksContainer">
+          <!-- Injetado dinamicamente -->
+        </div>
+      </div>
+
+      <form id="quickTransportForm" onsubmit="handleQuickTransportSubmit(event)" class="space-y-3.5 text-xs">
+        <input type="hidden" id="quickTransQuoteId" value="">
+        <input type="hidden" id="quickTransBaseId" value="">
+
+        <div class="grid grid-cols-2 gap-3">
+          <!-- 1. TIPO DE TRANSPORTE -->
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Modal / Tipo <span class="text-rose-500">*</span></label>
+            <select id="quickTransMode" onchange="handleQuickTransModeChange()" required class="w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-sky-500 font-medium text-slate-800 bg-white">
+              <option value="flight">✈️ Voo Aéreo</option>
+              <option value="bus">🚌 Ônibus Leito / Rodoviário</option>
+              <option value="ferry">⛴️ Ferry / Barco</option>
+              <option value="car">🚗 Aluguel de Carro</option>
+              <option value="transfer">🚐 Van / Transfer Turístico</option>
+              <option value="other">🚀 Outro Deslocamento</option>
+            </select>
+          </div>
+
+          <!-- 2. STATUS DA PASSAGEM -->
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Status da Cotação <span class="text-rose-500">*</span></label>
+            <select id="quickTransStatus" required class="w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-sky-500 font-bold text-slate-800 bg-white">
+              <option value="quoted">🟡 Em Cotação / Pesquisando</option>
+              <option value="selected">⭐ Opção Escolhida (Favorita)</option>
+              <option value="booked">🎉 Passagem Comprada / Emitida</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- 3. TÍTULO / TRECHO -->
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">🏷️ Descrição do Trecho / Rota <span class="text-rose-500">*</span></label>
+          <input type="text" id="quickTransTitle" required placeholder="Ex: Voo Santiago → Arequipa (Sky Airline / LATAM)" class="w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-sky-500 font-medium text-slate-800">
+        </div>
+
+        <!-- 4. EMPRESA / OPERADORA -->
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">🏢 Cia / Operadora</label>
+            <input type="text" id="quickTransCompany" placeholder="Ex: LATAM, Cruz del Sur, Buquebus..." class="w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-sky-500 font-medium text-slate-800">
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">🔗 Link da Pesquisa / Reserva</label>
+            <input type="url" id="quickTransUrl" placeholder="https://..." class="w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-sky-500 font-medium text-slate-800">
+          </div>
+        </div>
+
+        <!-- 5. VALOR TOTAL COBRADO PARA O CASAL -->
+        <div class="p-3 bg-slate-50 rounded-2xl border border-slate-200 space-y-2">
+          <div class="flex items-center justify-between">
+            <label class="font-bold text-slate-800 flex items-center gap-1.5">
+              <span>💰</span> <strong>Valor Total do Casal (Passagens + Taxas)</strong>
+            </label>
+            <span class="text-[11px] font-medium text-slate-500" id="quickTransTargetPriceDisplay">Meta: --</span>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <select id="quickTransCurrency" onchange="handleQuickTransAudit()" class="px-3 py-2.5 rounded-xl border border-slate-300 bg-white font-bold text-slate-800 focus:ring-2 focus:ring-sky-500">
+              <option value="BRL">R$ (BRL)</option>
+              <option value="USD">US$ (USD)</option>
+            </select>
+            <input type="number" id="quickTransPrice" step="any" min="0" required oninput="handleQuickTransAudit()" placeholder="0.00" class="flex-1 px-3 py-2.5 rounded-xl border border-slate-300 font-black text-slate-900 text-sm focus:ring-2 focus:ring-sky-500 bg-white">
+          </div>
+
+          <!-- COMPARATIVO COM A META -->
+          <div class="flex items-center justify-between pt-1 border-t border-slate-200/60">
+            <span class="text-[11px] text-slate-500">Comparativo vs Meta de Transporte:</span>
+            <span id="quickTransDiffBadge" class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-200 text-slate-600">
+              Aguardando valor
+            </span>
+          </div>
+        </div>
+
+        <!-- 6. NOTAS E DETALHES DE BAGAGEM / CONEXÃO -->
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">📝 Bagagem, Prancha de Surf & Notas</label>
+          <input type="text" id="quickTransNotes" placeholder="Ex: 2 malas de mão inclusas + 1 despachada. Prancha paga à parte..." class="w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-sky-500 font-medium text-slate-800">
+        </div>
+
+        <div class="pt-3 flex items-center justify-between border-t border-slate-100">
+          <button type="button" id="quickTransDeleteBtn" onclick="handleQuickTransDelete()" class="text-rose-600 hover:text-rose-800 font-bold text-xs hover:underline hidden cursor-pointer">
+            🗑️ Remover Cotação
+          </button>
+          <div class="flex items-center gap-2 ml-auto">
+            <button type="button" onclick="closeQuickTransportModal()" class="px-4 py-2 rounded-xl border border-slate-300 text-slate-700 font-bold text-xs hover:bg-slate-50 transition-colors cursor-pointer">
+              Cancelar
+            </button>
+            <button type="submit" class="px-5 py-2 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs shadow-sm transition-colors flex items-center gap-1.5 cursor-pointer">
+              <span>💾</span> Salvar Cotação de Transporte
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- ⚙️ MODAL DE AJUSTE DE ORÇAMENTO DA ETAPA -->
+  <!-- ========================================== -->
+  <div id="budgetAdjustModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-3 md:p-6 overflow-y-auto" onclick="handleBudgetModalBackdrop(event)">
+    <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 relative my-auto space-y-4" onclick="event.stopPropagation()">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <div class="flex items-center gap-2.5">
+          <span class="text-2xl p-2 bg-purple-50 text-purple-700 rounded-xl">⚙️</span>
+          <div>
+            <h3 class="text-base font-black text-slate-900" id="budgetModalTitle">Ajustar Orçamento da Etapa</h3>
+            <p class="text-xs text-slate-500" id="budgetModalSubtitle">Altere as metas planejadas desta cidade</p>
+          </div>
+        </div>
+        <button type="button" onclick="closeBudgetAdjustModal()" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold flex items-center justify-center text-sm transition-colors cursor-pointer">
+          ✕
+        </button>
+      </div>
+
+      <form id="budgetAdjustForm" onsubmit="handleBudgetAdjustSubmit(event)" class="space-y-3.5 text-xs">
+        <input type="hidden" id="budgetModalBaseId" value="">
+
+        <div class="p-3 bg-purple-50/60 rounded-2xl border border-purple-200 flex items-center justify-between">
+          <div>
+            <span class="text-xs font-black text-purple-950 block" id="budgetModalBaseName">Etapa</span>
+            <span class="text-[11px] text-purple-700 font-medium" id="budgetModalBaseDates">Datas da viagem</span>
+          </div>
+          <div class="text-right">
+            <span class="text-[10px] text-slate-500 uppercase font-bold block">Duração:</span>
+            <div class="flex items-center gap-1 justify-end">
+              <input type="number" id="budgetModalWeeks" step="0.5" min="0" max="12" required oninput="handleBudgetModalPreview()" class="w-16 px-2 py-1 text-center font-black text-sm rounded-lg border border-purple-300 bg-white focus:ring-2 focus:ring-purple-500">
+              <span class="text-xs font-bold text-purple-900">semanas</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="space-y-2.5">
+          <!-- 1. HOSPEDAGEM -->
+          <div class="p-2.5 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between gap-3">
+            <div>
+              <span class="font-bold text-slate-800 flex items-center gap-1 text-xs">🏡 Meta Hospedagem</span>
+              <span class="text-[10px] text-slate-400">Mensal (privativo confortável)</span>
+            </div>
+            <div class="flex items-center gap-1.5 shrink-0">
+              <span class="text-xs font-bold text-slate-500">US$/mês:</span>
+              <input type="number" id="budgetModalHospUsd" step="10" min="0" required oninput="handleBudgetModalPreview()" class="w-24 px-2 py-1.5 font-black text-slate-900 rounded-lg border border-slate-300 bg-white text-right focus:ring-2 focus:ring-purple-500">
+            </div>
+          </div>
+
+          <!-- 2. TRANSPORTE -->
+          <div class="p-2.5 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between gap-3">
+            <div>
+              <span class="font-bold text-slate-800 flex items-center gap-1 text-xs">🚌 Meta Transporte</span>
+              <span class="text-[10px] text-slate-400">Total do trecho para o casal</span>
+            </div>
+            <div class="flex items-center gap-1.5 shrink-0">
+              <span class="text-xs font-bold text-slate-500">US$ trecho:</span>
+              <input type="number" id="budgetModalTransUsd" step="5" min="0" required oninput="handleBudgetModalPreview()" class="w-24 px-2 py-1.5 font-black text-slate-900 rounded-lg border border-slate-300 bg-white text-right focus:ring-2 focus:ring-purple-500">
+            </div>
+          </div>
+
+          <!-- 3. ALIMENTAÇÃO -->
+          <div class="p-2.5 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between gap-3">
+            <div>
+              <span class="font-bold text-slate-800 flex items-center gap-1 text-xs">🍳 Meta Alimentação</span>
+              <span class="text-[10px] text-slate-400">Mensal do casal (mercados + menús)</span>
+            </div>
+            <div class="flex items-center gap-1.5 shrink-0">
+              <span class="text-xs font-bold text-slate-500">US$/mês:</span>
+              <input type="number" id="budgetModalAlimUsd" step="10" min="0" required oninput="handleBudgetModalPreview()" class="w-24 px-2 py-1.5 font-black text-slate-900 rounded-lg border border-slate-300 bg-white text-right focus:ring-2 focus:ring-purple-500">
+            </div>
+          </div>
+
+          <!-- 4. LAZER & EXTRAS -->
+          <div class="p-2.5 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between gap-3">
+            <div>
+              <span class="font-bold text-slate-800 flex items-center gap-1 text-xs">🎟️ Meta Lazer & Extras</span>
+              <span class="text-[10px] text-slate-400">Mensal do casal (passeios, tours, compras)</span>
+            </div>
+            <div class="flex items-center gap-1.5 shrink-0">
+              <span class="text-xs font-bold text-slate-500">US$/mês:</span>
+              <input type="number" id="budgetModalExtrasUsd" step="10" min="0" required oninput="handleBudgetModalPreview()" class="w-24 px-2 py-1.5 font-black text-slate-900 rounded-lg border border-slate-300 bg-white text-right focus:ring-2 focus:ring-purple-500">
+            </div>
+          </div>
+        </div>
+
+        <!-- PRÉVIA DOS TOTAIS DA ETAPA CALCULADOS -->
+        <div class="p-3 bg-emerald-50 rounded-2xl border border-emerald-200 flex items-center justify-between">
+          <div>
+            <span class="text-[10px] text-emerald-800 font-bold uppercase tracking-wider block">Novo Total Planejado da Etapa:</span>
+            <span class="text-base font-black text-emerald-900" id="budgetModalPreviewTotal">R$ 0</span>
+          </div>
+          <div class="text-right">
+            <span class="text-[10px] text-emerald-700 font-semibold block" id="budgetModalPreviewDaily">~R$ 0/dia</span>
+            <span class="text-[10px] text-emerald-600" id="budgetModalPreviewUsd">US$ 0</span>
+          </div>
+        </div>
+
+        <div class="pt-3 flex items-center justify-end gap-2 border-t border-slate-100">
+          <button type="button" onclick="closeBudgetAdjustModal()" class="px-4 py-2 rounded-xl border border-slate-300 text-slate-700 font-bold text-xs hover:bg-slate-50 transition-colors cursor-pointer">
+            Cancelar
+          </button>
+          <button type="submit" class="px-5 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs shadow-sm transition-colors flex items-center gap-1.5 cursor-pointer">
+            <span>💾</span> Salvar & Atualizar Orçamento
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
   <!-- 🔒 TELA DE BLOQUEIO MINIMALISTA -->
   <!-- ========================================== -->
   <div id="authLockOverlay" class="w-full flex-1 flex flex-col items-center justify-center p-4 sm:p-6 transition-opacity overflow-y-auto" style="min-height: 100vh; min-height: 100%; min-height: 540px; box-sizing: border-box; background-image: linear-gradient(to bottom, rgba(15, 23, 42, 0.7), rgba(15, 23, 42, 0.88)), url('https://images.unsplash.com/photo-1506377247377-2a5b3b417ebb?auto=format&fit=crop&w=2000&q=80'); background-size: cover; background-position: center; background-repeat: no-repeat;">
@@ -1452,7 +1686,28 @@
       if (password) masterPassword = password;
 
       if (Array.isArray(bundle.baseData) && bundle.baseData.length > 0) {
-        baseData = bundle.baseData;
+        let localBases = [];
+        try {
+          const bSaved = appStorage.getItem("expedicao_bases_v2");
+          if (bSaved) localBases = JSON.parse(bSaved);
+        } catch (e) {}
+
+        if (Array.isArray(localBases) && localBases.length > 0) {
+          const localMap = new Map();
+          localBases.forEach(b => localMap.set(b.id, b));
+          baseData = bundle.baseData.map(incoming => {
+            const local = localMap.get(incoming.id);
+            if (local && (local.updatedAt || 0) >= (incoming.updatedAt || 0)) {
+              return { ...incoming, ...local };
+            }
+            return incoming;
+          });
+        } else {
+          baseData = bundle.baseData;
+        }
+        try {
+          appStorage.setItem("expedicao_bases_v2", JSON.stringify(baseData));
+        } catch (e) {}
       }
       if (bundle.cityGuides) {
         CITY_NEIGHBORHOOD_GUIDE = bundle.cityGuides;
@@ -1521,6 +1776,54 @@
             appStorage.setItem("expedicao_cached_bundle", JSON.stringify(appDecryptedBundle));
           }
         } catch(e) {}
+      }
+
+      if (Array.isArray(bundle.transportQuotes)) {
+        let localTrans = [];
+        try {
+          const tSaved = appStorage.getItem("expedicao_transports_v1");
+          if (tSaved) localTrans = JSON.parse(tSaved);
+        } catch (e) {}
+        if (!Array.isArray(localTrans)) localTrans = [];
+
+        let deletedTransIds = [];
+        try {
+          const dtSaved = appStorage.getItem("expedicao_deleted_transports");
+          if (dtSaved) deletedTransIds = JSON.parse(dtSaved);
+        } catch (e) {}
+        if (!Array.isArray(deletedTransIds)) deletedTransIds = [];
+
+        const transMap = new Map();
+        bundle.transportQuotes.forEach(t => {
+          if (t && t.id && !deletedTransIds.includes(t.id)) {
+            transMap.set(t.id, t);
+          }
+        });
+
+        localTrans.forEach(t => {
+          if (t && t.id && !deletedTransIds.includes(t.id)) {
+            if (!transMap.has(t.id)) {
+              transMap.set(t.id, t);
+            } else {
+              const existing = transMap.get(t.id);
+              const localTime = t.updatedAt || 0;
+              const incomingTime = existing.updatedAt || 0;
+              if (localTime >= incomingTime) {
+                transMap.set(t.id, { ...existing, ...t });
+              }
+            }
+          }
+        });
+
+        transportQuotes = Array.from(transMap.values());
+        DEFAULT_TRANSPORT_QUOTES = transportQuotes;
+        try {
+          appStorage.setItem("expedicao_transports_v1", JSON.stringify(transportQuotes));
+          if (appDecryptedBundle) {
+            appDecryptedBundle.transportQuotes = transportQuotes;
+            appStorage.setItem("expedicao_cached_bundle", JSON.stringify(appDecryptedBundle));
+          }
+        } catch (e) {}
       }
       if (bundle.settings) {
         if (bundle.settings.currency) {
@@ -1634,6 +1937,7 @@
           mapRoutes: mapRoutes,
           cityGuides: CITY_NEIGHBORHOOD_GUIDE,
           airbnbQuotes: airbnbQuotes,
+          transportQuotes: transportQuotes,
           settings: {
             currency: currentCurrency,
             usdRate: usdRate,
@@ -2362,6 +2666,206 @@
       };
     }
 
+    // ==========================================
+    // SISTEMA DE COTAÇÕES DE TRANSPORTE & AJUSTE ORÇAMENTÁRIO
+    // ==========================================
+    let transportQuotes = [];
+    let DEFAULT_TRANSPORT_QUOTES = [];
+
+    const TRANSPORT_MODE_ICONS = {
+      flight: "✈️",
+      bus: "🚌",
+      ferry: "⛴️",
+      car: "🚗",
+      transfer: "🚐",
+      other: "🚀"
+    };
+
+    const TRANSPORT_MODE_LABELS = {
+      flight: "Voo Aéreo",
+      bus: "Ônibus Leito",
+      ferry: "Ferry / Barco",
+      car: "Aluguel de Carro",
+      transfer: "Transfer / Van",
+      other: "Transporte"
+    };
+
+    const AIRPORT_SEARCH_MAP = {
+      ba: { from: "Brasil", to: "Buenos Aires", query: "passagens voo Brasil Buenos Aires" },
+      colonia: { from: "Buenos Aires", to: "Colonia del Sacramento", query: "ferry Buquebus Buenos Aires Colonia del Sacramento" },
+      "7lagos": { from: "Buenos Aires", to: "Bariloche", query: "voo Buenos Aires Bariloche" },
+      mendoza: { from: "Bariloche", to: "Mendoza", query: "voo Bariloche Mendoza" },
+      santiago_exp: { from: "Mendoza", to: "Santiago", query: "onibus Mendoza Santiago Andesmar" },
+      arequipa: { from: "Santiago", to: "Arequipa", query: "voo Santiago Arequipa Sky LATAM" },
+      cusco: { from: "Arequipa", to: "Cusco", query: "onibus Arequipa Cusco Cruz del Sur" },
+      lima: { from: "Cusco", to: "Lima", query: "voo Cusco Lima LATAM Sky" },
+      huanchaco: { from: "Lima", to: "Trujillo", query: "onibus Lima Trujillo Cruz del Sur" },
+      organos: { from: "Trujillo", to: "Mancora", query: "onibus Trujillo Mancora Los Organos Civa Cruz del Sur" },
+      olon_ayampe: { from: "Mancora", to: "Olon", query: "transporte Mancora Olon Montanita Equador" },
+      vulcoes: { from: "Olon", to: "Banos", query: "onibus Olon Guayaquil Banos Quilotoa" },
+      medellin: { from: "Quito", to: "Medellin", query: "voo Quito Medellin Avianca" },
+      caribe: { from: "Medellin", to: "Santa Marta", query: "voo Medellin Santa Marta Avianca Wingo" }
+    };
+
+    function getBaseTargetTransInActiveCurrency(base) {
+      if (!base) return 0;
+      const targetUsd = (base.transUsd || 0) * profileMultiplier;
+      return currentCurrency === "BRL" ? targetUsd * usdRate : targetUsd;
+    }
+
+    function getBaseEffectiveTrans(base) {
+      if (!base) return {
+        hasQuote: false,
+        quote: null,
+        status: null,
+        isBooked: false,
+        isSelected: false,
+        isQuoted: false,
+        cost: 0,
+        costUsd: 0,
+        plannedCost: 0,
+        plannedCostUsd: 0,
+        diff: 0,
+        diffUsd: 0,
+        isAboveMeta: false,
+        isBelowMeta: false,
+        diffAbs: 0,
+        icon: "🚌",
+        modeLabel: "Transporte",
+        title: "Transporte da Etapa"
+      };
+
+      const mult = profileMultiplier > 0 ? profileMultiplier : 1;
+      const rate = currentCurrency === "BRL" ? usdRate : 1;
+      const plannedCostUsd = base.transUsd || 0;
+      const plannedCost = plannedCostUsd * mult * rate;
+
+      const activeQuotes = (typeof transportQuotes !== "undefined" && Array.isArray(transportQuotes))
+        ? transportQuotes.filter(q => q.baseId === base.id && q.status !== "discarded")
+        : [];
+
+      const booked = activeQuotes.find(q => q.status === "booked");
+      const selected = activeQuotes.find(q => q.status === "selected" || q.status === "approved");
+      const quoted = activeQuotes.find(q => q.status === "quoted" || q.status === "analyzing") || activeQuotes[0];
+
+      const chosen = booked || selected || quoted || null;
+
+      if (!chosen) {
+        let defaultIcon = "🚌";
+        if (base.transType) {
+          const tLower = base.transType.toLowerCase();
+          if (tLower.includes("voo")) defaultIcon = "✈️";
+          else if (tLower.includes("ferry")) defaultIcon = "⛴️";
+          else if (tLower.includes("carro")) defaultIcon = "🚗";
+          else if (tLower.includes("van") || tLower.includes("transfer")) defaultIcon = "🚐";
+        }
+        return {
+          hasQuote: false,
+          quote: null,
+          status: null,
+          isBooked: false,
+          isSelected: false,
+          isQuoted: false,
+          cost: plannedCost,
+          costUsd: plannedCostUsd,
+          plannedCost: plannedCost,
+          plannedCostUsd: plannedCostUsd,
+          diff: 0,
+          diffUsd: 0,
+          isAboveMeta: false,
+          isBelowMeta: false,
+          diffAbs: 0,
+          icon: defaultIcon,
+          modeLabel: base.transType || "Transporte",
+          title: base.transType || "Transporte da Etapa"
+        };
+      }
+
+      const cost = convertQuotePriceToActive(chosen.price, chosen.currency);
+      const costUsd = (cost / rate) / mult;
+
+      const diff = cost - plannedCost;
+      const diffUsd = (cost / rate) - (plannedCostUsd * mult);
+      const isAboveMeta = diff > 10;
+      const isBelowMeta = diff < -10;
+
+      const mode = chosen.mode || "bus";
+      const icon = TRANSPORT_MODE_ICONS[mode] || "🚌";
+      const modeLabel = TRANSPORT_MODE_LABELS[mode] || "Transporte";
+
+      return {
+        hasQuote: true,
+        quote: chosen,
+        status: chosen.status,
+        isBooked: !!booked,
+        isSelected: !booked && !!selected,
+        isQuoted: !booked && !selected && !!quoted,
+        cost: cost,
+        costUsd: costUsd,
+        plannedCost: plannedCost,
+        plannedCostUsd: plannedCostUsd,
+        diff: diff,
+        diffUsd: diffUsd,
+        isAboveMeta: isAboveMeta,
+        isBelowMeta: isBelowMeta,
+        diffAbs: Math.abs(diff),
+        icon: icon,
+        modeLabel: modeLabel,
+        title: chosen.title || `${modeLabel} - ${base.name}`
+      };
+    }
+
+    function saveTransportQuotes(immediateSync = true) {
+      try {
+        appStorage.setItem("expedicao_transports_v1", JSON.stringify(transportQuotes));
+      } catch (e) {
+        console.warn("Erro ao salvar transportes no LocalStorage:", e);
+      }
+
+      if (appDecryptedBundle) {
+        appDecryptedBundle.transportQuotes = transportQuotes;
+        appDecryptedBundle.updatedAt = Date.now();
+        try {
+          appStorage.setItem("expedicao_cached_bundle", JSON.stringify(appDecryptedBundle));
+        } catch (e) {}
+      }
+
+      if (immediateSync) {
+        syncToCloud(true);
+      } else if (typeof scheduleCloudSync === "function") {
+        scheduleCloudSync();
+      }
+    }
+
+    function saveBaseBudget(baseId, updatedFields) {
+      const base = baseData.find(b => b.id === baseId);
+      if (!base) return false;
+
+      Object.assign(base, updatedFields);
+      base.updatedAt = Date.now();
+
+      try {
+        appStorage.setItem("expedicao_bases_v2", JSON.stringify(baseData));
+      } catch (e) {}
+
+      if (appDecryptedBundle) {
+        appDecryptedBundle.baseData = baseData;
+        appDecryptedBundle.updatedAt = Date.now();
+        try {
+          appStorage.setItem("expedicao_cached_bundle", JSON.stringify(appDecryptedBundle));
+        } catch (e) {}
+      }
+
+      renderBases();
+      selectBase(currentSelectedBaseIndex);
+      renderCostTable();
+      updateAirbnbKPIs();
+      syncToCloud(true);
+      showToast(`⚙️ Orçamento de ${base.name} atualizado e sincronizado na nuvem!`);
+      return true;
+    }
+
+
     function selectBase(index) {
       if (!baseData || baseData.length === 0 || !baseData[index]) return;
       currentSelectedBaseIndex = index;
@@ -2387,12 +2891,14 @@
       const rate = currentCurrency === "BRL" ? usdRate : 1;
 
       const effHosp = getBaseEffectiveHosp(base);
+      const effTrans = getBaseEffectiveTrans(base);
       const chosenAirbnb = effHosp.quote;
       const effectiveHospCost = effHosp.cost;
       const plannedHosp = effHosp.plannedCost;
 
       const plannedAlim = (base.alimUsdMonth / 4.33) * base.weeks * multiplier * rate;
-      const plannedTrans = base.transUsd * multiplier * rate;
+      const effectiveTransCost = effTrans.cost;
+      const plannedTrans = effTrans.plannedCost;
       const plannedExtras = (base.extrasUsdMonth / 4.33) * base.weeks * multiplier * rate;
 
       const isBooked = effHosp.isBooked;
@@ -2430,7 +2936,7 @@
         hospSubtitleClass = effHosp.isAboveMeta ? 'text-rose-700 font-bold' : 'text-amber-700 font-medium';
       }
 
-      const baseTotalCost = effectiveHospCost + plannedAlim + plannedTrans + plannedExtras;
+      const baseTotalCost = effectiveHospCost + plannedAlim + effectiveTransCost + plannedExtras;
       const dailyHosp = days > 0 ? effectiveHospCost / days : 0;
       const dailyAlim = days > 0 ? plannedAlim / days : 0;
       const dailyTotal = days > 0 ? baseTotalCost / days : 0;
@@ -2478,9 +2984,14 @@
           <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-3">
             <div class="flex items-center justify-between border-b border-slate-200 pb-2">
               <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Detalhamento Financeiro (${base.weeks > 0 ? base.weeks + ' sem' : 'Passeio'})</span>
-              <div class="text-right">
-                <span class="text-xs text-slate-400 block font-medium">Total da Etapa:</span>
-                <span class="text-base font-black text-emerald-700">${formatRawMoney(baseTotalCost, currentCurrency)}</span>
+              <div class="flex items-center gap-2">
+                <button type="button" onclick="openBudgetAdjustModal('${base.id}')" class="text-[11px] font-bold text-purple-700 hover:text-purple-900 bg-purple-50 hover:bg-purple-100 border border-purple-200 px-2.5 py-1 rounded-lg transition-colors cursor-pointer" title="Editar metas orçamentárias desta etapa">
+                  ⚙️ Ajustar Metas
+                </button>
+                <div class="text-right">
+                  <span class="text-xs text-slate-400 block font-medium">Total da Etapa:</span>
+                  <span class="text-base font-black text-emerald-700">${formatRawMoney(baseTotalCost, currentCurrency)}</span>
+                </div>
               </div>
             </div>
 
@@ -2508,13 +3019,20 @@
               </div>
 
               <!-- 3. TRANSPORTE -->
-              <div class="p-2.5 bg-white rounded-xl border border-slate-200 shadow-2xs">
+              <div class="p-2.5 bg-white rounded-xl border ${effTrans.isAboveMeta ? 'border-rose-300 ring-1 ring-rose-300 bg-rose-50/30' : (effTrans.isBooked ? 'border-purple-300 ring-1 ring-purple-300 bg-purple-50/20' : (effTrans.hasQuote ? 'border-sky-300 ring-1 ring-sky-300 bg-sky-50/20' : 'border-slate-200'))} shadow-2xs">
                 <div class="flex items-center justify-between">
-                  <span class="text-[10px] text-emerald-800 font-bold flex items-center gap-1">🚌 Transporte</span>
-                  <span class="text-[10px] text-slate-400">Deslocamento</span>
+                  <span class="text-[10px] text-sky-800 font-bold flex items-center gap-1">${effTrans.icon} Transporte</span>
+                  <span class="text-[10px] ${effTrans.isBooked ? 'text-purple-700 font-bold' : (effTrans.isAboveMeta ? 'text-rose-700 font-bold' : (effTrans.hasQuote ? 'text-sky-700 font-bold' : 'text-slate-400'))}">
+                    ${effTrans.isBooked ? '✅ Emitido' : (effTrans.hasQuote ? (effTrans.isAboveMeta ? '⚠️ Acima da Meta' : '🟡 Cotado') : 'Meta')}
+                  </span>
                 </div>
-                <span class="text-sm font-black text-slate-900 block mt-1">${formatRawMoney(plannedTrans, currentCurrency)}</span>
-                <span class="text-[10px] text-slate-500 block truncate" title="${base.transType}">${base.weeks > 0 ? 'Voo / Ônibus leito' : 'Ferry Buquebus'}</span>
+                <span class="text-sm font-black ${effTrans.isAboveMeta ? 'text-rose-700' : (effTrans.isBooked ? 'text-purple-700' : 'text-slate-900')} block mt-1">${formatRawMoney(effectiveTransCost, currentCurrency)}</span>
+                <div class="flex items-center justify-between mt-1 pt-1 border-t border-slate-100">
+                  <span class="text-[10px] text-slate-500 truncate max-w-[110px]" title="${effTrans.title}">${effTrans.title}</span>
+                  <button type="button" onclick="openQuickTransportModal('${base.id}')" class="text-[10px] font-bold text-sky-600 hover:text-sky-800 underline shrink-0 cursor-pointer">
+                    ${effTrans.hasQuote ? 'Editar' : '+ Cotar'}
+                  </button>
+                </div>
               </div>
 
               <!-- 4. LAZER & EXTRAS -->
@@ -2544,6 +3062,24 @@
               <span>Economia de -${formatRawMoney(effHosp.diffAbs, currentCurrency)} abaixo da meta!</span>
             </div>
             <span class="text-[11px] font-semibold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded">Meta: ${formatRawMoney(effHosp.plannedCost, currentCurrency)}</span>
+          </div>
+          ` : '')}
+
+          ${effTrans.hasQuote && effTrans.isAboveMeta ? `
+          <div class="p-2.5 rounded-xl bg-rose-50 border border-rose-300 text-rose-900 text-xs flex items-center justify-between shadow-2xs">
+            <div class="flex items-center gap-1.5 font-bold">
+              <span>⚠️</span>
+              <span>Passagem / Transporte excede a meta em +${formatRawMoney(effTrans.diffAbs, currentCurrency)}</span>
+            </div>
+            <span class="text-[11px] font-semibold text-rose-700 bg-rose-100 px-2 py-0.5 rounded">Meta: ${formatRawMoney(effTrans.plannedCost, currentCurrency)}</span>
+          </div>
+          ` : (effTrans.hasQuote && effTrans.isBelowMeta ? `
+          <div class="p-2.5 rounded-xl bg-emerald-50 border border-emerald-300 text-emerald-900 text-xs flex items-center justify-between shadow-2xs">
+            <div class="flex items-center gap-1.5 font-bold">
+              <span>🎉</span>
+              <span>Economia de -${formatRawMoney(effTrans.diffAbs, currentCurrency)} na passagem de transporte!</span>
+            </div>
+            <span class="text-[11px] font-semibold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded">Meta: ${formatRawMoney(effTrans.plannedCost, currentCurrency)}</span>
           </div>
           ` : '')}
 
@@ -2830,11 +3366,14 @@
         totalWeeks += base.weeks;
 
         const effHosp = getBaseEffectiveHosp(base);
+        const effTrans = getBaseEffectiveTrans(base);
         const chosen = effHosp.quote;
 
         const baseHospCost = effHosp.costUsd;
+        const baseTransCost = effTrans.costUsd;
         const baseAlimCost = (base.alimUsdMonth / 4.33) * base.weeks;
-        const baseTotalCost = baseHospCost + baseAlimCost + base.transUsd + ((base.extrasUsdMonth / 4.33) * base.weeks);
+        const baseExtrasCost = (base.extrasUsdMonth / 4.33) * base.weeks;
+        const baseTotalCost = baseHospCost + baseAlimCost + baseTransCost + baseExtrasCost;
         totalCostUsd += baseTotalCost;
 
         const card = document.createElement("div");
@@ -2861,7 +3400,33 @@
                 <div class="text-xs text-slate-500 mt-1 flex flex-wrap gap-x-4 gap-y-1">
                   <span>🌊 <strong>Mar/Lazer:</strong> ${base.surfNotes}</span>
                   <span>🌡️ <strong>Clima:</strong> ${base.temp}</span>
-                  <span>🚌 <strong>Transporte:</strong> ${base.transType}</span>
+                  <div class="flex items-center gap-1.5 flex-wrap">
+                    <span>${effTrans.icon} <strong>Transporte:</strong></span>
+                    ${effTrans.hasQuote ? `
+                    <span class="inline-flex items-center gap-1 font-bold ${effTrans.isBooked ? 'text-purple-700 bg-purple-50 border-purple-200' : 'text-sky-800 bg-sky-50 border-sky-200'} border px-2 py-0.5 rounded-md">
+                      ${effTrans.isBooked ? '🎉 ' : ''}${effTrans.title}: ${formatRawMoney(effTrans.cost, currentCurrency)}
+                    </span>
+                    ${effTrans.isAboveMeta ? `
+                    <span class="inline-flex items-center text-[10px] font-black px-1.5 py-0.5 rounded bg-rose-100 text-rose-800 border border-rose-300" title="Meta planejada: ${formatRawMoney(effTrans.plannedCost, currentCurrency)}">
+                      ⚠️ +${formatRawMoney(effTrans.diffAbs, currentCurrency)} vs Meta
+                    </span>
+                    ` : (effTrans.isBelowMeta ? `
+                    <span class="inline-flex items-center text-[10px] font-black px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 border border-emerald-300" title="Meta planejada: ${formatRawMoney(effTrans.plannedCost, currentCurrency)}">
+                      🎉 -${formatRawMoney(effTrans.diffAbs, currentCurrency)} vs Meta
+                    </span>
+                    ` : `
+                    <span class="text-[10px] text-slate-400 font-medium">Na meta</span>
+                    `)}
+                    <button type="button" onclick="openQuickTransportModal('${base.id}')" class="text-[11px] font-semibold text-sky-700 hover:text-sky-900 underline cursor-pointer">
+                      Editar cotação
+                    </button>
+                    ` : `
+                    <span class="text-slate-600">${base.transType} (Meta: ~${formatRawMoney(effTrans.plannedCost, currentCurrency)})</span>
+                    <button type="button" onclick="openQuickTransportModal('${base.id}')" class="text-[11px] font-bold text-sky-700 hover:text-sky-900 bg-sky-50 hover:bg-sky-100 border border-sky-200 px-2 py-0.5 rounded-md transition-colors cursor-pointer">
+                      + Cotar Transporte
+                    </button>
+                    `}
+                  </div>
                 </div>
                 <div class="mt-2.5 flex flex-wrap items-center gap-2">
                   ${chosen ? `
@@ -2889,7 +3454,10 @@
                     <span>+</span> Vincular Airbnb
                   </button>
                   `}
-                  <button type="button" onclick="openCityGuideModal('${base.id}')" class="inline-flex items-center gap-1.5 text-[11px] font-bold text-indigo-700 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 px-2.5 py-1 rounded-lg transition-colors">
+                  <button type="button" onclick="openBudgetAdjustModal('${base.id}')" class="inline-flex items-center gap-1.5 text-[11px] font-bold text-purple-700 hover:text-purple-900 bg-purple-50 hover:bg-purple-100 border border-purple-200 px-2.5 py-1 rounded-lg transition-colors cursor-pointer" title="Ajustar metas orçamentárias de hospedagem, transporte, etc.">
+                    <span>⚙️</span> Ajustar Metas
+                  </button>
+                  <button type="button" onclick="openCityGuideModal('${base.id}')" class="inline-flex items-center gap-1.5 text-[11px] font-bold text-indigo-700 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 px-2.5 py-1 rounded-lg transition-colors cursor-pointer">
                     <span>📖</span> Ver Guia & Segredos ↗
                   </button>
                   <a href="${getAirbnbSearchUrl(base)}" target="_blank" class="inline-flex items-center gap-1.5 text-[11px] ${chosen ? 'text-slate-500 hover:text-slate-700 font-medium' : 'text-slate-600 hover:text-slate-900 font-bold bg-slate-100 hover:bg-slate-200 border border-slate-200 px-2.5 py-1 rounded-lg'} transition-colors" title="Buscar no Airbnb para ${datesMap[base.id]?.displayCheckin} a ${datesMap[base.id]?.displayCheckout}">
@@ -2964,9 +3532,10 @@
 
       baseData.forEach((base, index) => {
         const effHosp = getBaseEffectiveHosp(base);
+        const effTrans = getBaseEffectiveTrans(base);
         const hosp = effHosp.costUsd;
+        const trans = effTrans.costUsd;
         const alim = (base.alimUsdMonth / 4.33) * base.weeks;
-        const trans = base.transUsd;
         const extras = (base.extrasUsdMonth / 4.33) * base.weeks;
         const total = hosp + alim + trans + extras;
 
@@ -2997,7 +3566,18 @@
             `}
           </td>
           <td class="py-3 px-3 text-slate-600">${formatMoney(alim)}</td>
-          <td class="py-3 px-3 text-slate-600">${formatMoney(trans)}</td>
+          <td class="py-3 px-3 text-slate-700">
+            <span class="${effTrans.isAboveMeta ? 'font-bold text-amber-900' : ''}">${formatMoney(trans)}</span>
+            ${effTrans.hasQuote ? (effTrans.isAboveMeta ? `
+              <span class="block text-[10px] text-rose-600 font-bold">⚠️ +${formatRawMoney(effTrans.diffAbs, currentCurrency)}</span>
+            ` : (effTrans.isBelowMeta ? `
+              <span class="block text-[10px] text-emerald-600 font-bold">🎉 -${formatRawMoney(effTrans.diffAbs, currentCurrency)}</span>
+            ` : `
+              <span class="block text-[10px] text-sky-600 font-normal">Cotado na meta</span>
+            `)) : `
+              <span class="block text-[10px] text-slate-400 font-normal">Meta planejada</span>
+            `}
+          </td>
           <td class="py-3 px-3 text-slate-600">${formatMoney(extras)}</td>
           <td class="py-3 px-4 font-bold text-slate-800 text-right">${formatMoney(total)}</td>
         `;
@@ -4334,6 +4914,326 @@
       updateAirbnbKPIs();
       if (typeof scheduleCloudSync === "function") scheduleCloudSync();
     });
+
+    // ==========================================
+    // CONTROLADORES DO MODAL DE TRANSPORTE
+    // ==========================================
+    function openQuickTransportModal(baseId, quoteId) {
+      const base = baseData.find(b => b.id === baseId);
+      if (!base) return;
+
+      const quote = quoteId 
+        ? transportQuotes.find(q => q.id === quoteId)
+        : (transportQuotes.find(q => q.baseId === baseId && (q.status === 'booked' || q.status === 'selected'))
+           || transportQuotes.find(q => q.baseId === baseId && q.status !== 'discarded'));
+
+      document.getElementById("quickTransBaseId").value = baseId;
+      document.getElementById("quickTransQuoteId").value = quote ? quote.id : "";
+      document.getElementById("quickTransModalTitle").textContent = quote ? `Editar Transporte de ${base.name}` : `Cotar Transporte de ${base.name}`;
+
+      const datesMap = calculateAllBaseDates(tripStartDate);
+      const bDates = datesMap[base.id];
+      const travelDate = bDates ? bDates.displayCheckin : "Início da etapa";
+      document.getElementById("quickTransModalSubtitle").innerHTML = `${base.flag} <strong>${base.name}</strong> • Viagem prevista para ${travelDate}`;
+      document.getElementById("quickTransTravelDateText").textContent = `Viagem: ${travelDate}`;
+
+      // Define modo padrão baseado no transType
+      let defaultMode = "bus";
+      if (base.transType) {
+        const tLower = base.transType.toLowerCase();
+        if (tLower.includes("voo")) defaultMode = "flight";
+        else if (tLower.includes("ferry")) defaultMode = "ferry";
+        else if (tLower.includes("carro")) defaultMode = "car";
+        else if (tLower.includes("van") || tLower.includes("transfer")) defaultMode = "transfer";
+      }
+
+      document.getElementById("quickTransMode").value = quote ? (quote.mode || defaultMode) : defaultMode;
+      document.getElementById("quickTransStatus").value = quote ? quote.status : "quoted";
+      document.getElementById("quickTransTitle").value = quote ? quote.title : base.transType;
+      document.getElementById("quickTransCompany").value = quote && quote.company ? quote.company : "";
+      document.getElementById("quickTransUrl").value = quote && quote.url ? quote.url : "";
+
+      const defaultPrice = Math.round(getBaseTargetTransInActiveCurrency(base));
+      document.getElementById("quickTransPrice").value = quote ? quote.price : (defaultPrice > 0 ? defaultPrice : 500);
+      document.getElementById("quickTransCurrency").value = quote ? quote.currency : currentCurrency;
+      document.getElementById("quickTransNotes").value = quote && quote.notes ? quote.notes : "";
+
+      const delBtn = document.getElementById("quickTransDeleteBtn");
+      if (delBtn) {
+        if (quote) {
+          delBtn.classList.remove("hidden");
+        } else {
+          delBtn.classList.add("hidden");
+        }
+      }
+
+      // Preenche links de busca rápida pré-formatados
+      const searchInfo = AIRPORT_SEARCH_MAP[base.id] || { from: "Origem", to: base.name, query: `voo para ${base.name}` };
+      const linksContainer = document.getElementById("quickTransSearchLinksContainer");
+      if (linksContainer) {
+        const queryEnc = encodeURIComponent(searchInfo.query);
+        linksContainer.innerHTML = `
+          <a href="https://www.google.com/travel/flights?q=${queryEnc}" target="_blank" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white hover:bg-sky-100 text-sky-800 border border-sky-300 font-bold transition-all shadow-2xs">
+            <span>🔍</span> Google Flights ↗
+          </a>
+          <a href="https://www.skyscanner.com.br/transporte/passagens-aereas/busca?q=${queryEnc}" target="_blank" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white hover:bg-sky-100 text-sky-800 border border-sky-300 font-bold transition-all shadow-2xs">
+            <span>✈️</span> Skyscanner ↗
+          </a>
+          <a href="https://www.busbud.com/pt/search?q=${encodeURIComponent(searchInfo.from + ' ' + searchInfo.to)}" target="_blank" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white hover:bg-sky-100 text-sky-800 border border-sky-300 font-bold transition-all shadow-2xs">
+            <span>🚌</span> Busbud (Ônibus) ↗
+          </a>
+        `;
+      }
+
+      handleQuickTransModeChange();
+      handleQuickTransAudit();
+
+      const modal = document.getElementById("quickTransportModal");
+      if (modal) {
+        modal.classList.remove("hidden");
+        document.body.style.overflow = "hidden";
+      }
+    }
+
+    function closeQuickTransportModal() {
+      const modal = document.getElementById("quickTransportModal");
+      if (modal) {
+        modal.classList.add("hidden");
+        document.body.style.overflow = "";
+      }
+    }
+
+    function handleTransportModalBackdrop(event) {
+      if (event.target && event.target.id === "quickTransportModal") {
+        closeQuickTransportModal();
+      }
+    }
+
+    function handleQuickTransModeChange() {
+      const mode = document.getElementById("quickTransMode").value;
+      const iconEl = document.getElementById("quickTransHeaderIcon");
+      if (iconEl) {
+        iconEl.textContent = TRANSPORT_MODE_ICONS[mode] || "🚌";
+      }
+    }
+
+    function handleQuickTransAudit() {
+      const baseId = document.getElementById("quickTransBaseId").value;
+      const base = baseData.find(b => b.id === baseId);
+      if (!base) return;
+
+      const price = parseFloat(document.getElementById("quickTransPrice").value) || 0;
+      const currency = document.getElementById("quickTransCurrency").value;
+
+      const targetActive = getBaseTargetTransInActiveCurrency(base);
+      const targetDisplay = document.getElementById("quickTransTargetPriceDisplay");
+      if (targetDisplay) {
+        targetDisplay.textContent = `Meta planejada: ${formatCurrency(targetActive, currentCurrency)}`;
+      }
+
+      const priceInActive = convertQuotePriceToActive(price, currency);
+      const diffBadge = document.getElementById("quickTransDiffBadge");
+
+      if (diffBadge) {
+        if (price <= 0) {
+          diffBadge.className = "px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-200 text-slate-600";
+          diffBadge.textContent = "Aguardando valor";
+        } else if (priceInActive <= targetActive) {
+          const diff = targetActive - priceInActive;
+          diffBadge.className = "px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300";
+          diffBadge.textContent = `✅ Na Meta / Economia (- ${formatCurrency(diff, currentCurrency)})`;
+        } else {
+          const over = priceInActive - targetActive;
+          diffBadge.className = "px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800 border border-rose-300";
+          diffBadge.textContent = `⚠️ Excede Meta (+ ${formatCurrency(over, currentCurrency)})`;
+        }
+      }
+    }
+
+    function handleQuickTransportSubmit(event) {
+      event.preventDefault();
+      const baseId = document.getElementById("quickTransBaseId").value;
+      const quoteId = document.getElementById("quickTransQuoteId").value;
+      const mode = document.getElementById("quickTransMode").value;
+      const status = document.getElementById("quickTransStatus").value;
+      const title = document.getElementById("quickTransTitle").value.trim() || "Transporte da Etapa";
+      const company = document.getElementById("quickTransCompany").value.trim();
+      const url = document.getElementById("quickTransUrl").value.trim();
+      const price = parseFloat(document.getElementById("quickTransPrice").value) || 0;
+      const currency = document.getElementById("quickTransCurrency").value;
+      const notes = document.getElementById("quickTransNotes").value.trim();
+
+      if (quoteId) {
+        const quote = transportQuotes.find(q => q.id === quoteId);
+        if (quote) {
+          quote.mode = mode;
+          quote.status = status;
+          quote.title = title;
+          quote.company = company;
+          quote.url = url;
+          quote.price = price;
+          quote.currency = currency;
+          quote.notes = notes;
+          quote.updatedAt = Date.now();
+        }
+      } else {
+        const newQuote = {
+          id: "trans-" + Date.now(),
+          baseId: baseId,
+          mode: mode,
+          status: status,
+          title: title,
+          company: company,
+          url: url,
+          price: price,
+          currency: currency,
+          notes: notes,
+          createdAt: new Date().toISOString().split("T")[0],
+          updatedAt: Date.now()
+        };
+        transportQuotes.unshift(newQuote);
+      }
+
+      saveTransportQuotes(true);
+      closeQuickTransportModal();
+      selectBase(currentSelectedBaseIndex);
+      renderBases();
+      renderCostTable();
+      updateAirbnbKPIs();
+
+      showToast("🎉 Cotação de transporte salva e sincronizada na nuvem!");
+    }
+
+    function handleQuickTransDelete() {
+      const quoteId = document.getElementById("quickTransQuoteId").value;
+      if (!quoteId) return;
+
+      if (confirm("Deseja remover esta cotação de transporte?")) {
+        try {
+          let deletedIds = [];
+          const dtSaved = appStorage.getItem("expedicao_deleted_transports");
+          if (dtSaved) deletedIds = JSON.parse(dtSaved);
+          if (!Array.isArray(deletedIds)) deletedIds = [];
+          if (!deletedIds.includes(quoteId)) {
+            deletedIds.push(quoteId);
+            appStorage.setItem("expedicao_deleted_transports", JSON.stringify(deletedIds));
+          }
+        } catch (e) {}
+
+        transportQuotes = transportQuotes.filter(q => q.id !== quoteId);
+        saveTransportQuotes(true);
+        closeQuickTransportModal();
+        selectBase(currentSelectedBaseIndex);
+        renderBases();
+        renderCostTable();
+        updateAirbnbKPIs();
+        showToast("🗑️ Cotação de transporte removida!");
+      }
+    }
+
+    // ==========================================
+    // CONTROLADORES DO MODAL DE AJUSTE DE ORÇAMENTO
+    // ==========================================
+    function openBudgetAdjustModal(baseId) {
+      const base = baseData.find(b => b.id === baseId);
+      if (!base) return;
+
+      document.getElementById("budgetModalBaseId").value = baseId;
+      document.getElementById("budgetModalTitle").textContent = `Ajustar Metas: ${base.name}`;
+      document.getElementById("budgetModalBaseName").innerHTML = `${base.flag} ${base.name} (${base.country})`;
+
+      const datesMap = calculateAllBaseDates(tripStartDate);
+      const bDates = datesMap[base.id];
+      const dateStr = bDates ? `📅 ${bDates.displayCheckin} a ${bDates.displayCheckout} (${bDates.nights} noites)` : "";
+      document.getElementById("budgetModalBaseDates").textContent = dateStr;
+
+      document.getElementById("budgetModalWeeks").value = base.weeks !== undefined ? base.weeks : 3;
+      document.getElementById("budgetModalHospUsd").value = base.hospUsdMonth || 500;
+      document.getElementById("budgetModalTransUsd").value = base.transUsd || 100;
+      document.getElementById("budgetModalAlimUsd").value = base.alimUsdMonth || 550;
+      document.getElementById("budgetModalExtrasUsd").value = base.extrasUsdMonth || 200;
+
+      handleBudgetModalPreview();
+
+      const modal = document.getElementById("budgetAdjustModal");
+      if (modal) {
+        modal.classList.remove("hidden");
+        document.body.style.overflow = "hidden";
+      }
+    }
+
+    function closeBudgetAdjustModal() {
+      const modal = document.getElementById("budgetAdjustModal");
+      if (modal) {
+        modal.classList.add("hidden");
+        document.body.style.overflow = "";
+      }
+    }
+
+    function handleBudgetModalBackdrop(event) {
+      if (event.target && event.target.id === "budgetAdjustModal") {
+        closeBudgetAdjustModal();
+      }
+    }
+
+    function handleBudgetModalPreview() {
+      const weeks = parseFloat(document.getElementById("budgetModalWeeks").value) || 0;
+      const hospUsdMonth = parseFloat(document.getElementById("budgetModalHospUsd").value) || 0;
+      const transUsd = parseFloat(document.getElementById("budgetModalTransUsd").value) || 0;
+      const alimUsdMonth = parseFloat(document.getElementById("budgetModalAlimUsd").value) || 0;
+      const extrasUsdMonth = parseFloat(document.getElementById("budgetModalExtrasUsd").value) || 0;
+
+      const mult = profileMultiplier > 0 ? profileMultiplier : 1;
+      const rate = currentCurrency === "BRL" ? usdRate : 1;
+
+      const hospTotalUsd = weeks > 0 ? (hospUsdMonth / 4.33) * weeks : 0;
+      const alimTotalUsd = (alimUsdMonth / 4.33) * weeks;
+      const extrasTotalUsd = (extrasUsdMonth / 4.33) * weeks;
+      const stageTotalUsd = hospTotalUsd + alimTotalUsd + transUsd + extrasTotalUsd;
+
+      const stageTotalActive = stageTotalUsd * mult * rate;
+      const days = weeks > 0 ? weeks * 7 : 2;
+      const dailyActive = days > 0 ? stageTotalActive / days : 0;
+
+      const previewTotal = document.getElementById("budgetModalPreviewTotal");
+      const previewDaily = document.getElementById("budgetModalPreviewDaily");
+      const previewUsd = document.getElementById("budgetModalPreviewUsd");
+
+      if (previewTotal) previewTotal.textContent = formatRawMoney(stageTotalActive, currentCurrency);
+      if (previewDaily) previewDaily.textContent = `~${formatRawMoney(dailyActive, currentCurrency)}/dia`;
+      if (previewUsd) previewUsd.textContent = `US$ ${Math.round(stageTotalUsd * mult).toLocaleString("en-US")}`;
+    }
+
+    function handleBudgetAdjustSubmit(event) {
+      event.preventDefault();
+      const baseId = document.getElementById("budgetModalBaseId").value;
+      const weeks = parseFloat(document.getElementById("budgetModalWeeks").value) || 0;
+      const hospUsdMonth = parseFloat(document.getElementById("budgetModalHospUsd").value) || 0;
+      const transUsd = parseFloat(document.getElementById("budgetModalTransUsd").value) || 0;
+      const alimUsdMonth = parseFloat(document.getElementById("budgetModalAlimUsd").value) || 0;
+      const extrasUsdMonth = parseFloat(document.getElementById("budgetModalExtrasUsd").value) || 0;
+
+      saveBaseBudget(baseId, {
+        weeks: weeks,
+        hospUsdMonth: hospUsdMonth,
+        transUsd: transUsd,
+        alimUsdMonth: alimUsdMonth,
+        extrasUsdMonth: extrasUsdMonth
+      });
+
+      closeBudgetAdjustModal();
+    }
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") {
+        closeCityGuideModal();
+        closeQuickAirbnbModal();
+        closeQuickTransportModal();
+        closeBudgetAdjustModal();
+        closeCloudModal();
+      }
+    });
+
 
     tripStartDate = getTripStartDate();
     const tripStartInput = document.getElementById("tripStartDateInput");
