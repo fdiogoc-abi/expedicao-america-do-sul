@@ -64,6 +64,16 @@
             </label>
             <input type="date" id="tripStartDateInput" onchange="setTripStartDate(this.value)" class="text-xs font-bold bg-white border border-slate-300 rounded-lg px-2 py-1.5 text-slate-700 focus:outline-none focus:ring-2 focus:ring-sky-500 cursor-pointer shadow-2xs">
           </div>
+          <div class="flex items-end gap-1.5 pt-1 sm:pt-0">
+            <button type="button" onclick="openCloudModal()" title="Central de Nuvem & Sincronização Multi-PC" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 hover:border-sky-400 transition-colors shadow-2xs cursor-pointer">
+              <span id="headerCloudIcon" class="text-sm">☁️</span>
+              <span id="headerCloudText" class="hidden sm:inline">Nuvem Ativa</span>
+            </button>
+            <button type="button" onclick="lockApp()" title="Bloquear Painel com Senha" class="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-bold bg-slate-100 hover:bg-slate-200 border border-slate-300 text-slate-700 transition-colors shadow-2xs cursor-pointer">
+              <span>🔒</span>
+              <span class="hidden md:inline">Bloquear</span>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -1118,6 +1128,205 @@
     </div>
   </div>
 
+  <!-- ========================================== -->
+  <!-- 🔒 TELA DE BLOQUEIO / AUTH OVERLAY (E2EE) -->
+  <!-- ========================================== -->
+  <div id="authLockOverlay" class="fixed inset-0 z-[9999] bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4 transition-all duration-300">
+    <div class="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl border border-slate-200 text-center relative overflow-hidden">
+      <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-sky-500 to-indigo-600 text-white mx-auto flex items-center justify-center text-3xl shadow-lg shadow-sky-500/30 mb-4">
+        <span id="lockIconDisplay">🔐</span>
+      </div>
+      
+      <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-sky-50 text-sky-800 border border-sky-200 mb-2">
+        <span>🛡️</span> Criptografia AES-GCM 256-bit
+      </div>
+      <h2 class="text-2xl font-black text-slate-900 tracking-tight" id="lockTitle">Expedição América do Sul</h2>
+      <p class="text-xs text-slate-500 mt-1 mb-6 leading-relaxed" id="lockSubtitle">
+        Painel de Rota & Finanças protegido. Digite sua senha para descriptografar os dados.
+      </p>
+
+      <!-- FORMULÁRIO DE DESBLOQUEIO (SE JÁ TEM SENHA DEFINIDA) -->
+      <form id="unlockForm" onsubmit="handleUnlockSubmit(event)" class="space-y-4">
+        <div class="text-left">
+          <label class="block text-xs font-bold text-slate-700 mb-1.5">Senha Mestra / PIN</label>
+          <div class="relative">
+            <input type="password" id="unlockPasswordInput" required autocomplete="current-password" placeholder="Digite sua senha..." class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-sky-500 font-medium text-slate-900 pr-10 text-sm">
+            <button type="button" onclick="togglePasswordVisibility('unlockPasswordInput', this)" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-sm p-1">
+              👁️
+            </button>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between text-xs pt-1">
+          <label class="flex items-center gap-2 cursor-pointer select-none text-slate-600 font-medium">
+            <input type="checkbox" id="rememberDeviceCheck" checked class="rounded text-sky-600 focus:ring-sky-500">
+            <span>Lembrar neste computador</span>
+          </label>
+          <button type="button" onclick="promptResetPassword()" class="text-slate-400 hover:text-rose-600 underline transition-colors cursor-pointer">
+            Redefinir
+          </button>
+        </div>
+
+        <div id="authErrorMessage" class="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-bold hidden flex items-center gap-2 text-left">
+          <span>⚠️</span> <span id="authErrorText">Senha incorreta. Tente novamente.</span>
+        </div>
+
+        <button type="submit" id="unlockSubmitBtn" class="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-700 hover:to-indigo-700 text-white font-black text-sm shadow-md shadow-sky-600/20 transition-all active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer">
+          <span>🔓</span> Desbloquear Painel
+        </button>
+      </form>
+
+      <!-- FORMULÁRIO DE PRIMEIRO ACESSO (SE AINDA NÃO TEM SENHA) -->
+      <form id="setupPasswordForm" onsubmit="handleSetupPasswordSubmit(event)" class="space-y-4 hidden">
+        <div class="p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs text-left leading-relaxed">
+          <strong>👋 Primeiro Acesso:</strong> Escolha uma Senha Mestra ou PIN. Ela será usada para criptografar todos os seus dados antes de salvá-los no Pantry Cloud e proteger o acesso em qualquer computador.
+        </div>
+
+        <div class="text-left space-y-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Crie sua Senha Mestra / PIN</label>
+            <div class="relative">
+              <input type="password" id="setupPasswordInput" required placeholder="Mínimo 4 caracteres (ex: 2026)" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-sky-500 font-medium text-slate-900 pr-10 text-sm">
+              <button type="button" onclick="togglePasswordVisibility('setupPasswordInput', this)" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-sm p-1">
+                👁️
+              </button>
+            </div>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Confirme a Senha</label>
+            <input type="password" id="setupPasswordConfirm" required placeholder="Repita a mesma senha" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-sky-500 font-medium text-slate-900 text-sm">
+          </div>
+        </div>
+
+        <div class="flex items-center text-xs text-slate-600 pt-1">
+          <label class="flex items-center gap-2 cursor-pointer select-none font-medium">
+            <input type="checkbox" id="setupRememberDeviceCheck" checked class="rounded text-sky-600 focus:ring-sky-500">
+            <span>Lembrar neste computador</span>
+          </label>
+        </div>
+
+        <div id="setupErrorMessage" class="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-bold hidden flex items-center gap-2 text-left">
+          <span>⚠️</span> <span id="setupErrorText">As senhas não coincidem.</span>
+        </div>
+
+        <button type="submit" class="w-full py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-sm shadow-md shadow-emerald-600/20 transition-all active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer">
+          <span>🛡️</span> Criar Senha & Entrar no Painel
+        </button>
+      </form>
+
+      <div class="mt-6 pt-4 border-t border-slate-100 flex items-center justify-center gap-2 text-[11px] text-slate-400">
+        <span>☁️ Sincronização Nuvem:</span>
+        <span class="font-semibold text-slate-600">Pantry Cloud Ativo</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- ☁️ MODAL DE NUVEM & SEGURANÇA (MULTI-PC) -->
+  <!-- ========================================== -->
+  <div id="cloudConfigModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-3 md:p-6 overflow-y-auto" onclick="handleCloudModalBackdrop(event)">
+    <div class="bg-white rounded-3xl p-6 sm:p-8 max-w-xl w-full shadow-2xl border border-slate-200 space-y-6">
+      
+      <!-- CABEÇALHO DO MODAL -->
+      <div class="flex items-start justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-12 h-12 rounded-2xl bg-sky-100 text-sky-700 flex items-center justify-center text-2xl font-black shrink-0">
+            ☁️
+          </div>
+          <div>
+            <h3 class="text-lg font-black text-slate-900">Nuvem & Segurança Multi-PC</h3>
+            <p class="text-xs text-slate-500">Sincronização em tempo real entre seus computadores com Criptografia E2EE</p>
+          </div>
+        </div>
+        <button type="button" onclick="closeCloudModal()" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold flex items-center justify-center text-sm transition-colors cursor-pointer">
+          ✕
+        </button>
+      </div>
+
+      <!-- STATUS ATUAL -->
+      <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div class="space-y-1">
+          <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Status da Sincronização</span>
+          <div class="flex items-center gap-2">
+            <span id="modalCloudStatusDot" class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span id="modalCloudStatusText" class="text-sm font-black text-slate-800">Conectado & Sincronizado</span>
+          </div>
+          <span id="modalCloudLastSync" class="text-[11px] text-slate-500 block">Aguardando primeira sincronização</span>
+        </div>
+        <div class="flex items-center gap-2 flex-wrap">
+          <button type="button" onclick="syncToCloud(true)" class="px-3.5 py-2 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer">
+            <span>📤</span> Sincronizar Agora
+          </button>
+          <button type="button" onclick="fetchFromCloud(true)" class="px-3.5 py-2 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold text-xs transition-colors flex items-center gap-1.5 cursor-pointer">
+            <span>📥</span> Baixar da Nuvem
+          </button>
+        </div>
+      </div>
+
+      <!-- BOTÃO DE PAREAMENTO: COPIAR LINK PARA OUTRO PC -->
+      <div class="p-4 rounded-2xl bg-gradient-to-r from-sky-50 to-indigo-50 border border-sky-200 space-y-2">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-black text-sky-900 flex items-center gap-1.5">
+            <span>💻</span> Abrir no Segundo Computador / Celular
+          </span>
+          <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-sky-200 text-sky-800">1-Clique</span>
+        </div>
+        <p class="text-xs text-sky-700 leading-relaxed">
+          Copie este link e abra no seu outro computador. O novo PC configurará automaticamente o acesso ao mesmo cesto na nuvem!
+        </p>
+        <button type="button" onclick="copyPairingLink()" class="w-full py-2.5 px-4 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-black text-xs shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer">
+          <span>🔗</span> Copiar Link de Acesso com Nuvem
+        </button>
+      </div>
+
+      <!-- PARÂMETROS DO PANTRY CLOUD -->
+      <div class="space-y-3 pt-1">
+        <div class="flex items-center justify-between">
+          <label class="text-xs font-black text-slate-800 flex items-center gap-1.5">
+            <span>🗄️</span> Configurações do Cesto (Pantry Cloud)
+          </label>
+          <span class="text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">100% Gratuito</span>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+          <div>
+            <label class="block text-slate-500 font-medium mb-1">Pantry ID</label>
+            <input type="text" id="cfgPantryId" value="085aaed1-01e2-4648-af62-0ffa2f41a755" class="w-full px-3 py-2 rounded-xl border border-slate-300 font-mono text-slate-700 text-[11px]">
+          </div>
+          <div>
+            <label class="block text-slate-500 font-medium mb-1">Nome do Cesto (Basket)</label>
+            <input type="text" id="cfgBasketName" value="expedicao-america-do-sul" class="w-full px-3 py-2 rounded-xl border border-slate-300 font-mono text-slate-700 text-[11px]">
+          </div>
+        </div>
+        <div class="flex items-center justify-between pt-1">
+          <a href="https://getpantry.cloud/apiv1/pantry/085aaed1-01e2-4648-af62-0ffa2f41a755/basket/expedicao-america-do-sul" target="_blank" class="text-[11px] text-sky-600 hover:underline flex items-center gap-1 font-medium">
+            <span>↗</span> Ver JSON Criptografado no Pantry
+          </a>
+          <button type="button" onclick="savePantryConfigChanges()" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-900 text-white font-bold text-[11px] transition-colors cursor-pointer">
+            Salvar Cesto
+          </button>
+        </div>
+      </div>
+
+      <!-- SEGURANÇA: ALTERAR SENHA & BACKUP MANUAL -->
+      <div class="pt-4 border-t border-slate-200 grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <button type="button" onclick="openChangePasswordPrompt()" class="py-2.5 px-3 rounded-xl border border-slate-300 text-slate-700 hover:bg-slate-50 font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer">
+          <span>🔑</span> Alterar Senha Mestra
+        </button>
+        <button type="button" onclick="exportDataJson()" class="py-2.5 px-3 rounded-xl border border-slate-300 text-slate-700 hover:bg-slate-50 font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer">
+          <span>💾</span> Baixar Backup JSON
+        </button>
+      </div>
+
+      <!-- FECHAR -->
+      <div class="pt-2 flex justify-end">
+        <button type="button" onclick="closeCloudModal()" class="px-5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition-colors cursor-pointer">
+          Fechar
+        </button>
+      </div>
+
+    </div>
+  </div>
+
   <script>
     // BASE DATA CONFIGURATION - ROTA 3.0 DEFINITIVA (30 SEMANAS / 14 ETAPAS)
     const baseData = [
@@ -1757,6 +1966,608 @@
       return { score, total, label, badgeClass, audit };
     }
 
+    // ==========================================
+    // SEGURANÇA, CRIPTOGRAFIA E NUVEM MULTI-PC (E2EE)
+    // ==========================================
+    const DEFAULT_PANTRY_CONFIG = {
+      pantryId: "085aaed1-01e2-4648-af62-0ffa2f41a755",
+      basketName: "expedicao-america-do-sul"
+    };
+
+    let masterPassword = null;
+    let isAppUnlocked = false;
+    let cloudSyncDebounceTimer = null;
+    let lastCloudSyncTimestamp = null;
+    let isSyncingToCloud = false;
+
+    // --- Web Crypto Helpers (PBKDF2 + AES-GCM 256-bit) ---
+    function bufToHex(buffer) {
+      return Array.from(new Uint8Array(buffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    function hexToBuf(hex) {
+      const bytes = new Uint8Array(hex.length / 2);
+      for (let i = 0; i < hex.length; i += 2) {
+        bytes[i / 2] = parseInt(hex.substr(i, 2), 16);
+      }
+      return bytes;
+    }
+
+    async function deriveAesKey(password, saltUint8) {
+      const enc = new TextEncoder();
+      const keyMaterial = await crypto.subtle.importKey(
+        "raw",
+        enc.encode(password),
+        "PBKDF2",
+        false,
+        ["deriveKey"]
+      );
+      return crypto.subtle.deriveKey(
+        {
+          name: "PBKDF2",
+          salt: saltUint8,
+          iterations: 100000,
+          hash: "SHA-256"
+        },
+        keyMaterial,
+        { name: "AES-GCM", length: 256 },
+        false,
+        ["encrypt", "decrypt"]
+      );
+    }
+
+    async function encryptPayloadE2EE(plainText, password) {
+      const salt = crypto.getRandomValues(new Uint8Array(16));
+      const iv = crypto.getRandomValues(new Uint8Array(12));
+      const key = await deriveAesKey(password, salt);
+      const enc = new TextEncoder();
+      const cipherBuf = await crypto.subtle.encrypt(
+        { name: "AES-GCM", iv: iv },
+        key,
+        enc.encode(plainText)
+      );
+      return {
+        v: 1,
+        app: "expedicao-america-do-sul",
+        salt: bufToHex(salt),
+        iv: bufToHex(iv),
+        ciphertext: bufToHex(cipherBuf),
+        updatedAt: Date.now()
+      };
+    }
+
+    async function decryptPayloadE2EE(encryptedObj, password) {
+      if (!encryptedObj || !encryptedObj.salt || !encryptedObj.iv || !encryptedObj.ciphertext) {
+        throw new Error("Formato de dados criptografados inválido.");
+      }
+      const salt = hexToBuf(encryptedObj.salt);
+      const iv = hexToBuf(encryptedObj.iv);
+      const ciphertext = hexToBuf(encryptedObj.ciphertext);
+      const key = await deriveAesKey(password, salt);
+      const decryptedBuf = await crypto.subtle.decrypt(
+        { name: "AES-GCM", iv: iv },
+        key,
+        ciphertext
+      );
+      return new TextDecoder().decode(decryptedBuf);
+    }
+
+    async function computeSha256(text) {
+      const enc = new TextEncoder();
+      const hashBuf = await crypto.subtle.digest("SHA-256", enc.encode(text));
+      return bufToHex(hashBuf);
+    }
+
+    // --- Configuração & Endpoint do Pantry ---
+    function getPantryConfig() {
+      try {
+        const saved = localStorage.getItem("expedicao_pantry_config");
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (parsed.pantryId && parsed.basketName) return parsed;
+        }
+      } catch (e) {}
+      return { ...DEFAULT_PANTRY_CONFIG };
+    }
+
+    function savePantryConfig(cfg) {
+      try {
+        localStorage.setItem("expedicao_pantry_config", JSON.stringify(cfg));
+      } catch (e) {}
+    }
+
+    function getPantryEndpoint() {
+      const cfg = getPantryConfig();
+      return `https://getpantry.cloud/apiv1/pantry/${cfg.pantryId}/basket/${cfg.basketName}`;
+    }
+
+    // --- Indicadores Visuais de Status da Nuvem ---
+    function updateCloudStatusUI(status, errorMsg = "") {
+      const headerIcon = document.getElementById("headerCloudIcon");
+      const headerText = document.getElementById("headerCloudText");
+      const modalDot = document.getElementById("modalCloudStatusDot");
+      const modalText = document.getElementById("modalCloudStatusText");
+      const modalLast = document.getElementById("modalCloudLastSync");
+
+      const timeStr = lastCloudSyncTimestamp ? `Hoje às ${lastCloudSyncTimestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : "Ainda não sincronizado";
+
+      if (status === "synced") {
+        if (headerIcon) headerIcon.textContent = "☁️";
+        if (headerText) headerText.textContent = "Nuvem Ativa";
+        if (modalDot) modalDot.className = "w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse";
+        if (modalText) modalText.textContent = "Conectado & Sincronizado";
+        if (modalLast) modalLast.textContent = `Última sincronização: ${timeStr}`;
+      } else if (status === "syncing") {
+        if (headerIcon) headerIcon.textContent = "🔄";
+        if (headerText) headerText.textContent = "Sincronizando...";
+        if (modalDot) modalDot.className = "w-2.5 h-2.5 rounded-full bg-sky-500 animate-spin";
+        if (modalText) modalText.textContent = "Criptografando & Enviando...";
+      } else if (status === "error") {
+        if (headerIcon) headerIcon.textContent = "⚠️";
+        if (headerText) headerText.textContent = "Falha Nuvem";
+        if (modalDot) modalDot.className = "w-2.5 h-2.5 rounded-full bg-rose-500";
+        if (modalText) modalText.textContent = "Falha de Conexão com a Nuvem";
+        if (modalLast) modalLast.textContent = errorMsg ? `Erro: ${errorMsg}` : "Verifique sua conexão ou Pantry ID";
+      } else {
+        if (headerIcon) headerIcon.textContent = "💾";
+        if (headerText) headerText.textContent = "Modo Local";
+        if (modalDot) modalDot.className = "w-2.5 h-2.5 rounded-full bg-slate-400";
+        if (modalText) modalText.textContent = "Salvo apenas no computador";
+      }
+    }
+
+    // --- Envio e Recebimento na Nuvem ---
+    async function syncToCloud(showToastFeedback = false) {
+      if (!masterPassword || isSyncingToCloud) return;
+      isSyncingToCloud = true;
+      updateCloudStatusUI("syncing");
+
+      try {
+        const localUpdated = Date.now();
+        localStorage.setItem("expedicao_local_updated_at", localUpdated.toString());
+
+        const rawData = {
+          updatedAt: localUpdated,
+          tripStartDate: getTripStartDate(),
+          airbnbQuotes: airbnbQuotes,
+          settings: {
+            currency: currentCurrency,
+            usdRate: usdRate,
+            profile: document.getElementById("profileSelect")?.value || "budget"
+          }
+        };
+
+        const encrypted = await encryptPayloadE2EE(JSON.stringify(rawData), masterPassword);
+        const endpoint = getPantryEndpoint();
+
+        const res = await fetch(endpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(encrypted)
+        });
+
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+        lastCloudSyncTimestamp = new Date();
+        updateCloudStatusUI("synced");
+        if (showToastFeedback) {
+          showToast("☁️ Dados salvos e criptografados na nuvem com sucesso!");
+        }
+      } catch (err) {
+        console.warn("Erro na sincronização em nuvem:", err);
+        updateCloudStatusUI("error", err.message);
+        if (showToastFeedback) {
+          showToast("⚠️ Falha ao sincronizar com o Pantry. Dados seguros localmente.");
+        }
+      } finally {
+        isSyncingToCloud = false;
+      }
+    }
+
+    async function fetchFromCloud(showToastFeedback = false) {
+      if (!masterPassword) return;
+      updateCloudStatusUI("syncing");
+
+      try {
+        const endpoint = getPantryEndpoint();
+        const res = await fetch(endpoint);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+        const data = await res.json();
+        if (data.ciphertext && data.salt && data.iv) {
+          const decryptedStr = await decryptPayloadE2EE(data, masterPassword);
+          const cloudData = JSON.parse(decryptedStr);
+
+          const localTimestamp = parseInt(localStorage.getItem("expedicao_local_updated_at") || "0", 10);
+          const cloudTimestamp = cloudData.updatedAt || 0;
+
+          if (cloudTimestamp > localTimestamp || showToastFeedback) {
+            if (cloudData.tripStartDate && /^\d{4}-\d{2}-\d{2}$/.test(cloudData.tripStartDate)) {
+              tripStartDate = cloudData.tripStartDate;
+              localStorage.setItem("expedicao_start_date", tripStartDate);
+              const dateInput = document.getElementById("tripStartDateInput");
+              if (dateInput) dateInput.value = tripStartDate;
+            }
+
+            if (Array.isArray(cloudData.airbnbQuotes)) {
+              airbnbQuotes = cloudData.airbnbQuotes;
+              localStorage.setItem("expedicao_airbnbs_v2", JSON.stringify(airbnbQuotes));
+            }
+
+            if (cloudData.settings) {
+              if (cloudData.settings.currency) {
+                currentCurrency = cloudData.settings.currency;
+                const cSelect = document.getElementById("currencySelect");
+                if (cSelect) cSelect.value = currentCurrency;
+              }
+              if (cloudData.settings.usdRate) {
+                usdRate = parseFloat(cloudData.settings.usdRate) || 5.50;
+                const uInput = document.getElementById("usdRate");
+                if (uInput) uInput.value = usdRate;
+              }
+              if (cloudData.settings.profile) {
+                const pSelect = document.getElementById("profileSelect");
+                if (pSelect) {
+                  pSelect.value = cloudData.settings.profile;
+                  profileMultiplier = cloudData.settings.profile === "budget" ? 0.82 : 1.0;
+                }
+              }
+            }
+
+            localStorage.setItem("expedicao_local_updated_at", cloudTimestamp.toString());
+            renderBases();
+            selectBase(currentSelectedBaseIndex);
+            populateCityDropdowns();
+            updateFormBudgetMeta();
+            renderAirbnbCards();
+            updateAirbnbKPIs();
+            updateAirbnbBadge();
+            if (showToastFeedback) {
+              showToast("📥 Dados mais recentes sincronizados da nuvem com sucesso!");
+            }
+          }
+          lastCloudSyncTimestamp = new Date();
+          updateCloudStatusUI("synced");
+        } else {
+          // Basket virgem: envia os dados locais iniciais
+          syncToCloud(false);
+        }
+      } catch (err) {
+        console.warn("Erro ao baixar da nuvem:", err);
+        updateCloudStatusUI("offline");
+        if (showToastFeedback) {
+          showToast("⚠️ Não foi possível baixar da nuvem. Usando dados locais.");
+        }
+      }
+    }
+
+    function scheduleCloudSync() {
+      if (cloudSyncDebounceTimer) clearTimeout(cloudSyncDebounceTimer);
+      cloudSyncDebounceTimer = setTimeout(() => {
+        syncToCloud(false);
+      }, 1500);
+    }
+
+    // --- Funções de Bloqueio, Desbloqueio e Pareamento ---
+    function togglePasswordVisibility(inputId, btn) {
+      const input = document.getElementById(inputId);
+      if (!input) return;
+      if (input.type === "password") {
+        input.type = "text";
+        btn.textContent = "🔒";
+      } else {
+        input.type = "password";
+        btn.textContent = "👁️";
+      }
+    }
+
+    async function handleUnlockSubmit(e) {
+      if (e) e.preventDefault();
+      const input = document.getElementById("unlockPasswordInput");
+      const errBox = document.getElementById("authErrorMessage");
+      const errText = document.getElementById("authErrorText");
+      const rememberCheck = document.getElementById("rememberDeviceCheck");
+      if (!input) return;
+
+      const password = input.value.trim();
+      if (!password) return;
+
+      const hash = await computeSha256(password);
+      const storedHash = localStorage.getItem("expedicao_auth_hash");
+
+      let isValid = false;
+
+      if (storedHash) {
+        if (hash === storedHash) {
+          isValid = true;
+        }
+      } else {
+        // Caso de pareamento no PC 2: sem hash local, testa descriptografar o cesto da nuvem
+        try {
+          const endpoint = getPantryEndpoint();
+          const res = await fetch(endpoint);
+          if (res.ok) {
+            const data = await res.json();
+            if (data.ciphertext && data.salt && data.iv) {
+              await decryptPayloadE2EE(data, password);
+              isValid = true;
+              localStorage.setItem("expedicao_auth_hash", hash);
+            }
+          }
+        } catch (cloudErr) {}
+      }
+
+      if (isValid) {
+        masterPassword = password;
+        isAppUnlocked = true;
+        sessionStorage.setItem("expedicao_unlocked", "true");
+
+        if (rememberCheck && rememberCheck.checked) {
+          localStorage.setItem("expedicao_remember_device", "true");
+          localStorage.setItem("expedicao_saved_key", btoa(encodeURIComponent(password)));
+        } else {
+          localStorage.removeItem("expedicao_remember_device");
+          localStorage.removeItem("expedicao_saved_key");
+        }
+
+        const overlay = document.getElementById("authLockOverlay");
+        if (overlay) overlay.classList.add("hidden");
+
+        if (errBox) errBox.classList.add("hidden");
+        input.value = "";
+        showToast("🔓 Bem-vindo! Painel desbloqueado com sucesso.");
+        fetchFromCloud(false);
+      } else {
+        if (errBox) errBox.classList.remove("hidden");
+        if (errText) errText.textContent = "Senha incorreta. Tente novamente.";
+        input.classList.add("ring-2", "ring-rose-500");
+        setTimeout(() => input.classList.remove("ring-2", "ring-rose-500"), 1500);
+      }
+    }
+
+    async function handleSetupPasswordSubmit(e) {
+      if (e) e.preventDefault();
+      const p1 = document.getElementById("setupPasswordInput").value.trim();
+      const p2 = document.getElementById("setupPasswordConfirm").value.trim();
+      const errBox = document.getElementById("setupErrorMessage");
+      const errText = document.getElementById("setupErrorText");
+      const rememberCheck = document.getElementById("setupRememberDeviceCheck");
+
+      if (p1.length < 4) {
+        if (errBox) errBox.classList.remove("hidden");
+        if (errText) errText.textContent = "A senha deve ter pelo menos 4 caracteres.";
+        return;
+      }
+
+      if (p1 !== p2) {
+        if (errBox) errBox.classList.remove("hidden");
+        if (errText) errText.textContent = "As senhas digitadas não conferem.";
+        return;
+      }
+
+      const hash = await computeSha256(p1);
+      localStorage.setItem("expedicao_auth_hash", hash);
+      masterPassword = p1;
+      isAppUnlocked = true;
+      sessionStorage.setItem("expedicao_unlocked", "true");
+
+      if (rememberCheck && rememberCheck.checked) {
+        localStorage.setItem("expedicao_remember_device", "true");
+        localStorage.setItem("expedicao_saved_key", btoa(encodeURIComponent(p1)));
+      }
+
+      const overlay = document.getElementById("authLockOverlay");
+      if (overlay) overlay.classList.add("hidden");
+
+      showToast("🛡️ Senha Mestra criada! Seus dados foram protegidos.");
+      syncToCloud(true);
+    }
+
+    function lockApp() {
+      masterPassword = null;
+      isAppUnlocked = false;
+      sessionStorage.removeItem("expedicao_unlocked");
+      localStorage.removeItem("expedicao_saved_key");
+
+      const overlay = document.getElementById("authLockOverlay");
+      const unlockForm = document.getElementById("unlockForm");
+      const setupForm = document.getElementById("setupPasswordForm");
+      const input = document.getElementById("unlockPasswordInput");
+
+      if (overlay) overlay.classList.remove("hidden");
+      if (unlockForm) unlockForm.classList.remove("hidden");
+      if (setupForm) setupForm.classList.add("hidden");
+      if (input) {
+        input.value = "";
+        setTimeout(() => input.focus(), 200);
+      }
+      showToast("🔒 Painel bloqueado.");
+    }
+
+    function promptResetPassword() {
+      const ok = confirm("Deseja redefinir a senha deste computador?\\n\\nIsso permitirá criar uma nova senha para o painel. Seus dados locais serão preservados.");
+      if (!ok) return;
+
+      localStorage.removeItem("expedicao_auth_hash");
+      localStorage.removeItem("expedicao_saved_key");
+      sessionStorage.removeItem("expedicao_unlocked");
+      masterPassword = null;
+
+      const unlockForm = document.getElementById("unlockForm");
+      const setupForm = document.getElementById("setupPasswordForm");
+      if (unlockForm) unlockForm.classList.add("hidden");
+      if (setupForm) setupForm.classList.remove("hidden");
+    }
+
+    async function openChangePasswordPrompt() {
+      const currentPass = prompt("Digite a sua Senha Mestra ATUAL:");
+      if (!currentPass) return;
+
+      const currentHash = await computeSha256(currentPass);
+      const storedHash = localStorage.getItem("expedicao_auth_hash");
+      if (storedHash && currentHash !== storedHash) {
+        alert("Senha atual incorreta! Ação cancelada.");
+        return;
+      }
+
+      const newPass = prompt("Digite a NOVA Senha Mestra (mínimo 4 caracteres):");
+      if (!newPass || newPass.trim().length < 4) {
+        alert("Nova senha inválida. Deve ter pelo menos 4 caracteres.");
+        return;
+      }
+
+      const confirmPass = prompt("Confirme a NOVA Senha Mestra:");
+      if (newPass !== confirmPass) {
+        alert("As senhas não coincidem. Ação cancelada.");
+        return;
+      }
+
+      const newHash = await computeSha256(newPass);
+      localStorage.setItem("expedicao_auth_hash", newHash);
+      masterPassword = newPass;
+
+      if (localStorage.getItem("expedicao_remember_device") === "true") {
+        localStorage.setItem("expedicao_saved_key", btoa(encodeURIComponent(newPass)));
+      }
+
+      showToast("🔑 Senha alterada! Re-criptografando cofre na nuvem...");
+      await syncToCloud(true);
+      closeCloudModal();
+    }
+
+    function openCloudModal() {
+      const modal = document.getElementById("cloudConfigModal");
+      if (modal) modal.classList.remove("hidden");
+      const cfg = getPantryConfig();
+      const pInput = document.getElementById("cfgPantryId");
+      const bInput = document.getElementById("cfgBasketName");
+      if (pInput) pInput.value = cfg.pantryId;
+      if (bInput) bInput.value = cfg.basketName;
+      updateCloudStatusUI(lastCloudSyncTimestamp ? "synced" : "synced");
+    }
+
+    function closeCloudModal() {
+      const modal = document.getElementById("cloudConfigModal");
+      if (modal) modal.classList.add("hidden");
+    }
+
+    function handleCloudModalBackdrop(e) {
+      if (e.target.id === "cloudConfigModal") {
+        closeCloudModal();
+      }
+    }
+
+    function savePantryConfigChanges() {
+      const pInput = document.getElementById("cfgPantryId");
+      const bInput = document.getElementById("cfgBasketName");
+      if (!pInput || !bInput) return;
+
+      const pantryId = pInput.value.trim();
+      const basketName = bInput.value.trim();
+      if (!pantryId || !basketName) {
+        alert("Pantry ID e Nome do Cesto não podem ficar vazios.");
+        return;
+      }
+
+      savePantryConfig({ pantryId, basketName });
+      showToast("🗄️ Configurações do Pantry salvas!");
+      fetchFromCloud(true);
+    }
+
+    function copyPairingLink() {
+      const cfg = getPantryConfig();
+      const payload = {
+        id: cfg.pantryId,
+        basket: cfg.basketName
+      };
+      const hash = '#sync=' + encodeURIComponent(btoa(JSON.stringify(payload)));
+      const url = window.location.origin + window.location.pathname + hash;
+
+      navigator.clipboard.writeText(url).then(() => {
+        showToast("🔗 Link copiado! Abra no seu outro computador para sincronizar.");
+      }).catch(() => {
+        prompt("Copie este link para abrir no outro computador:", url);
+      });
+    }
+
+    function exportDataJson() {
+      const exportObj = {
+        version: 2,
+        exportedAt: new Date().toISOString(),
+        tripStartDate: getTripStartDate(),
+        airbnbQuotes: airbnbQuotes,
+        settings: {
+          currency: currentCurrency,
+          usdRate: usdRate,
+          profile: document.getElementById("profileSelect")?.value || "budget"
+        }
+      };
+      const blob = new Blob([JSON.stringify(exportObj, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `expedicao_backup_${new Date().toISOString().slice(0, 10)}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast("📦 Backup JSON baixado com sucesso!");
+    }
+
+    async function initSecurityAndCloud() {
+      // 1. Verificar se há parâmetro de pareamento na URL (#sync=...)
+      if (window.location.hash && window.location.hash.includes("#sync=")) {
+        try {
+          const rawHash = window.location.hash.split("#sync=")[1];
+          const decodedJson = atob(decodeURIComponent(rawHash));
+          const syncData = JSON.parse(decodedJson);
+          if (syncData.id && syncData.basket) {
+            savePantryConfig({ pantryId: syncData.id, basketName: syncData.basket });
+            showToast("🔗 Cesto do Pantry configurado via link de pareamento!");
+            window.history.replaceState(null, "", window.location.pathname + window.location.search);
+          }
+        } catch (e) {
+          console.warn("Erro ao interpretar link de pareamento:", e);
+        }
+      }
+
+      // 2. Verificar se o dispositivo está desbloqueado
+      const overlay = document.getElementById("authLockOverlay");
+      const unlockForm = document.getElementById("unlockForm");
+      const setupForm = document.getElementById("setupPasswordForm");
+      const hasStoredHash = !!localStorage.getItem("expedicao_auth_hash");
+      const isRemembered = localStorage.getItem("expedicao_remember_device") === "true";
+      const isSessionUnlocked = sessionStorage.getItem("expedicao_unlocked") === "true";
+      const savedKey = localStorage.getItem("expedicao_saved_key");
+
+      if (savedKey && (isRemembered || isSessionUnlocked)) {
+        try {
+          const restoredPass = decodeURIComponent(atob(savedKey));
+          const testHash = await computeSha256(restoredPass);
+          if (testHash === localStorage.getItem("expedicao_auth_hash")) {
+            masterPassword = restoredPass;
+            isAppUnlocked = true;
+            if (overlay) overlay.classList.add("hidden");
+            updateCloudStatusUI("synced");
+            fetchFromCloud(false);
+            return;
+          }
+        } catch (e) {}
+      }
+
+      if (overlay) overlay.classList.remove("hidden");
+
+      if (hasStoredHash) {
+        if (unlockForm) unlockForm.classList.remove("hidden");
+        if (setupForm) setupForm.classList.add("hidden");
+        const passInput = document.getElementById("unlockPasswordInput");
+        if (passInput) setTimeout(() => passInput.focus(), 300);
+      } else {
+        if (unlockForm) unlockForm.classList.add("hidden");
+        if (setupForm) setupForm.classList.remove("hidden");
+        const setupInput = document.getElementById("setupPasswordInput");
+        if (setupInput) setTimeout(() => setupInput.focus(), 300);
+      }
+    }
+
     let currentCurrency = "BRL";
     let usdRate = 5.50;
     let profileMultiplier = 0.82;
@@ -1793,6 +2604,9 @@
       renderAirbnbCards();
       updateAirbnbKPIs();
       showToast(`📅 Data inicial atualizada para ${formatDisplayDate(newDateStr)}! Datas de Airbnb recalculadas.`);
+      if (typeof scheduleCloudSync === "function") {
+        scheduleCloudSync();
+      }
     }
 
     function formatDateIso(d) {
@@ -2825,6 +3639,9 @@
         console.warn("Erro ao salvar no LocalStorage:", e);
       }
       updateAirbnbBadge();
+      if (typeof scheduleCloudSync === "function") {
+        scheduleCloudSync();
+      }
     }
 
     function updateAirbnbBadge() {
@@ -3863,6 +4680,7 @@
       if (event.key === "Escape") {
         closeCityGuideModal();
         closeQuickAirbnbModal();
+        closeCloudModal();
       }
     });
 
@@ -3877,6 +4695,7 @@
       updateFormBudgetMeta();
       renderAirbnbCards();
       updateAirbnbKPIs();
+      if (typeof scheduleCloudSync === "function") scheduleCloudSync();
     });
 
     usdRateInput.addEventListener("input", (e) => {
@@ -3886,6 +4705,7 @@
       updateFormBudgetMeta();
       renderAirbnbCards();
       updateAirbnbKPIs();
+      if (typeof scheduleCloudSync === "function") scheduleCloudSync();
     });
 
     profileSelect.addEventListener("change", (e) => {
@@ -3895,6 +4715,7 @@
       updateFormBudgetMeta();
       renderAirbnbCards();
       updateAirbnbKPIs();
+      if (typeof scheduleCloudSync === "function") scheduleCloudSync();
     });
 
     tripStartDate = getTripStartDate();
@@ -3906,6 +4727,7 @@
     renderBases();
     selectBase(0); // Inicia na Etapa 1: Buenos Aires
     initAirbnbModule();
+    initSecurityAndCloud();
   </script>
 </body>
 </html>
