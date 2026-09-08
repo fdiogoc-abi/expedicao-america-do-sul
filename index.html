@@ -1357,6 +1357,88 @@ Para poder confirmar la reserva, necesitamos verificar la estabilidad de interne
     </div>
   </div>
 
+  <!-- MODAL RÁPIDO PARA VINCULAR/EDITAR AIRBNB DA ETAPA -->
+  <div id="quickAirbnbModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-3 md:p-6 overflow-y-auto" onclick="handleAirbnbModalBackdrop(event)">
+    <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 relative my-auto space-y-4" onclick="event.stopPropagation()">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <div class="flex items-center gap-2.5">
+          <span class="text-2xl p-2 bg-emerald-50 text-emerald-700 rounded-xl">🏡</span>
+          <div>
+            <h3 class="text-base font-black text-slate-900" id="quickModalTitle">Vincular Airbnb da Etapa</h3>
+            <p class="text-xs text-slate-500" id="quickModalSubtitle">Destino selecionado</p>
+          </div>
+        </div>
+        <button type="button" onclick="closeQuickAirbnbModal()" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold flex items-center justify-center text-sm transition-colors">
+          ✕
+        </button>
+      </div>
+
+      <form id="quickAirbnbForm" onsubmit="handleQuickAirbnbSubmit(event)" class="space-y-3.5 text-xs">
+        <input type="hidden" id="quickModalQuoteId" value="">
+        <input type="hidden" id="quickModalBaseId" value="">
+
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">🔗 Link do Anúncio no Airbnb <span class="text-rose-500">*</span></label>
+          <input type="url" id="quickModalUrl" required placeholder="https://www.airbnb.com.br/rooms/..." class="w-full px-3 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-sky-500 font-medium text-slate-800">
+          <p class="text-[10px] text-slate-400 mt-1">Cole a URL direta do imóvel encontrado para guardar e abrir com 1 clique.</p>
+        </div>
+
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">🏷️ Nome ou Apelido do Imóvel</label>
+          <input type="text" id="quickModalName" placeholder="Ex: Apartamento com Varanda em Colegiales" class="w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-sky-500 font-medium text-slate-800">
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">💰 Valor da Hospedagem</label>
+            <input type="number" id="quickModalPrice" step="any" placeholder="3500" class="w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-sky-500 font-bold text-slate-800">
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Período / Cobrança</label>
+            <select id="quickModalPeriod" class="w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-sky-500 font-medium text-slate-800 bg-white">
+              <option value="total">Valor Total da Estadia</option>
+              <option value="month">Valor por Mês (28 noites)</option>
+              <option value="night">Valor por Diária</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Moeda</label>
+            <select id="quickModalCurrency" class="w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-sky-500 font-medium text-slate-800 bg-white">
+              <option value="BRL">Reais (R$)</option>
+              <option value="USD">Dólares (US$)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Status</label>
+            <select id="quickModalStatus" class="w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-sky-500 font-bold text-slate-800 bg-white">
+              <option value="booked">🎉 Reservado / Fechado</option>
+              <option value="approved">✅ Aprovado (Favorito)</option>
+              <option value="contacted">💬 Em Negociação</option>
+              <option value="analyzing">🟡 Em Análise</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">📝 Observações (Opcional)</label>
+          <input type="text" id="quickModalNotes" placeholder="Ex: Anfitrião deu 20% de desconto para estadia longa, ar split e mesa ampla..." class="w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-sky-500 font-medium text-slate-800">
+        </div>
+
+        <div class="pt-3 flex items-center justify-end gap-2 border-t border-slate-100">
+          <button type="button" onclick="closeQuickAirbnbModal()" class="px-4 py-2 rounded-xl border border-slate-300 text-slate-700 font-bold text-xs hover:bg-slate-50 transition-colors">
+            Cancelar
+          </button>
+          <button type="submit" class="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-sm transition-colors flex items-center gap-1.5">
+            <span>💾</span> Salvar Airbnb
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <script>
     // BASE DATA CONFIGURATION - ROTA 3.0 DEFINITIVA (30 SEMANAS / 14 ETAPAS)
     const baseData = [
@@ -1837,9 +1919,21 @@ Para poder confirmar la reserva, necesitamos verificar la estabilidad de interne
       const baseAlimCost = (base.alimUsdMonth / 4.33) * base.weeks;
       const baseTransCost = base.transUsd;
       const baseExtrasCost = (base.extrasUsdMonth / 4.33) * base.weeks;
-      const baseTotalCost = baseHospCost + baseAlimCost + baseTransCost + baseExtrasCost;
 
-      const dailyHosp = days > 0 ? baseHospCost / days : 0;
+      const chosenAirbnb = (typeof airbnbQuotes !== "undefined" && airbnbQuotes.length > 0)
+        ? (airbnbQuotes.find(q => q.baseId === base.id && (q.status === 'booked' || q.status === 'approved')) 
+           || airbnbQuotes.find(q => q.baseId === base.id && q.status !== 'discarded') 
+           || null)
+        : null;
+
+      let effectiveHospCost = baseHospCost;
+      if (chosenAirbnb && chosenAirbnb.price > 0) {
+        const rawQuoteCost = getQuoteTotal(chosenAirbnb, base);
+        effectiveHospCost = convertQuotePriceToActive(rawQuoteCost, chosenAirbnb.currency);
+      }
+      const baseTotalCost = effectiveHospCost + baseAlimCost + baseTransCost + baseExtrasCost;
+
+      const dailyHosp = days > 0 ? effectiveHospCost / days : 0;
       const dailyAlim = days > 0 ? baseAlimCost / days : 0;
       const dailyTotal = days > 0 ? baseTotalCost / days : 0;
 
@@ -1881,7 +1975,7 @@ Para poder confirmar la reserva, necesitamos verificar la estabilidad de interne
             ${base.desc}
           </p>
 
-          <!-- DETALHAMENTO FINANCEIRO COMPLETO (COMIDA SEPARADA!) -->
+          <!-- DETALHAMENTO FINANCEIRO COMPLETO -->
           <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-3">
             <div class="flex items-center justify-between border-b border-slate-200 pb-2">
               <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Detalhamento Financeiro (${base.weeks > 0 ? base.weeks + ' sem' : 'Passeio'})</span>
@@ -1893,13 +1987,15 @@ Para poder confirmar la reserva, necesitamos verificar la estabilidad de interne
 
             <div class="grid grid-cols-2 gap-2 text-xs">
               <!-- 1. HOSPEDAGEM -->
-              <div class="p-2.5 bg-white rounded-xl border border-slate-200 shadow-2xs">
+              <div class="p-2.5 bg-white rounded-xl border ${chosenAirbnb ? 'border-emerald-300 ring-1 ring-emerald-300 bg-emerald-50/20' : 'border-slate-200'} shadow-2xs">
                 <div class="flex items-center justify-between">
                   <span class="text-[10px] text-sky-800 font-bold flex items-center gap-1">🏡 Hospedagem</span>
-                  <span class="text-[10px] text-slate-400">${base.weeks > 0 ? '~' + formatMoney(dailyHosp) + '/dia' : 'Incluso em BA'}</span>
+                  <span class="text-[10px] ${chosenAirbnb ? 'text-emerald-700 font-bold' : 'text-slate-400'}">${chosenAirbnb ? 'Valor Confirmado' : (base.weeks > 0 ? '~' + formatMoney(dailyHosp) + '/dia' : 'Incluso em BA')}</span>
                 </div>
-                <span class="text-sm font-black text-slate-900 block mt-1">${formatMoney(baseHospCost)}</span>
-                <span class="text-[10px] text-slate-400 block">${base.weeks > 0 ? 'Apartamento privativo' : 'Bate-e-volta'}</span>
+                <span class="text-sm font-black ${chosenAirbnb ? 'text-emerald-700' : 'text-slate-900'} block mt-1">${formatMoney(effectiveHospCost)}</span>
+                <span class="text-[10px] ${chosenAirbnb ? 'text-emerald-600 font-bold' : 'text-slate-400'} block truncate" title="${chosenAirbnb ? chosenAirbnb.title : ''}">
+                  ${chosenAirbnb ? '🎉 Airbnb vinculado' : (base.weeks > 0 ? 'Apartamento privativo' : 'Bate-e-volta')}
+                </span>
               </div>
 
               <!-- 2. ALIMENTAÇÃO / COMIDA (DESTACADA E SEPARADA!) -->
@@ -1932,6 +2028,73 @@ Para poder confirmar la reserva, necesitamos verificar la estabilidad de interne
                 <span class="text-[10px] text-slate-400 block">Passeios e compras</span>
               </div>
             </div>
+          </div>
+
+          <!-- SEÇÃO DO AIRBNB DEFINIDO / VINCULADO NESTA ETAPA -->
+          <div class="p-3.5 rounded-2xl border ${chosenAirbnb ? 'bg-emerald-50/80 border-emerald-300 shadow-2xs' : 'bg-slate-50 border-slate-200'} space-y-2.5">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-slate-900 flex items-center gap-1.5">
+                <span class="text-base">🏡</span> <strong>Airbnb Desta Etapa</strong>
+              </span>
+              ${chosenAirbnb ? `
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${STATUS_MAP[chosenAirbnb.status]?.badgeClass || 'bg-emerald-100 text-emerald-800'}">
+                ${STATUS_MAP[chosenAirbnb.status]?.label || 'Definido'}
+              </span>
+              ` : `
+              <span class="text-[11px] text-slate-400 font-medium">Nenhum imóvel vinculado</span>
+              `}
+            </div>
+
+            ${chosenAirbnb ? `
+            <div class="bg-white p-3 rounded-xl border border-emerald-200 shadow-2xs space-y-2">
+              <div class="flex items-start justify-between gap-2">
+                <div class="min-w-0">
+                  <h4 class="text-xs font-bold text-slate-900 truncate" title="${chosenAirbnb.title}">${chosenAirbnb.title}</h4>
+                  <div class="flex items-center gap-2 mt-0.5 flex-wrap">
+                    <span class="text-xs font-black text-emerald-700">
+                      ${formatRawMoney(chosenAirbnb.price, chosenAirbnb.currency)}
+                    </span>
+                    <span class="text-[10px] text-slate-400">
+                      (${chosenAirbnb.periodType === 'month' ? 'por mês' : (chosenAirbnb.periodType === 'night' ? 'por diária' : 'valor total')})
+                    </span>
+                  </div>
+                </div>
+                <a href="${chosenAirbnb.url}" target="_blank" class="shrink-0 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center gap-1 transition-colors shadow-xs">
+                  <span>Abrir no Airbnb</span> ↗
+                </a>
+              </div>
+
+              ${chosenAirbnb.notes ? `
+              <p class="text-[11px] text-slate-600 bg-slate-50 p-2 rounded-lg border border-slate-100 italic">
+                "${chosenAirbnb.notes}"
+              </p>
+              ` : ''}
+
+              <div class="flex items-center justify-between pt-2 border-t border-slate-100 text-[11px]">
+                <button type="button" onclick="openQuickAirbnbModal('${base.id}', '${chosenAirbnb.id}')" class="text-sky-700 hover:text-sky-900 font-bold flex items-center gap-1">
+                  ✏️ Editar link / valor
+                </button>
+                <button type="button" onclick="deleteAirbnbQuote('${chosenAirbnb.id}')" class="text-rose-600 hover:text-rose-800 font-bold">
+                  ✕ Desvincular
+                </button>
+              </div>
+            </div>
+            ` : `
+            <div class="space-y-2">
+              <div class="flex gap-1.5">
+                <input type="url" id="inspectorAirbnbUrlInput" onkeydown="if(event.key==='Enter') quickSaveAirbnbUrl('${base.id}')" placeholder="Cole o link do Airbnb (ex: https://airbnb.com/rooms/...)" class="flex-1 text-xs px-3 py-2 rounded-xl border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-sky-500 text-slate-800 placeholder-slate-400 shadow-2xs">
+                <button type="button" onclick="quickSaveAirbnbUrl('${base.id}')" class="px-3.5 py-2 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs shrink-0 transition-colors shadow-xs flex items-center gap-1">
+                  <span>💾</span> Salvar Link
+                </button>
+              </div>
+              <div class="flex items-center justify-between text-[11px] text-slate-400 px-0.5">
+                <span>Cole a URL direta do imóvel para abrir direto daqui.</span>
+                <button type="button" onclick="openQuickAirbnbModal('${base.id}')" class="text-sky-600 hover:text-sky-800 font-bold hover:underline">
+                  + Detalhes e valor
+                </button>
+              </div>
+            </div>
+            `}
           </div>
 
           <!-- DETALHES TÉCNICOS & CULINÁRIA -->
@@ -1970,7 +2133,7 @@ Para poder confirmar la reserva, necesitamos verificar la estabilidad de interne
               <span>📖</span> Guia & Segredos (${base.name})
             </button>
             <a href="${getAirbnbSearchUrl(base)}" target="_blank" class="w-full py-2.5 px-3 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-colors shadow-sm">
-              <span>🔍</span> Buscar no Airbnb ↗
+              <span>🔍</span> ${chosenAirbnb ? 'Buscar Outros no Airbnb ↗' : 'Buscar no Airbnb ↗'}
             </a>
           </div>
         </div>
@@ -2100,6 +2263,12 @@ Para poder confirmar la reserva, necesitamos verificar la estabilidad de interne
       baseData.forEach((base, index) => {
         if (base.weeks === 0) return; // Pula bônus fds (Colonia) no total de semanas
         totalWeeks += base.weeks;
+        const chosen = (typeof airbnbQuotes !== "undefined" && airbnbQuotes.length > 0)
+          ? (airbnbQuotes.find(q => q.baseId === base.id && (q.status === 'booked' || q.status === 'approved'))
+             || airbnbQuotes.find(q => q.baseId === base.id && q.status !== 'discarded')
+             || null)
+          : null;
+
         const baseHospCost = (base.hospUsdMonth / 4.33) * base.weeks;
         const baseAlimCost = (base.alimUsdMonth / 4.33) * base.weeks;
         const baseTotalCost = baseHospCost + baseAlimCost + base.transUsd + ((base.extrasUsdMonth / 4.33) * base.weeks);
@@ -2131,11 +2300,20 @@ Para poder confirmar la reserva, necesitamos verificar la estabilidad de interne
                   <span>🚌 <strong>Transporte:</strong> ${base.transType}</span>
                 </div>
                 <div class="mt-2.5 flex flex-wrap items-center gap-2">
+                  ${chosen ? `
+                  <a href="${chosen.url}" target="_blank" class="inline-flex items-center gap-1.5 text-[11px] font-bold text-emerald-800 hover:text-emerald-950 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 px-2.5 py-1 rounded-lg transition-colors shadow-2xs">
+                    <span>🏠</span> Abrir Airbnb Escolhido ↗
+                  </a>
+                  ` : `
+                  <button type="button" onclick="openQuickAirbnbModal('${base.id}')" class="inline-flex items-center gap-1.5 text-[11px] font-bold text-sky-700 hover:text-sky-900 bg-sky-50 hover:bg-sky-100 border border-sky-200 px-2.5 py-1 rounded-lg transition-colors">
+                    <span>+</span> Vincular Airbnb
+                  </button>
+                  `}
                   <button type="button" onclick="openCityGuideModal('${base.id}')" class="inline-flex items-center gap-1.5 text-[11px] font-bold text-indigo-700 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 px-2.5 py-1 rounded-lg transition-colors">
                     <span>📖</span> Ver Guia & Segredos ↗
                   </button>
-                  <a href="${getAirbnbSearchUrl(base)}" target="_blank" class="inline-flex items-center gap-1.5 text-[11px] font-bold text-sky-700 hover:text-sky-900 bg-sky-50 hover:bg-sky-100 border border-sky-200 px-2.5 py-1 rounded-lg transition-colors">
-                    <span>🔍</span> Buscar no Airbnb c/ Desconto Mensal ↗
+                  <a href="${getAirbnbSearchUrl(base)}" target="_blank" class="inline-flex items-center gap-1.5 text-[11px] ${chosen ? 'text-slate-500 hover:text-slate-700 font-medium' : 'text-slate-600 hover:text-slate-900 font-bold bg-slate-100 hover:bg-slate-200 border border-slate-200 px-2.5 py-1 rounded-lg'} transition-colors" title="Buscar no Airbnb">
+                    <span>🔍</span> ${chosen ? 'Outras Opções ↗' : 'Buscar no Airbnb ↗'}
                   </a>
                 </div>
               </div>
@@ -2683,6 +2861,8 @@ Para poder confirmar la reserva, necesitamos verificar la estabilidad de interne
       clearAirbnbForm();
       renderAirbnbCards();
       updateAirbnbKPIs();
+      selectBase(currentSelectedBaseIndex);
+      renderBases();
 
       alert(`✅ Cotação "${title}" salva com sucesso!`);
     }
@@ -2694,6 +2874,8 @@ Para poder confirmar la reserva, necesitamos verificar la estabilidad de interne
       saveAirbnbQuotes();
       renderAirbnbCards();
       updateAirbnbKPIs();
+      selectBase(currentSelectedBaseIndex);
+      renderBases();
     }
 
     function deleteAirbnbQuote(quoteId) {
@@ -2704,6 +2886,8 @@ Para poder confirmar la reserva, necesitamos verificar la estabilidad de interne
         saveAirbnbQuotes();
         renderAirbnbCards();
         updateAirbnbKPIs();
+        selectBase(currentSelectedBaseIndex);
+        renderBases();
       }
     }
 
@@ -3133,9 +3317,172 @@ Para poder confirmar la reserva, necesitamos verificar la estabilidad de interne
       }
     }
 
+    // ==========================================
+    // VINCULAÇÃO RÁPIDA DE AIRBNB NA ETAPA
+    // ==========================================
+
+    function quickSaveAirbnbUrl(baseId) {
+      const input = document.getElementById("inspectorAirbnbUrlInput");
+      if (!input) return;
+      let url = input.value.trim();
+      if (!url) {
+        alert("Por favor, cole a URL do anúncio no Airbnb.");
+        input.focus();
+        return;
+      }
+      if (!/^https?:\/\//i.test(url)) {
+        url = "https://" + url;
+      }
+
+      const base = baseData.find(b => b.id === baseId);
+      const baseName = base ? base.name : "Destino";
+
+      let quote = airbnbQuotes.find(q => q.baseId === baseId && q.status !== 'discarded');
+      if (quote) {
+        quote.url = url;
+        quote.status = "booked";
+      } else {
+        const defaultPrice = base ? Math.round(getBaseTargetHospInActiveCurrency(base)) : 3500;
+        quote = {
+          id: "quote-" + Date.now(),
+          baseId: baseId,
+          title: `Airbnb Escolhido em ${baseName}`,
+          url: url,
+          price: defaultPrice,
+          currency: currentCurrency,
+          periodType: "total",
+          speed: 0,
+          dist: "Imóvel selecionado",
+          status: "booked",
+          desk: true,
+          ac: false,
+          kitchen: true,
+          washer: true,
+          notes: "Definido diretamente pelo Inspetor da Expedição.",
+          createdAt: new Date().toISOString().split("T")[0]
+        };
+        airbnbQuotes.unshift(quote);
+      }
+
+      saveAirbnbQuotes();
+      selectBase(currentSelectedBaseIndex);
+      renderAirbnbCards();
+      updateAirbnbKPIs();
+      updateAirbnbBadge();
+      renderBases();
+    }
+
+    function openQuickAirbnbModal(baseId, quoteId) {
+      const base = baseData.find(b => b.id === baseId);
+      if (!base) return;
+
+      const quote = quoteId 
+        ? airbnbQuotes.find(q => q.id === quoteId) 
+        : (airbnbQuotes.find(q => q.baseId === baseId && (q.status === 'booked' || q.status === 'approved'))
+           || airbnbQuotes.find(q => q.baseId === baseId && q.status !== 'discarded'));
+
+      document.getElementById("quickModalBaseId").value = baseId;
+      document.getElementById("quickModalQuoteId").value = quote ? quote.id : "";
+      document.getElementById("quickModalTitle").textContent = quote ? `Editar Airbnb de ${base.name}` : `Vincular Airbnb de ${base.name}`;
+      document.getElementById("quickModalSubtitle").textContent = `${base.flag} ${base.name} • ${base.weeks > 0 ? base.weeks + ' semanas' : 'Escapada'}`;
+
+      document.getElementById("quickModalUrl").value = quote ? quote.url : "";
+      document.getElementById("quickModalName").value = quote ? quote.title : `Airbnb Escolhido em ${base.name}`;
+      
+      const defaultPrice = base ? Math.round(getBaseTargetHospInActiveCurrency(base)) : 3500;
+      document.getElementById("quickModalPrice").value = quote ? quote.price : defaultPrice;
+      document.getElementById("quickModalPeriod").value = quote ? quote.periodType : "total";
+      document.getElementById("quickModalCurrency").value = quote ? quote.currency : currentCurrency;
+      document.getElementById("quickModalStatus").value = quote ? quote.status : "booked";
+      document.getElementById("quickModalNotes").value = quote && quote.notes ? quote.notes : "";
+
+      const modal = document.getElementById("quickAirbnbModal");
+      if (modal) {
+        modal.classList.remove("hidden");
+        document.body.style.overflow = "hidden";
+      }
+    }
+
+    function closeQuickAirbnbModal() {
+      const modal = document.getElementById("quickAirbnbModal");
+      if (modal) {
+        modal.classList.add("hidden");
+        document.body.style.overflow = "";
+      }
+    }
+
+    function handleAirbnbModalBackdrop(event) {
+      if (event.target && event.target.id === "quickAirbnbModal") {
+        closeQuickAirbnbModal();
+      }
+    }
+
+    function handleQuickAirbnbSubmit(event) {
+      event.preventDefault();
+      const baseId = document.getElementById("quickModalBaseId").value;
+      const quoteId = document.getElementById("quickModalQuoteId").value;
+      let url = document.getElementById("quickModalUrl").value.trim();
+      const title = document.getElementById("quickModalName").value.trim() || "Airbnb Selecionado";
+      const price = parseFloat(document.getElementById("quickModalPrice").value) || 0;
+      const periodType = document.getElementById("quickModalPeriod").value;
+      const currency = document.getElementById("quickModalCurrency").value;
+      const status = document.getElementById("quickModalStatus").value;
+      const notes = document.getElementById("quickModalNotes").value.trim();
+
+      if (!url) {
+        alert("Por favor, informe a URL do anúncio no Airbnb.");
+        return;
+      }
+      if (!/^https?:\/\//i.test(url)) {
+        url = "https://" + url;
+      }
+
+      if (quoteId) {
+        const quote = airbnbQuotes.find(q => q.id === quoteId);
+        if (quote) {
+          quote.url = url;
+          quote.title = title;
+          quote.price = price;
+          quote.periodType = periodType;
+          quote.currency = currency;
+          quote.status = status;
+          quote.notes = notes;
+        }
+      } else {
+        const newQuote = {
+          id: "quote-" + Date.now(),
+          baseId: baseId,
+          title: title,
+          url: url,
+          price: price,
+          currency: currency,
+          periodType: periodType,
+          speed: 0,
+          dist: "Imóvel selecionado",
+          status: status,
+          desk: true,
+          ac: false,
+          kitchen: true,
+          washer: true,
+          notes: notes,
+          createdAt: new Date().toISOString().split("T")[0]
+        };
+        airbnbQuotes.unshift(newQuote);
+      }
+
+      saveAirbnbQuotes();
+      closeQuickAirbnbModal();
+      selectBase(currentSelectedBaseIndex);
+      renderAirbnbCards();
+      updateAirbnbKPIs();
+      updateAirbnbBadge();
+      renderBases();
+    }
+
     document.addEventListener("keydown", (event) => {
       if (event.key === "Escape") {
         closeCityGuideModal();
+        closeQuickAirbnbModal();
       }
     });
 
