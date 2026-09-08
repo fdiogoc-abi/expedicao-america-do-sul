@@ -1154,14 +1154,11 @@
           <input type="password" id="authConfirmInput" placeholder="Confirme a nova senha..." class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-800 text-sm font-medium text-slate-800">
         </div>
 
-        <div class="flex items-center justify-between text-xs text-slate-500 pt-0.5">
+        <div class="flex items-center text-xs text-slate-500 pt-0.5">
           <label class="flex items-center gap-1.5 cursor-pointer select-none">
             <input type="checkbox" id="rememberDeviceCheck" checked class="rounded text-slate-800 focus:ring-slate-800">
             <span>Lembrar</span>
           </label>
-          <button type="button" id="resetPasswordBtn" onclick="promptResetPassword()" class="text-slate-400 hover:text-slate-700 underline cursor-pointer">
-            Criar nova senha
-          </button>
         </div>
 
         <div id="authErrorMessage" class="text-xs text-rose-600 font-medium hidden">
@@ -1186,7 +1183,6 @@
         var input = document.getElementById("authPasswordInput");
         var confirmBox = document.getElementById("authConfirmContainer");
         var submitBtn = document.getElementById("authSubmitBtn");
-        var resetBtn = document.getElementById("resetPasswordBtn");
 
         if (!hasHash) {
           if (title) title.textContent = "Definir Senha";
@@ -1194,17 +1190,12 @@
           if (input) input.placeholder = "Crie sua nova senha...";
           if (confirmBox) confirmBox.classList.remove("hidden");
           if (submitBtn) submitBtn.textContent = "Salvar Senha & Entrar";
-          if (resetBtn) resetBtn.classList.add("hidden");
         } else {
           if (title) title.textContent = "Acesso ao Roteiro";
           if (subtitle) subtitle.textContent = "Digite sua senha para entrar";
           if (input) input.placeholder = "Digite sua senha...";
           if (confirmBox) confirmBox.classList.add("hidden");
           if (submitBtn) submitBtn.textContent = "Entrar";
-          if (resetBtn) {
-            resetBtn.classList.remove("hidden");
-            resetBtn.textContent = "Criar nova senha";
-          }
         }
       } catch(e) {}
     })();
@@ -2246,7 +2237,6 @@
       const input = document.getElementById("authPasswordInput");
       const confirmBox = document.getElementById("authConfirmContainer");
       const submitBtn = document.getElementById("authSubmitBtn");
-      const resetBtn = document.getElementById("resetPasswordBtn");
 
       if (!hasHash) {
         if (title) title.textContent = "Definir Senha";
@@ -2254,17 +2244,12 @@
         if (input) input.placeholder = "Crie sua nova senha...";
         if (confirmBox) confirmBox.classList.remove("hidden");
         if (submitBtn) submitBtn.textContent = "Salvar Senha & Entrar";
-        if (resetBtn) resetBtn.classList.add("hidden");
       } else {
         if (title) title.textContent = "Acesso ao Roteiro";
         if (subtitle) subtitle.textContent = "Digite sua senha para entrar";
         if (input) input.placeholder = "Digite sua senha...";
         if (confirmBox) confirmBox.classList.add("hidden");
         if (submitBtn) submitBtn.textContent = "Entrar";
-        if (resetBtn) {
-          resetBtn.classList.remove("hidden");
-          resetBtn.textContent = "Criar nova senha";
-        }
       }
     }
 
