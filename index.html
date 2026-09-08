@@ -93,20 +93,16 @@
 
     <!-- NAVEGAÇÃO DE ABAS -->
     <div class="flex border-b border-slate-200 bg-white rounded-t-xl px-4 pt-2 gap-4 text-sm font-medium overflow-x-auto">
-      <button onclick="switchTab('map')" id="tab-map" class="py-3 px-2 tab-active transition-colors whitespace-nowrap">🗺️ Mapa Completo da Rota</button>
-      <button onclick="switchTab('itinerary')" id="tab-itinerary" class="py-3 px-2 text-slate-500 hover:text-slate-800 transition-colors whitespace-nowrap">📋 Cronograma & Ajustador</button>
+      <button onclick="switchTab('map')" id="tab-map" class="py-3 px-2 tab-active transition-colors whitespace-nowrap">🗺️ Mapa & Inspetor da Rota</button>
+      <button onclick="switchTab('itinerary')" id="tab-itinerary" class="py-3 px-2 text-slate-500 hover:text-slate-800 transition-colors whitespace-nowrap">📋 Cronograma (14 Etapas)</button>
       <button onclick="switchTab('costs')" id="tab-costs" class="py-3 px-2 text-slate-500 hover:text-slate-800 transition-colors whitespace-nowrap">💰 Custos Reais Detalhados</button>
       <button onclick="switchTab('airbnb')" id="tab-airbnb" class="py-3 px-2 text-slate-500 hover:text-slate-800 transition-colors whitespace-nowrap flex items-center gap-1.5">
         <span>🏡 Cotações de Airbnbs</span>
         <span id="tabAirbnbBadge" class="bg-sky-100 text-sky-800 text-[10px] font-bold px-1.5 py-0.5 rounded-full">3</span>
       </button>
       <button onclick="switchTab('spanish')" id="tab-spanish" class="py-3 px-2 text-slate-500 hover:text-slate-800 transition-colors whitespace-nowrap flex items-center gap-1.5">
-        <span>🎓 Cursos de Espanhol</span>
-        <span class="bg-indigo-100 text-indigo-800 text-[10px] font-bold px-1.5 py-0.5 rounded-full">Estratégia</span>
+        <span>🎓 Espanhol Prático</span>
       </button>
-      <button onclick="switchTab('surf')" id="tab-surf" class="py-3 px-2 text-slate-500 hover:text-slate-800 transition-colors whitespace-nowrap">🏄 O Circuito do Longboard</button>
-      <button onclick="switchTab('savings')" id="tab-savings" class="py-3 px-2 text-slate-500 hover:text-slate-800 transition-colors whitespace-nowrap">📉 Economia de R$ 16.000</button>
-      <button onclick="switchTab('wifi')" id="tab-wifi" class="py-3 px-2 text-slate-500 hover:text-slate-800 transition-colors whitespace-nowrap">📶 Checklist de Conexão</button>
     </div>
 
     <!-- CONTEÚDO DAS ABAS -->
@@ -749,41 +745,6 @@
         <!-- Injetado dinamicamente via JS -->
       </div>
 
-      <!-- SCRIPTS DE NEGOCIAÇÃO RÁPIDA -->
-      <div class="bg-gradient-to-r from-slate-900 to-indigo-950 text-white rounded-2xl p-6 shadow-sm border border-slate-800 space-y-4">
-        <div class="flex items-center gap-2">
-          <span class="text-2xl">💡</span>
-          <div>
-            <h3 class="font-bold text-base text-white">Scripts Prontos para Enviar aos Anfitriões no Airbnb</h3>
-            <p class="text-xs text-slate-300">Copie com um clique para validar a conexão e negociar desconto antes de fechar a reserva.</p>
-          </div>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1">
-          <!-- SCRIPT 1 -->
-          <div class="bg-slate-800/80 p-4 rounded-xl border border-slate-700 text-xs font-mono relative">
-            <div class="flex items-center justify-between mb-2">
-              <span class="text-[11px] font-bold text-sky-400 uppercase">1. Pedido de Speedtest & Estabilidade</span>
-              <button onclick="copyScriptSpeedtest()" class="bg-sky-600 hover:bg-sky-500 text-white text-[10px] font-sans font-bold px-2 py-0.5 rounded transition-colors">Copiar</button>
-            </div>
-            <p id="scriptSpeedtestText" class="text-slate-200 leading-relaxed text-[11px]">
-"¡Hola! Nos encanta su departamento para una estancia de varias semanas. Trabajamos 100% en remoto para Brasil con videollamadas continuas. ¿Sería tan amable de enviarnos una captura de pantalla de un test de velocidad reciente (Speedtest.net) y confirmarnos si el router de fibra está dentro del departamento? ¡Muchas gracias!"
-            </p>
-          </div>
-
-          <!-- SCRIPT 2 -->
-          <div class="bg-slate-800/80 p-4 rounded-xl border border-slate-700 text-xs font-mono relative">
-            <div class="flex items-center justify-between mb-2">
-              <span class="text-[11px] font-bold text-emerald-400 uppercase">2. Proposta de Desconto para Longa Estada</span>
-              <button onclick="copyScriptDiscount()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-sans font-bold px-2 py-0.5 rounded transition-colors">Copiar</button>
-            </div>
-            <p id="scriptDiscountText" class="text-slate-200 leading-relaxed text-[11px]">
-"¡Hola! Somos una pareja profesional muy tranquila, no fumadores y cuidamos los departamentos como si fueran propios. Como nos quedaremos casi un mes, queríamos consultar si es posible considerar un descuento especial sobre la tarifa final. ¡Estamos listos para reservar hoy mismo si llegamos a un acuerdo! Saludos cordiales."
-            </p>
-          </div>
-        </div>
-      </div>
-
     </div>
 
     <!-- ABA 2.7: CURSOS & IMERSÃO EM ESPANHOL -->
@@ -793,487 +754,131 @@
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
           <div>
             <div class="flex items-center gap-2 mb-1 flex-wrap">
-              <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-100 text-indigo-800">Estratégia Bilíngue Nômade</span>
-              <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800">Eliminar o Portunhol</span>
+              <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-100 text-indigo-800">Estratégia Nômade</span>
+              <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800">Particular vs. Escola</span>
               <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-800">2 Polos de Imersão</span>
             </div>
-            <h2 class="text-xl md:text-2xl font-bold text-slate-900">🎓 Onde e Como Estudar Espanhol na Expedição: O Guia Definitivo</h2>
+            <h2 class="text-xl md:text-2xl font-bold text-slate-900">🎓 Espanhol na Prática: Particular (Casal) ou Escola?</h2>
             <p class="text-sm text-slate-500 mt-1">
-              Aprender espanhol no momento certo muda completamente a viagem. A rota foi desenhada com dois polos estratégicos: <strong>Buenos Aires para destravar a gramática no Mês 1</strong> e <strong>Medellín para polir a fluência com o sotaque mais limpo do mundo no Mês 7</strong>.
+              Para quem trabalha remoto (horários flexíveis) e viaja em casal, <strong>aulas particulares 2:1 ganham em 90% dos cenários</strong> em custo, ritmo e adaptação à rotina.
             </p>
           </div>
         </div>
 
-        <!-- 4 CARDS DE RESUMO ESTRATÉGICO -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 pt-2">
-          <!-- 1. BUENOS AIRES -->
-          <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 hover:border-indigo-300 transition-colors">
-            <div class="flex items-center justify-between mb-2">
-              <span class="text-2xl">🇦🇷</span>
-              <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-800">Mês 1 (Destravar)</span>
-            </div>
-            <h4 class="font-bold text-slate-900 text-sm">Buenos Aires</h4>
-            <span class="text-xs font-semibold text-emerald-700 block mt-0.5">~US$ 8 - 12 / hora (Dólar MEP)</span>
-            <p class="text-xs text-slate-600 mt-2 leading-relaxed">
-              O momento mais decisivo. Fazer aulas particulares 1-on-1 nas primeiras 3 semanas elimina o "portunhol" e destrava negociações de estadias, compras e emergências para os 6 meses seguintes.
-            </p>
-          </div>
-
-          <!-- 2. MEDELLÍN -->
-          <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 hover:border-emerald-300 transition-colors">
-            <div class="flex items-center justify-between mb-2">
-              <span class="text-2xl">🇨🇴</span>
-              <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">Mês 7 (Pós-Graduação)</span>
-            </div>
-            <h4 class="font-bold text-slate-900 text-sm">Medellín</h4>
-            <span class="text-xs font-semibold text-sky-700 block mt-0.5">~US$ 10 - 15 / hora</span>
-            <p class="text-xs text-slate-600 mt-2 leading-relaxed">
-              O melhor espanhol da América Latina. O sotaque <em>paisa</em> é musical, sem comer sílabas e extremamente fácil de entender. Capital mundial de escolas para nômades e eventos diários de intercâmbio.
-            </p>
-          </div>
-
-          <!-- 3. AREQUIPA & CUSCO -->
-          <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 hover:border-amber-300 transition-colors">
-            <div class="flex items-center justify-between mb-2">
-              <span class="text-2xl">🇵🇪</span>
-              <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800">Mês 3 (Reforço Andino)</span>
-            </div>
-            <h4 class="font-bold text-slate-900 text-sm">Arequipa & Cusco</h4>
-            <span class="text-xs font-semibold text-amber-700 block mt-0.5">~US$ 6 - 9 / hora</span>
-            <p class="text-xs text-slate-600 mt-2 leading-relaxed">
-              Espanhol andino falado com calma e ritmo pausado. Professores super pacientes e preços muito baixos em cafés coloniais. Excelente para destravar se ainda houver timidez de falar em público.
-            </p>
-          </div>
-
-          <!-- 4. SANTIAGO (ALERTA) -->
-          <div class="bg-rose-50/60 p-4 rounded-xl border border-rose-200">
-            <div class="flex items-center justify-between mb-2">
-              <span class="text-2xl">🇨🇱</span>
-              <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-100 text-rose-800">⚠️ Zona de Cuidado</span>
-            </div>
-            <h4 class="font-bold text-slate-900 text-sm">Santiago (Chile)</h4>
-            <span class="text-xs font-semibold text-rose-700 block mt-0.5">Não contrate cursos aqui</span>
-            <p class="text-xs text-slate-600 mt-2 leading-relaxed">
-              O sotaque chileno é o mais rápido e truncado do continente, cheio de gírias próprias (<em>chilenismos</em>). É ótimo para passear 3 dias, mas péssimo para quem está querendo aprender a base.
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <!-- OS DOIS GRANDES POLOS DE IMERSÃO DETALHADOS -->
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <!-- POLO 1: BUENOS AIRES -->
-        <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm space-y-4">
-          <div class="flex items-center gap-3 border-b border-slate-100 pb-3">
-            <span class="text-3xl p-2 bg-sky-50 rounded-xl">🇦🇷</span>
-            <div>
-              <div class="flex items-center gap-2">
-                <h3 class="font-bold text-slate-900 text-lg">Polo 1: Buenos Aires (Semanas 1 a 4)</h3>
-                <span class="text-xs px-2 py-0.5 rounded bg-sky-100 text-sky-800 font-bold">Início Decisivo</span>
-              </div>
-              <p class="text-xs text-slate-500">Onde você aprende a base para não passar perrengue pelos 6 meses seguintes.</p>
-            </div>
-          </div>
-
-          <div class="space-y-3 text-xs text-slate-700">
-            <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-1.5">
-              <h5 class="font-bold text-slate-900 text-xs flex items-center gap-1.5">
-                <span>🎯</span> <strong>Por que começar aqui é a chave do sucesso:</strong>
-              </h5>
-              <p class="text-slate-600 leading-relaxed">
-                Passar o 1º mês em Buenos Aires sem aprender espanhol é uma oportunidade perdida. Com o <strong>Dólar MEP</strong>, você contrata professores particulares excelentes pelo mesmo valor de um almoço. Destravando aqui, você já chega no Chile e Peru sabendo negociar prancha de surf, pedir desconto em aluguel e conversar com vizinhos.
-              </p>
-            </div>
-
-            <div class="space-y-2">
-              <h5 class="font-bold text-slate-900 text-xs">Instituições e Formatos Recomendados:</h5>
-              
-              <div class="p-2.5 rounded-lg border border-slate-200 bg-white hover:border-slate-300 transition-colors">
-                <div class="flex items-center justify-between font-bold text-slate-900">
-                  <span>1. Professor Particular 1-on-1 (Recomendação Principal ⭐)</span>
-                  <span class="text-emerald-700 font-bold">~US$ 8 - 12 / hora</span>
-                </div>
-                <p class="text-slate-500 mt-1">
-                  Contratado via <em>Superprof Argentina</em> ou <em>TusClasesParticulares</em>. Aulas de 1h30 (3x por semana) em cafeterias de Palermo/Colegiales ou na sua sala. Foco 100% no casal e nos seus objetivos práticos de viagem.
-                </p>
-              </div>
-
-              <div class="p-2.5 rounded-lg border border-slate-200 bg-white hover:border-slate-300 transition-colors">
-                <div class="flex items-center justify-between font-bold text-slate-900">
-                  <span>2. Expanish Spanish School (Palermo Soho)</span>
-                  <span class="text-sky-700 font-bold">~US$ 160 - 220 / semana</span>
-                </div>
-                <p class="text-slate-500 mt-1">
-                  Uma das escolas mais prestigiadas da América Latina. Estrutura impecável, salas com ar-condicionado, turmas reduzidas e excelente para conhecer outros nômades estrangeiros.
-                </p>
-              </div>
-
-              <div class="p-2.5 rounded-lg border border-slate-200 bg-white hover:border-slate-300 transition-colors">
-                <div class="flex items-center justify-between font-bold text-slate-900">
-                  <span>3. Laboratorio de Idiomas - UBA (Univ. de Buenos Aires)</span>
-                  <span class="text-slate-700 font-bold">Custo acadêmico público</span>
-                </div>
-                <p class="text-slate-500 mt-1">
-                  O centro de línguas oficial da universidade mais respeitada da Argentina. Método gramatical formal e rigoroso, ideal se você quer base sólida e certificação.
-                </p>
-              </div>
-            </div>
-
-            <!-- DICAS DO SOTAQUE PORTEÑO -->
-            <div class="p-3 bg-amber-50 rounded-xl border border-amber-200 text-[11px] text-amber-900 space-y-1">
-              <strong class="font-bold flex items-center gap-1">💡 Atenção às particularidades porteñas:</strong>
-              <p>• <strong>Voseo:</strong> Em vez de <em>"tú tienes"</em>, você ouvirá <em>"vos tenés"</em>. Não precisa falar assim; se usar o <em>"tú"</em> ou <em>"usted"</em> padrão, todos compreendem com respeito.</p>
-              <p>• <strong>Yeísmo rehilado:</strong> As letras <strong>LL</strong> e <strong>Y</strong> soam como "sh" (<em>"la playa"</em> soa como <em>"la plasha"</em>, <em>"calle"</em> vira <em>"cashe"</em>).</p>
-            </div>
-          </div>
-        </div>
-
-        <!-- POLO 2: MEDELLÍN -->
-        <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm space-y-4">
-          <div class="flex items-center gap-3 border-b border-slate-100 pb-3">
-            <span class="text-3xl p-2 bg-emerald-50 rounded-xl">🇨🇴</span>
-            <div>
-              <div class="flex items-center gap-2">
-                <h3 class="font-bold text-slate-900 text-lg">Polo 2: Medellín (Semanas 25 a 28)</h3>
-                <span class="text-xs px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-bold">O Padrão Ouro Mundial</span>
-              </div>
-              <p class="text-xs text-slate-500">O sotaque mais limpo e didático do mundo para consagrar sua fluência.</p>
-            </div>
-          </div>
-
-          <div class="space-y-3 text-xs text-slate-700">
-            <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-1.5">
-              <h5 class="font-bold text-slate-900 text-xs flex items-center gap-1.5">
-                <span>🏆</span> <strong>Por que o espanhol de Medellín é o melhor do planeta:</strong>
-              </h5>
-              <p class="text-slate-600 leading-relaxed">
-                O sotaque <em>paisa</em> é famoso por sua musicalidade suave, ritmo cadenciado e enunciação cristalina: todas as letras são pronunciadas sem cortar finais de palavras. É o ambiente perfeito para ganhar confiança, velocidade de raciocínio e falar com elegância natural.
-              </p>
-            </div>
-
-            <div class="space-y-2">
-              <h5 class="font-bold text-slate-900 text-xs">Escolas & Experiências Recomendadas:</h5>
-              
-              <div class="p-2.5 rounded-lg border border-slate-200 bg-white hover:border-slate-300 transition-colors">
-                <div class="flex items-center justify-between font-bold text-slate-900">
-                  <span>1. Toucan Spanish School (El Poblado ⭐⭐⭐⭐⭐)</span>
-                  <span class="text-emerald-700 font-bold">~US$ 140 - 180 / sem</span>
-                </div>
-                <p class="text-slate-500 mt-1">
-                  A escola mais famosa e estruturada da Colômbia. Aulas pela manhã e atividades culturais gratuitas diárias à tarde (aulas de salsa, tours de café especial, passeios a cavalo e workshops de gírias locais).
-                </p>
-              </div>
-
-              <div class="p-2.5 rounded-lg border border-slate-200 bg-white hover:border-slate-300 transition-colors">
-                <div class="flex items-center justify-between font-bold text-slate-900">
-                  <span>2. Colombia Immersion (Laureles & Envigado)</span>
-                  <span class="text-emerald-700 font-bold">Ideal p/ quem mora em Laureles</span>
-                </div>
-                <p class="text-slate-500 mt-1">
-                  Localizada no mesmo bairro da sua base nômade! Menos turística que El Poblado, metodologia focada em levar os alunos para praticar nas padarias, feiras livres e praças tradicionais de Laureles.
-                </p>
-              </div>
-
-              <div class="p-2.5 rounded-lg border border-slate-200 bg-white hover:border-slate-300 transition-colors">
-                <div class="flex items-center justify-between font-bold text-slate-900">
-                  <span>3. Language Exchanges / Tandems Gratuitos (Noturnos)</span>
-                  <span class="text-indigo-700 font-bold">100% Gratuito</span>
-                </div>
-                <p class="text-slate-500 mt-1">
-                  Toda semana ocorrem eventos como os <em>Gringo Tuesdays</em> (no Vintrash) e encontros no Toucan Café: centenas de colombianos e estrangeiros sentam em mesas para conversar 30 min em inglês/português e 30 min em espanhol.
-                </p>
-              </div>
-            </div>
-
-            <!-- DICAS DA COLÔMBIA -->
-            <div class="p-3 bg-emerald-50 rounded-xl border border-emerald-200 text-[11px] text-emerald-900 space-y-1">
-              <strong class="font-bold flex items-center gap-1">✨ A gentileza colombiana no dia a dia:</strong>
-              <p>• Na Colômbia, a cortesia é suprema: use sempre <em>"¿Me regala...?"</em> (forma educadíssima de pedir algo no café ou mercado), <em>"con mucho gusto"</em> e <em>"a la orden"</em>.</p>
-              <p>• <em>"Tinto"</em> na Colômbia é café preto coado simples (não é vinho tinto!).</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- TABELA COMPARATIVA DE SOTAQUES NA ROTA -->
-      <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm space-y-4">
-        <div>
-          <h3 class="font-bold text-slate-900 text-base flex items-center gap-2">
-            <span>🗺️</span> Raio-X dos Sotaques ao Longo da Sua Rota (30 Semanas)
-          </h3>
-          <p class="text-xs text-slate-500">Como o espanhol se transforma em cada país e qual o veredito prático para o casal.</p>
-        </div>
-
-        <div class="overflow-x-auto">
-          <table class="w-full text-left text-xs text-slate-600">
-            <thead class="bg-slate-50 text-slate-700 font-bold border-b border-slate-200">
+        <!-- TABELA COMPARATIVA DIRETA -->
+        <div class="overflow-x-auto rounded-xl border border-slate-200">
+          <table class="w-full text-left text-xs text-slate-700">
+            <thead class="bg-slate-100 text-slate-900 font-bold border-b border-slate-200 text-xs">
               <tr>
-                <th class="py-3 px-3">Destino / País</th>
-                <th class="py-3 px-3">Clareza</th>
-                <th class="py-3 px-3">Velocidade</th>
-                <th class="py-3 px-3">Particularidade Notável</th>
-                <th class="py-3 px-3">Custo Aulas / hora</th>
-                <th class="py-3 px-3 text-right">Veredito Nômade</th>
+                <th class="p-3">Critério</th>
+                <th class="p-3 text-emerald-700 bg-emerald-50/70">⭐ Professor Particular (2:1 Casal)</th>
+                <th class="p-3 text-indigo-700 bg-indigo-50/70">🏫 Escola Tradicional em Grupo</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-slate-100">
-              <tr class="hover:bg-slate-50 transition-colors">
-                <td class="py-3 px-3 font-bold text-slate-900 flex items-center gap-1.5">
-                  <span>🇦🇷</span> Buenos Aires
-                </td>
-                <td class="py-3 px-3 text-sky-700 font-bold">⭐⭐⭐⭐ (4/5)</td>
-                <td class="py-3 px-3">Média</td>
-                <td class="py-3 px-3">Voseo e som de "sh" no LL/Y</td>
-                <td class="py-3 px-3 font-semibold text-emerald-700">US$ 8 - 12 (Dólar MEP)</td>
-                <td class="py-3 px-3 text-right font-bold text-sky-700">🥇 Destravar no Mês 1</td>
+              <tr class="hover:bg-slate-50">
+                <td class="p-3 font-semibold text-slate-900">Custo Total (Casal)</td>
+                <td class="p-3 text-emerald-800 font-bold bg-emerald-50/30">US$ 8 – 15/hora total (~R$ 45–80 p/ ambos)</td>
+                <td class="p-3 text-slate-600 bg-indigo-50/30">US$ 300 – 450/semana (R$ 1.600+ p/ ambos)</td>
               </tr>
-              <tr class="hover:bg-slate-50 transition-colors">
-                <td class="py-3 px-3 font-bold text-slate-900 flex items-center gap-1.5">
-                  <span>🇨🇱</span> Santiago
-                </td>
-                <td class="py-3 px-3 text-rose-700 font-bold">⭐⭐ (2/5)</td>
-                <td class="py-3 px-3 font-bold text-rose-600">Ultrarrápido ⚡</td>
-                <td class="py-3 px-3">Corta finais e usa muitas gírias (<em>po, cachai</em>)</td>
-                <td class="py-3 px-3 text-slate-400">US$ 18 - 25</td>
-                <td class="py-3 px-3 text-right font-bold text-rose-700">⚠️ Evite estudar aqui</td>
+              <tr class="hover:bg-slate-50">
+                <td class="p-3 font-semibold text-slate-900">Flexibilidade c/ Trabalho</td>
+                <td class="p-3 text-emerald-800 font-bold bg-emerald-50/30">100% livre (horário combinado, café ou Airbnb)</td>
+                <td class="p-3 text-slate-600 bg-indigo-50/30">Rígido (geralmente 9h às 13h presencial diário)</td>
               </tr>
-              <tr class="hover:bg-slate-50 transition-colors">
-                <td class="py-3 px-3 font-bold text-slate-900 flex items-center gap-1.5">
-                  <span>🇵🇪</span> Arequipa & Cusco
-                </td>
-                <td class="py-3 px-3 text-emerald-700 font-bold">⭐⭐⭐⭐⭐ (5/5)</td>
-                <td class="py-3 px-3 text-emerald-700 font-semibold">Pausado / Lento</td>
-                <td class="py-3 px-3">Espanhol andino neutro, paciente e formal</td>
-                <td class="py-3 px-3 font-semibold text-emerald-700">US$ 6 - 9</td>
-                <td class="py-3 px-3 text-right font-bold text-emerald-700">🥈 Reforço Andino Barato</td>
+              <tr class="hover:bg-slate-50">
+                <td class="p-3 font-semibold text-slate-900">Foco do Aprendizado</td>
+                <td class="p-3 text-emerald-800 font-bold bg-emerald-50/30">Necessidades reais: aluguel, mercado, surf, negócios</td>
+                <td class="p-3 text-slate-600 bg-indigo-50/30">Gramática padronizada com ritmo nivelado por baixo</td>
               </tr>
-              <tr class="hover:bg-slate-50 transition-colors">
-                <td class="py-3 px-3 font-bold text-slate-900 flex items-center gap-1.5">
-                  <span>🇵🇪</span> Huanchaco & Órganos
-                </td>
-                <td class="py-3 px-3 text-sky-700 font-bold">⭐⭐⭐⭐ (4/5)</td>
-                <td class="py-3 px-3">Tranquila</td>
-                <td class="py-3 px-3">Vocabulário costeiro de pescadores e surfistas</td>
-                <td class="py-3 px-3 font-semibold text-slate-600">US$ 7 - 10</td>
-                <td class="py-3 px-3 text-right font-medium text-amber-700">🏄 Conversação nas Vilas</td>
+              <tr class="hover:bg-slate-50">
+                <td class="p-3 font-semibold text-slate-900">Socialização Externa</td>
+                <td class="p-3 text-slate-600 bg-emerald-50/30">Baixa na aula (socializa em cafés, coworkings, tours)</td>
+                <td class="p-3 text-indigo-800 font-bold bg-indigo-50/30">Alta (turmas cheias de gringos e nômades)</td>
               </tr>
-              <tr class="hover:bg-slate-50 transition-colors">
-                <td class="py-3 px-3 font-bold text-slate-900 flex items-center gap-1.5">
-                  <span>🇪🇨</span> Baños & Equador
-                </td>
-                <td class="py-3 px-3 text-emerald-700 font-bold">⭐⭐⭐⭐½ (4.5/5)</td>
-                <td class="py-3 px-3">Cadenciada</td>
-                <td class="py-3 px-3">Polidez extrema, uso constante de diminutivos</td>
-                <td class="py-3 px-3 font-semibold text-slate-600">US$ 8 - 11</td>
-                <td class="py-3 px-3 text-right font-medium text-slate-700">🌋 Prática Serena</td>
-              </tr>
-              <tr class="hover:bg-slate-50 transition-colors bg-emerald-50/50">
-                <td class="py-3 px-3 font-bold text-emerald-950 flex items-center gap-1.5">
-                  <span>🇨🇴</span> Medellín (Laureles)
-                </td>
-                <td class="py-3 px-3 text-emerald-700 font-black">⭐⭐⭐⭐⭐ (5/5 Ouro)</td>
-                <td class="py-3 px-3 font-bold text-emerald-800">Melódica</td>
-                <td class="py-3 px-3">Dicção impecável, sem atalhos ou cortes</td>
-                <td class="py-3 px-3 font-semibold text-emerald-800">US$ 10 - 15</td>
-                <td class="py-3 px-3 text-right font-black text-emerald-800">🏆 O Padrão Ouro</td>
+              <tr class="hover:bg-slate-50">
+                <td class="p-3 font-semibold text-slate-900">Veredito Nômade</td>
+                <td class="p-3 text-emerald-800 font-bold bg-emerald-50/30"><strong>Melhor escolha:</strong> 2 a 3x por semana (1h30 cada)</td>
+                <td class="p-3 text-slate-600 bg-indigo-50/30">Vale 1 semana pontual se o foco for fazer amigos gringos</td>
               </tr>
             </tbody>
           </table>
         </div>
       </div>
 
-      <!-- GUIA DOS FALSOS AMIGOS & VOCABULÁRIO NÔMADE -->
-      <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm space-y-4">
-        <div>
-          <div class="flex items-center gap-2">
-            <h3 class="font-bold text-slate-900 text-base">🚨 Falsos Amigos & Vocabulário Vital de Sobrevivência Nômade</h3>
-            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800">Para não errar</span>
-          </div>
-          <p class="text-xs text-slate-500 mt-0.5">Palavras que parecem português mas têm significados totalmente diferentes na rotina de viagem.</p>
-        </div>
-
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-          <!-- 1. PROPINA -->
-          <div class="p-3 bg-slate-50 rounded-xl border border-slate-200">
-            <div class="flex items-center justify-between mb-1">
-              <span class="font-black text-slate-900 text-sm">Propina</span>
-              <span class="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded">Gorjeta (10%)</span>
+      <!-- 2 POLOS ESTRATÉGICOS -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- POLO 1: BUENOS AIRES -->
+        <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm space-y-3">
+          <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+            <div class="flex items-center gap-2">
+              <span class="text-2xl">🇦🇷</span>
+              <div>
+                <h3 class="font-bold text-slate-900 text-base">Buenos Aires (Mês 1)</h3>
+                <span class="text-[11px] text-slate-500">Destravar base gramatical e conversação inicial</span>
+              </div>
             </div>
-            <p class="text-[11px] text-slate-500">NÃO é suborno! Em restaurantes no Peru e Argentina, o garçom perguntará: <em>"¿Desea incluir la propina?"</em>.</p>
+            <span class="text-xs px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 font-bold">~US$ 8–12/h</span>
           </div>
-
-          <!-- 2. BORRACHA -->
-          <div class="p-3 bg-slate-50 rounded-xl border border-slate-200">
-            <div class="flex items-center justify-between mb-1">
-              <span class="font-black text-slate-900 text-sm">Borracho(a)</span>
-              <span class="text-[10px] font-bold text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded">Bêbado(a)</span>
-            </div>
-            <p class="text-[11px] text-slate-500">Borracha de apagar no papel é <em>"goma de borrar"</em>. Se disser que você é borracha, entenderão que você bebeu demais!</p>
-          </div>
-
-          <!-- 3. ACORDAR -->
-          <div class="p-3 bg-slate-50 rounded-xl border border-slate-200">
-            <div class="flex items-center justify-between mb-1">
-              <span class="font-black text-slate-900 text-sm">Acordar</span>
-              <span class="text-[10px] font-bold text-sky-700 bg-sky-100 px-1.5 py-0.5 rounded">Chegar a Acordo</span>
-            </div>
-            <p class="text-[11px] text-slate-500">Significa combinar ou fechar negócio. Acordar do sono matinal em espanhol é <em>"despertarse"</em>.</p>
-          </div>
-
-          <!-- 4. DEPARTAMENTO / PISO -->
-          <div class="p-3 bg-slate-50 rounded-xl border border-slate-200">
-            <div class="flex items-center justify-between mb-1">
-              <span class="font-black text-slate-900 text-sm">Departamento</span>
-              <span class="text-[10px] font-bold text-indigo-700 bg-indigo-100 px-1.5 py-0.5 rounded">Apartamento</span>
-            </div>
-            <p class="text-[11px] text-slate-500">Na América do Sul, apartamento residencial é chamado de <em>"departamento"</em> (ou <em>"depa"</em> no Peru e Chile).</p>
-          </div>
-
-          <!-- 5. ALQUILER / ARRIENDO -->
-          <div class="p-3 bg-slate-50 rounded-xl border border-slate-200">
-            <div class="flex items-center justify-between mb-1">
-              <span class="font-black text-slate-900 text-sm">Alquiler / Arriendo</span>
-              <span class="text-[10px] font-bold text-purple-700 bg-purple-100 px-1.5 py-0.5 rounded">Aluguel</span>
-            </div>
-            <p class="text-[11px] text-slate-500">Na Argentina e Peru usa-se <em>"alquiler"</em>; na Colômbia e Chile o termo padrão é <em>"arriendo"</em>.</p>
-          </div>
-
-          <!-- 6. EXPENSAS -->
-          <div class="p-3 bg-slate-50 rounded-xl border border-slate-200">
-            <div class="flex items-center justify-between mb-1">
-              <span class="font-black text-slate-900 text-sm">Expensas</span>
-              <span class="text-[10px] font-bold text-rose-700 bg-rose-100 px-1.5 py-0.5 rounded">Condomínio</span>
-            </div>
-            <p class="text-[11px] text-slate-500">Taxa mensal do prédio. Ao cotar aluguéis diretos na Argentina, confirme sempre se o valor é <em>"con expensas incluidas"</em>.</p>
-          </div>
-
-          <!-- 7. FACTURA -->
-          <div class="p-3 bg-slate-50 rounded-xl border border-slate-200">
-            <div class="flex items-center justify-between mb-1">
-              <span class="font-black text-slate-900 text-sm">Factura</span>
-              <span class="text-[10px] font-bold text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded">Pão doce ou Nota</span>
-            </div>
-            <p class="text-[11px] text-slate-500">Significa nota fiscal formal, mas nas padarias da Argentina <em>"facturas"</em> são os pãezinhos doces com doce de leite matinais!</p>
-          </div>
-
-          <!-- 8. TINTO -->
-          <div class="p-3 bg-slate-50 rounded-xl border border-slate-200">
-            <div class="flex items-center justify-between mb-1">
-              <span class="font-black text-slate-900 text-sm">Tinto</span>
-              <span class="text-[10px] font-bold text-slate-700 bg-slate-200 px-1.5 py-0.5 rounded">Café ou Vinho</span>
-            </div>
-            <p class="text-[11px] text-slate-500">Na Colômbia, pedir um <em>"tintico"</em> é tomar um café preto coado. Na Argentina e Chile, <em>"vino tinto"</em> é o vinho tinto.</p>
-          </div>
-        </div>
-      </div>
-
-      <!-- SIMULADOR DE ORÇAMENTO PARA O CASAL -->
-      <div class="bg-gradient-to-r from-indigo-900 to-slate-900 text-white rounded-2xl p-6 shadow-md flex flex-col md:flex-row items-center justify-between gap-6">
-        <div class="space-y-2">
-          <div class="flex items-center gap-2">
-            <span class="text-2xl">💰</span>
-            <h4 class="font-bold text-lg text-white">Investimento Estimado no Curso de Espanhol (Casal)</h4>
-          </div>
-          <p class="text-xs text-slate-300 max-w-2xl leading-relaxed">
-            Com apenas <strong>12 horas de aulas particulares em Buenos Aires</strong> (para destravar a base gramatical) + <strong>1 semana de imersão/conversação em Medellín</strong> (para polir a fluência), o casal sai da viagem falando espanhol fluente pelo resto da vida.
-          </p>
-        </div>
-
-        <div class="bg-white/10 backdrop-blur-sm border border-white/20 p-4 rounded-xl text-center shrink-0 w-full md:w-auto">
-          <span class="text-xs text-slate-300 block">Investimento Total Sugerido (Casal)</span>
-          <span class="text-2xl font-black text-emerald-400">~US$ 250 (R$ 1.375)</span>
-          <span class="text-[11px] text-slate-400 block mt-1">Apenas R$ 98/mês por pessoa nos 7 meses</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- ABA 3: O CIRCUITO MUNDIAL DO LONGBOARD -->
-    <div id="content-surf" class="hidden space-y-6">
-      <div class="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
-        <h2 class="text-lg font-bold text-slate-900 mb-2">🌊 O Circuito do Longboard da Rota 3.0</h2>
-        <p class="text-sm text-slate-500 mb-6">Aproveitando a melhor janela de South Swell do planeta (Maio, Junho e Julho) nas esquerdas mais longas e perfeitas da América do Sul.</p>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
-            <span class="text-xs font-bold text-sky-700 uppercase block mb-1">1. Lima (Makaha)</span>
-            <h4 class="font-bold text-slate-900 text-sm mb-2">Aclimatação & Compra</h4>
-            <p class="text-xs text-slate-600 leading-relaxed">
-              Descida diária das falésias de Miraflores ao amanhecer. Ondas gordas e lentas sobre fundo de cascalho. Compra do longboard 9'0" usado em Miraflores. Água fria (3/2mm selado).
-            </p>
-          </div>
-
-          <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
-            <span class="text-xs font-bold text-emerald-700 uppercase block mb-1">2. Huanchaco (La Curvita)</span>
-            <h4 class="font-bold text-slate-900 text-sm mb-2">O QG Sagrado (3 Semanas)</h4>
-            <p class="text-xs text-slate-600 leading-relaxed">
-              A residência de evolução técnica. Esquerda regularíssima sobre cascalho e areia. Paredes longas e previsíveis para treinar noseride e cross-stepping sem crowd agressivo. Bate-volta no sábado a Chicama!
-            </p>
-          </div>
-
-          <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
-            <span class="text-xs font-bold text-amber-700 uppercase block mb-1">3. Los Órganos & Vichayito</span>
-            <h4 class="font-bold text-slate-900 text-sm mb-2">Água Morna & Point Break</h4>
-            <p class="text-xs text-slate-600 leading-relaxed">
-              O momento em que a roupa de borracha é guardada! Deserto costeiro, sol todos os dias, tartarugas marinhas e point break macio de fundo de areia em Los Órganos.
-            </p>
-          </div>
-
-          <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
-            <span class="text-xs font-bold text-rose-700 uppercase block mb-1">4. Olón & Ayampe, Equador</span>
-            <h4 class="font-bold text-slate-900 text-sm mb-2">Selva no Mar & Vibe Boho</h4>
-            <p class="text-xs text-slate-600 leading-relaxed">
-              Ayampe é a jóia ecológica do Equador: selva tropical tocando a praia, cafés saudáveis com Starlink, comunidade nômade e valas de areia com água morna. Revenda do pranchão aqui!
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ABA 4: COMO ECONOMIZAMOS R$ 16.000 -->
-    <div id="content-savings" class="hidden space-y-6">
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-          <div class="text-emerald-600 font-bold text-xl mb-1">- R$ 6.000</div>
-          <h4 class="font-bold text-slate-900 text-sm mb-2">Sete Lagos em vez de Extremo Sul</h4>
           <p class="text-xs text-slate-600 leading-relaxed">
-            Eliminamos os voos de alta temporada para El Calafate (Aerolíneas) e as diárias caríssimas de pico em El Chaltén. Focamos no melhor verão alpino de Bariloche, Angostura e San Martín.
+            <strong>Momento de ouro:</strong> com o Dólar MEP, contrate professor particular (Superprof ou TusClasesParticulares) para 2 a 3 sessões semanais em cafés de Palermo. Ensina a negociar, pedir prato, resolver problemas de apartamento e elimina o portunhol antes de cruzar os outros países.
           </p>
         </div>
 
-        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-          <div class="text-emerald-600 font-bold text-xl mb-1">- R$ 3.000</div>
-          <h4 class="font-bold text-slate-900 text-sm mb-2">Santiago Express (3-4 dias)</h4>
+        <!-- POLO 2: MEDELLÍN -->
+        <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm space-y-3">
+          <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+            <div class="flex items-center gap-2">
+              <span class="text-2xl">🇨🇴</span>
+              <div>
+                <h3 class="font-bold text-slate-900 text-base">Medellín (Mês 7)</h3>
+                <span class="text-[11px] text-slate-500">Polimento de fluência e sotaque límpido</span>
+              </div>
+            </div>
+            <span class="text-xs px-2.5 py-1 rounded-full bg-sky-100 text-sky-800 font-bold">~US$ 10–15/h</span>
+          </div>
           <p class="text-xs text-slate-600 leading-relaxed">
-            Santiago tem aluguéis de US$ 950+/mês e alimentação europeia. Cortamos 2 semanas de permanência cara e aproveitamos apenas a linda travessia cênica de ônibus e a conexão aérea.
-          </p>
-        </div>
-
-        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-          <div class="text-emerald-600 font-bold text-xl mb-1">- R$ 7.000</div>
-          <h4 class="font-bold text-slate-900 text-sm mb-2">Migração para Litoral & Caribe</h4>
-          <p class="text-xs text-slate-600 leading-relaxed">
-            Transferimos semanas para Huanchaco, Los Órganos, Ayampe e Caribe Colombiano, onde apartamentos de frente pro mar custam US$ 400-550/mês e o <em>menú del día</em> farto com peixe fresco sai por US$ 3,50 a 4,50.
+            <strong>O espanhol mais claro do mundo:</strong> o sotaque <em>paisa</em> é musical, calmo e sem cortes de fonemas. Perfeito para fechar os 7 meses com conversação avançada ou participar dos intercâmbios de idiomas (Gringo Tuesdays / Toucan Bar) no Poblado e Laureles.
           </p>
         </div>
       </div>
-    </div>
 
-    <!-- ABA 5: CHECKLIST DE CONEXÃO -->
-    <div id="content-wifi" class="hidden space-y-6">
-      <div class="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
-        <h2 class="text-lg font-bold text-slate-900 mb-2">Protocolo de Validação de Internet</h2>
-        <p class="text-sm text-slate-500 mb-4">Script em espanhol para copiar e enviar ao anfitrião antes de fechar qualquer reserva.</p>
-        <div class="bg-slate-900 text-emerald-400 p-4 rounded-xl text-xs font-mono leading-relaxed relative">
-          <button onclick="copyWifiScript()" class="absolute top-2 right-2 bg-slate-800 hover:bg-slate-700 text-white text-[11px] px-2.5 py-1 rounded border border-slate-700 transition-colors">Copiar Mensagem</button>
-          <p id="wifiScriptText">
-"¡Hola [Nombre]! Estamos muy interesados en su departamento para una estancia de [X semanas]. Somos una pareja de profesionales que trabajamos 100% en remoto para empresas de Brasil con videollamadas diarias.<br><br>
-Para poder confirmar la reserva, necesitamos verificar la estabilidad de internet:<br>
-1. ¿Podría enviarnos una captura de pantalla de un test de velocidad reciente (Speedtest.net o Fast.com)?<br>
-2. ¿La conexión es de Fibra Óptica directa (FTTH) o satelital Starlink? ¿Cuál es la empresa proveedora?<br>
-3. ¿El router se encuentra dentro del propio departamento?<br>
-4. ¿Cuentan con mesa y sillas cómodas adecuadas para trabajar con laptop?<br><br>
-¡Muchas gracias por su ayuda!"
-          </p>
+      <!-- 6 FALSOS AMIGOS INDISPENSÁVEIS -->
+      <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm space-y-3">
+        <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+          <span>⚠️</span> <strong>6 Palavras Cruciais que Mudam Tudo na Prática</strong>
+        </h3>
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2 text-xs">
+          <div class="p-2.5 bg-slate-50 rounded-xl border border-slate-200">
+            <span class="font-bold text-slate-900 block">Propina</span>
+            <span class="text-[10px] text-emerald-700 font-semibold block">Gorjeta</span>
+            <p class="text-[10px] text-slate-500 mt-1">10% padrão em restaurantes em quase toda a AL.</p>
+          </div>
+          <div class="p-2.5 bg-slate-50 rounded-xl border border-slate-200">
+            <span class="font-bold text-slate-900 block">Borracho</span>
+            <span class="text-[10px] text-rose-700 font-semibold block">Bêbado</span>
+            <p class="text-[10px] text-slate-500 mt-1">Borracha escolar se chama <em>goma de borrar</em>.</p>
+          </div>
+          <div class="p-2.5 bg-slate-50 rounded-xl border border-slate-200">
+            <span class="font-bold text-slate-900 block">Acordar</span>
+            <span class="text-[10px] text-indigo-700 font-semibold block">Combinar / Lembrar</span>
+            <p class="text-[10px] text-slate-500 mt-1">Acordar de dormir é <em>despertarse</em>.</p>
+          </div>
+          <div class="p-2.5 bg-slate-50 rounded-xl border border-slate-200">
+            <span class="font-bold text-slate-900 block">Departamento</span>
+            <span class="text-[10px] text-sky-700 font-semibold block">Apartamento (Depto)</span>
+            <p class="text-[10px] text-slate-500 mt-1">Termo usado para o seu Airbnb ou aluguel.</p>
+          </div>
+          <div class="p-2.5 bg-slate-50 rounded-xl border border-slate-200">
+            <span class="font-bold text-slate-900 block">Alquiler</span>
+            <span class="text-[10px] text-emerald-700 font-semibold block">Aluguel</span>
+            <p class="text-[10px] text-slate-500 mt-1">Usado para casas, carros e pranchas de surf.</p>
+          </div>
+          <div class="p-2.5 bg-slate-50 rounded-xl border border-slate-200">
+            <span class="font-bold text-slate-900 block">Expensas</span>
+            <span class="text-[10px] text-amber-700 font-semibold block">Condomínio</span>
+            <p class="text-[10px] text-slate-500 mt-1">Taxa predial em negociações diretas na Argentina.</p>
+          </div>
         </div>
       </div>
     </div>
@@ -2740,7 +2345,7 @@ Para poder confirmar la reserva, necesitamos verificar la estabilidad de interne
     }
 
     function switchTab(tabId) {
-      const tabs = ["map", "itinerary", "costs", "airbnb", "spanish", "surf", "savings", "wifi"];
+      const tabs = ["map", "itinerary", "costs", "airbnb", "spanish"];
       tabs.forEach(t => {
         const btn = document.getElementById("tab-" + t);
         const content = document.getElementById("content-" + t);
@@ -2757,13 +2362,6 @@ Para poder confirmar la reserva, necesitamos verificar la estabilidad de interne
         renderAirbnbCards();
         updateAirbnbKPIs();
       }
-    }
-
-    function copyWifiScript() {
-      const text = document.getElementById("wifiScriptText").innerText;
-      navigator.clipboard.writeText(text).then(() => {
-        alert("Mensagem copiada para a área de transferência!");
-      });
     }
 
     // ==========================================
@@ -3600,19 +3198,7 @@ Para poder confirmar la reserva, necesitamos verificar la estabilidad de interne
       }
     }
 
-    function copyScriptSpeedtest() {
-      const text = document.getElementById("scriptSpeedtestText").innerText.trim();
-      navigator.clipboard.writeText(text).then(() => {
-        alert("Script de Speedtest copiado! Cole no chat com o anfitrião no Airbnb.");
-      });
-    }
 
-    function copyScriptDiscount() {
-      const text = document.getElementById("scriptDiscountText").innerText.trim();
-      navigator.clipboard.writeText(text).then(() => {
-        alert("Script de desconto para estadia longa copiado! Cole no chat do anfitrião.");
-      });
-    }
 
     function initAirbnbModule() {
       loadAirbnbQuotes();
