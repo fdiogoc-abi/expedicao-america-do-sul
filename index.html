@@ -514,9 +514,72 @@
         </div>
       </div>
 
+      <!-- CENTRAL DE AUTOMAÇÃO DE BUSCA & CAPTURA DO AIRBNB -->
+      <div class="bg-gradient-to-r from-sky-900 via-slate-900 to-indigo-950 text-white rounded-2xl p-5 md:p-6 shadow-md border border-sky-800/40 space-y-4">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-white/10 pb-4">
+          <div>
+            <div class="flex items-center gap-2 mb-1">
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-sky-400/20 text-sky-300 border border-sky-400/30 uppercase tracking-wider">Fluxo Híbrido Nômade</span>
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-400/20 text-emerald-300 border border-emerald-400/30">100% Anti-Bloqueio</span>
+            </div>
+            <h3 class="text-lg md:text-xl font-black text-white">🚀 Automação de Busca & Captura em 2 Passos</h3>
+            <p class="text-xs text-slate-300 mt-0.5">Encontre acomodações com desconto mensal garantido e importe para o painel em 1 clique sem digitar nada.</p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+          <!-- PASSO 1: BUSCADOR CIRÚRGICO -->
+          <div class="bg-white/10 backdrop-blur-sm border border-white/15 rounded-xl p-4 space-y-3 flex flex-col justify-between">
+            <div class="space-y-2">
+              <div class="flex items-center gap-2">
+                <span class="w-6 h-6 rounded-full bg-sky-500 text-slate-900 flex items-center justify-center font-black text-xs">1</span>
+                <span class="font-bold text-white text-sm">Abrir Busca Cirúrgica no Airbnb</span>
+              </div>
+              <p class="text-slate-300 leading-relaxed text-[11px]">
+                Abre o Airbnb com filtros automáticos pré-configurados: <strong>estadia de 28 noites</strong> (para ativar o desconto mensal de 25% a 45%), <strong>Wi-Fi + Espaço de Trabalho + Cozinha</strong> e <strong>teto de preço</strong> da etapa selecionada.
+              </p>
+            </div>
+
+            <div class="pt-2 flex items-center gap-2">
+              <select id="quickSearchCitySelect" class="bg-slate-800 text-white border border-slate-700 rounded-lg px-2.5 py-2 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-sky-400 grow">
+                <!-- Populado dinamicamente -->
+              </select>
+              <button type="button" onclick="triggerQuickAirbnbSearch()" class="bg-sky-500 hover:bg-sky-400 text-slate-900 font-bold px-3.5 py-2 rounded-lg text-xs transition-colors shrink-0 flex items-center gap-1.5 shadow-sm">
+                <span>🔍</span> Buscar Agora
+              </button>
+            </div>
+          </div>
+
+          <!-- PASSO 2: BOOKMARKLET DE 1-CLIQUE -->
+          <div class="bg-white/10 backdrop-blur-sm border border-white/15 rounded-xl p-4 space-y-3 flex flex-col justify-between">
+            <div class="space-y-2">
+              <div class="flex items-center gap-2">
+                <span class="w-6 h-6 rounded-full bg-emerald-400 text-slate-900 flex items-center justify-center font-black text-xs">2</span>
+                <span class="font-bold text-white text-sm">Capturador de 1-Clique (Bookmarklet)</span>
+              </div>
+              <p class="text-slate-300 leading-relaxed text-[11px]">
+                Arraste o botão abaixo para a sua barra de favoritos do navegador. Quando estiver na página de qualquer anúncio que gostou no Airbnb, clique nele para copiar preço, título e link instantaneamente.
+              </p>
+            </div>
+
+            <div class="pt-2 flex flex-wrap items-center gap-2">
+              <!-- Botão arrastável (Bookmarklet Link) -->
+              <a href="javascript:(function(){try{if(!window.location.hostname.includes('airbnb')){alert('⚠️ Abra um anúncio no Airbnb antes de usar este botão!');return;}const url=window.location.origin+window.location.pathname;const h1=document.querySelector('h1');const title=h1?h1.innerText.trim():document.title.split('-')[0].trim();let price=0,currency='BRL';const text=document.body.innerText;const priceMatch=text.match(/(?:R\$|US\$|\$)\s?([0-9]{1,3}(?:\.[0-9]{3})*(?:,[0-9]{2})?|[0-9]+)/);if(priceMatch){if(priceMatch[0].includes('US$'))currency='USD';price=parseInt(priceMatch[1].replace(/[^0-9]/g,''),10)||0;}let speedMatch=text.match(/([0-9]{2,3})\s*(?:mbps|mega|mb)/i);let speed=speedMatch?parseInt(speedMatch[1],10):0;const payload={title:title,url:url,price:price,currency:currency,periodType:'total',speed:speed,source:'airbnb_bookmarklet'};const jsonStr=JSON.stringify(payload);navigator.clipboard.writeText(jsonStr).then(function(){alert('✅ Anúncio capturado!\n\n📌 '+title+'\n💵 '+(currency==='BRL'?'R$ ':'US$ ')+price+'\n\n👉 Volte ao seu Dashboard e clique em \'📥 Auto-Preencher Anúncio Copiado\'!');}).catch(function(){prompt('Copie os dados abaixo e cole no Dashboard:',jsonStr);});}catch(e){alert('Erro: '+e.message);}})();" 
+                 title="Arraste este botão para a barra de favoritos do seu navegador"
+                 class="px-3 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-900 font-extrabold text-xs inline-flex items-center gap-1.5 transition-all shadow cursor-grab border border-emerald-300">
+                <span>📌</span> Arraste p/ Favoritos: Capturar Airbnb
+              </a>
+              <button type="button" onclick="copyBookmarkletCode()" class="px-2.5 py-2 rounded-lg bg-white/10 hover:bg-white/20 text-slate-200 text-xs font-semibold transition-colors border border-white/20">
+                📋 Copiar Código
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- FORMULÁRIO DE NOVA COTAÇÃO -->
       <div class="bg-white rounded-2xl p-6 border border-sky-200 shadow-sm space-y-4">
-        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
           <div class="flex items-center gap-2">
             <span class="w-8 h-8 rounded-lg bg-sky-100 text-sky-700 flex items-center justify-center font-bold text-sm">➕</span>
             <div>
@@ -524,9 +587,14 @@
               <p class="text-xs text-slate-500">Cadastre o link do anúncio para comparar com o teto da cidade em tempo real.</p>
             </div>
           </div>
-          <button type="button" onclick="toggleAirbnbForm()" id="btnToggleForm" class="text-xs text-sky-700 hover:text-sky-900 font-semibold transition-colors">
-            Recolher Formulário ▲
-          </button>
+          <div class="flex items-center gap-2 flex-wrap">
+            <button type="button" onclick="handlePasteAirbnbFromClipboard()" class="px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-300 text-xs font-bold transition-all flex items-center gap-1.5 shadow-2xs">
+              <span>📥</span> Auto-Preencher Anúncio Copiado
+            </button>
+            <button type="button" onclick="toggleAirbnbForm()" id="btnToggleForm" class="text-xs text-sky-700 hover:text-sky-900 font-semibold transition-colors">
+              Recolher Formulário ▲
+            </button>
+          </div>
         </div>
 
         <form id="airbnbForm" onsubmit="handleSaveAirbnb(event)" class="space-y-4">
@@ -1691,6 +1759,11 @@ Para poder confirmar la reserva, necesitamos verificar la estabilidad de interne
               <span class="font-medium text-slate-800 text-right">${base.fuso}</span>
             </div>
           </div>
+
+          <!-- BOTÃO DE BUSCA CIRÚRGICA AIRBNB -->
+          <a href="${getAirbnbSearchUrl(base)}" target="_blank" class="w-full py-2.5 px-3 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-colors shadow-sm">
+            <span>🔍</span> Abrir Busca Cirúrgica no Airbnb (${base.name}) ↗
+          </a>
         </div>
       `;
 
@@ -1839,6 +1912,11 @@ Para poder confirmar la reserva, necesitamos verificar la estabilidad de interne
                   <span>📶 <strong>Conexão:</strong> ${base.wifiProvider}</span>
                   <span>🌊 <strong>Mar/Lazer:</strong> ${base.surfNotes}</span>
                   <span>🌡️ <strong>Clima:</strong> ${base.temp}</span>
+                </div>
+                <div class="mt-2.5">
+                  <a href="${getAirbnbSearchUrl(base)}" target="_blank" class="inline-flex items-center gap-1.5 text-[11px] font-bold text-sky-700 hover:text-sky-900 bg-sky-50 hover:bg-sky-100 border border-sky-200 px-2.5 py-1 rounded-lg transition-colors">
+                    <span>🔍</span> Buscar no Airbnb c/ Desconto Mensal (${base.name}) ↗
+                  </a>
                 </div>
               </div>
             </div>
@@ -2075,6 +2153,127 @@ Para poder confirmar la reserva, necesitamos verificar la estabilidad de interne
       return currentCurrency === "BRL" ? targetUsd * usdRate : targetUsd;
     }
 
+    function getAirbnbSearchUrl(base) {
+      if (!base) base = baseData[0];
+      const cityMap = {
+        ba: "Buenos-Aires--Argentina",
+        colonia: "Colonia-del-Sacramento--Colonia--Uruguay",
+        "7lagos": "San-Carlos-de-Bariloche--Rio-Negro--Argentina",
+        mendoza: "Mendoza--Mendoza-Province--Argentina",
+        santiago_exp: "Providencia--Santiago-Metropolitan-Region--Chile",
+        arequipa: "Arequipa--Peru",
+        cusco: "Cusco--Peru",
+        lima: "Miraflores--Lima--Peru",
+        huanchaco: "Huanchaco--La-Libertad--Peru",
+        organos: "Los-Organos--Piura--Peru",
+        olon_ayampe: "Olon--Santa-Elena--Ecuador",
+        vulcoes: "Banos--Tungurahua--Ecuador",
+        medellin: "Laureles--Medellin--Antioquia--Colombia",
+        caribe: "Palomino--La-Guajira--Colombia"
+      };
+
+      const locationSlug = cityMap[base.id] || encodeURIComponent(base.name + " " + base.country);
+      
+      // Calculate target budget with 12% margin for negotiation
+      const targetActive = getBaseTargetHospInActiveCurrency(base);
+      const maxPrice = Math.round(targetActive * 1.12);
+      const priceParam = maxPrice > 0 ? `&price_max=${maxPrice}` : "";
+
+      // 28-night monthly stay to trigger Airbnb's monthly discount algorithm automatically
+      const checkin = "2026-11-01";
+      const checkout = "2026-11-29";
+
+      return `https://www.airbnb.com.br/s/${locationSlug}/homes?adults=2&checkin=${checkin}&checkout=${checkout}&room_types%5B%5D=Entire%20home%2Fapt&amenities%5B%5D=4&amenities%5B%5D=47&amenities%5B%5D=8&search_type=filter_change${priceParam}`;
+    }
+
+    function triggerQuickAirbnbSearch() {
+      const select = document.getElementById("quickSearchCitySelect");
+      if (!select) return;
+      const base = baseData.find(b => b.id === select.value) || baseData[0];
+      const url = getAirbnbSearchUrl(base);
+      window.open(url, "_blank");
+    }
+
+    function copyBookmarkletCode() {
+      const code = "javascript:(function(){try{if(!window.location.hostname.includes('airbnb')){alert('⚠️ Abra um anúncio no Airbnb antes de usar este botão!');return;}const url=window.location.origin+window.location.pathname;const h1=document.querySelector('h1');const title=h1?h1.innerText.trim():document.title.split('-')[0].trim();let price=0,currency='BRL';const text=document.body.innerText;const priceMatch=text.match(/(?:R\\$|US\\$|\\$)\\s?([0-9]{1,3}(?:\\.[0-9]{3})*(?:,[0-9]{2})?|[0-9]+)/);if(priceMatch){if(priceMatch[0].includes('US$'))currency='USD';price=parseInt(priceMatch[1].replace(/[^0-9]/g,''),10)||0;}let speedMatch=text.match(/([0-9]{2,3})\\s*(?:mbps|mega|mb)/i);let speed=speedMatch?parseInt(speedMatch[1],10):0;const payload={title:title,url:url,price:price,currency:currency,periodType:'total',speed:speed,source:'airbnb_bookmarklet'};const jsonStr=JSON.stringify(payload);navigator.clipboard.writeText(jsonStr).then(function(){alert('✅ Anúncio capturado!\\n\\n📌 '+title+'\\n💵 '+(currency==='BRL'?'R$ ':'US$ ')+price+'\\n\\n👉 Volte ao seu Dashboard e clique em \\'📥 Auto-Preencher Anúncio Copiado\\'!');}).catch(function(){prompt('Copie os dados abaixo e cole no Dashboard:',jsonStr);});}catch(e){alert('Erro: '+e.message);}})();";
+      navigator.clipboard.writeText(code).then(() => {
+        alert("📋 Código do Bookmarklet copiado!\n\nPara instalar manualmente no seu navegador:\n1. Crie um novo favorito no Chrome/Safari;\n2. Edite o favorito, mude o nome para '📌 Capturar Airbnb';\n3. No campo de URL, cole este código copiado e salve!");
+      });
+    }
+
+    async function handlePasteAirbnbFromClipboard() {
+      try {
+        let text = "";
+        if (navigator.clipboard && navigator.clipboard.readText) {
+          try {
+            text = await navigator.clipboard.readText();
+          } catch(e) {
+            text = prompt("Cole aqui o JSON gerado pelo Bookmarklet ou o link do anúncio:");
+          }
+        } else {
+          text = prompt("Cole aqui o JSON gerado pelo Bookmarklet ou o link do anúncio:");
+        }
+
+        if (!text) return;
+        text = text.trim();
+
+        // 1. If JSON from Bookmarklet
+        if (text.startsWith("{") && text.endsWith("}")) {
+          try {
+            const data = JSON.parse(text);
+            if (data.title) document.getElementById("formTitle").value = data.title;
+            if (data.url) document.getElementById("formUrl").value = data.url;
+            if (data.price) document.getElementById("formPrice").value = data.price;
+            if (data.currency) document.getElementById("formCurrency").value = data.currency;
+            if (data.periodType) document.getElementById("formPeriodType").value = data.periodType;
+            if (data.speed) document.getElementById("formSpeed").value = data.speed;
+
+            // Auto-detect base by name in title or url
+            for (let b of baseData) {
+              const nameLow = b.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+              const searchBlob = (data.title + " " + data.url).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+              if (searchBlob.includes(nameLow) || searchBlob.includes(b.id)) {
+                document.getElementById("formCitySelect").value = b.id;
+                break;
+              }
+            }
+
+            updateFormBudgetMeta();
+            calcLiveComparison();
+            showToast("✨ Dados do anúncio preenchidos automaticamente!");
+            return;
+          } catch (jsonErr) {
+            console.warn("Erro ao fazer parse do JSON:", jsonErr);
+          }
+        }
+
+        // 2. If single URL
+        if (text.includes("airbnb.")) {
+          document.getElementById("formUrl").value = text;
+          showToast("🔗 Link do Airbnb inserido! Preencha o valor cotado.");
+          return;
+        }
+
+        alert("Conteúdo não reconhecido. Use o botão 'Capturar Airbnb' na página do anúncio para copiar os dados automaticamente!");
+      } catch (err) {
+        alert("Erro ao ler área de transferência: " + err.message);
+      }
+    }
+
+    function showToast(msg) {
+      const existing = document.getElementById("customGlobalToast");
+      if (existing) existing.remove();
+
+      const toast = document.createElement("div");
+      toast.id = "customGlobalToast";
+      toast.className = "fixed bottom-5 right-5 z-50 bg-slate-900 text-white px-4 py-3 rounded-xl shadow-2xl text-xs font-bold flex items-center gap-2 border border-slate-700 animate-bounce";
+      toast.innerHTML = `<span>⚡</span> <span>${msg}</span>`;
+      document.body.appendChild(toast);
+      setTimeout(() => {
+        if (toast) toast.remove();
+      }, 4000);
+    }
+
     function loadAirbnbQuotes() {
       try {
         const saved = localStorage.getItem("expedicao_airbnbs_v2");
@@ -2110,10 +2309,12 @@ Para poder confirmar la reserva, necesitamos verificar la estabilidad de interne
     function populateCityDropdowns() {
       const formSelect = document.getElementById("formCitySelect");
       const filterSelect = document.getElementById("filterQuoteCity");
+      const quickSelect = document.getElementById("quickSearchCitySelect");
       if (!formSelect || !filterSelect) return;
 
       formSelect.innerHTML = "";
       filterSelect.innerHTML = '<option value="all">Todas as Cidades</option>';
+      if (quickSelect) quickSelect.innerHTML = "";
 
       baseData.forEach((base, idx) => {
         const optForm = document.createElement("option");
@@ -2125,6 +2326,13 @@ Para poder confirmar la reserva, necesitamos verificar la estabilidad de interne
         optFilter.value = base.id;
         optFilter.textContent = `${base.flag} ${base.name}`;
         filterSelect.appendChild(optFilter);
+
+        if (quickSelect) {
+          const optQuick = document.createElement("option");
+          optQuick.value = base.id;
+          optQuick.textContent = `${base.flag} ${base.name} (${base.weeks > 0 ? base.weeks + ' sem' : 'Bônus fds'})`;
+          quickSelect.appendChild(optQuick);
+        }
       });
     }
 
