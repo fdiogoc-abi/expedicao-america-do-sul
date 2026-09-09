@@ -4216,11 +4216,27 @@
       }
     }
 
+    const REAL_ROOM_FALLBACKS = {
+      ba: "https://www.airbnb.com.br/rooms/13505237?adults=2&check_in=2026-10-01&check_out=2026-10-29",
+      huanchaco: "https://www.airbnb.com.br/rooms/26988074?adults=2&check_in=2027-01-14&check_out=2027-02-04",
+      organos: "https://www.airbnb.com.br/rooms/739224444301121392?adults=2&check_in=2027-02-04&check_out=2027-02-25",
+      arequipa: "https://www.airbnb.com.br/rooms/1341429163762649536?adults=2&check_in=2026-12-17&check_out=2026-12-31"
+    };
+
     function getSafeAirbnbUrl(quote, base) {
-      if (!quote) return getAirbnbSearchUrl(base);
+      const bId = base ? base.id : (quote ? quote.baseId : null);
+      if (!quote) {
+        if (bId && REAL_ROOM_FALLBACKS[bId]) return REAL_ROOM_FALLBACKS[bId];
+        return getAirbnbSearchUrl(base);
+      }
       const rawUrl = (quote.url || "").trim();
       if (!rawUrl || rawUrl.includes("sample-") || rawUrl.includes("example.com") || (!rawUrl.startsWith("http://") && !rawUrl.startsWith("https://"))) {
+        if (bId && REAL_ROOM_FALLBACKS[bId]) return REAL_ROOM_FALLBACKS[bId];
         return getAirbnbSearchUrl(base);
+      }
+      // Se a URL salva era apenas uma página de busca (/homes) e temos o anúncio do quarto real escolhido
+      if (rawUrl.includes("/homes") && bId && REAL_ROOM_FALLBACKS[bId]) {
+        return REAL_ROOM_FALLBACKS[bId];
       }
       return cleanAirbnbUrl(rawUrl);
     }
@@ -4362,9 +4378,12 @@
     function sanitizeQuotes(quotes) {
       if (!Array.isArray(quotes)) return { quotes, changed: false };
       const sampleMap = {
-        "sample-palermo": "https://www.airbnb.com.br/s/Palermo-Soho--Buenos-Aires--Argentina/homes?adults=2&checkin=2026-10-01&checkout=2026-10-29",
-        "sample-huanchaco": "https://www.airbnb.com.br/s/Huanchaco--Peru/homes?adults=2&checkin=2027-01-14&checkout=2027-02-04",
-        "sample-vichayito": "https://www.airbnb.com.br/s/Vichayito--Peru/homes?adults=2&checkin=2027-02-04&checkout=2027-02-25"
+        "sample-palermo": "https://www.airbnb.com.br/rooms/13505237?adults=2&check_in=2026-10-01&check_out=2026-10-29",
+        "sample-huanchaco": "https://www.airbnb.com.br/rooms/26988074?adults=2&check_in=2027-01-14&check_out=2027-02-04",
+        "sample-vichayito": "https://www.airbnb.com.br/rooms/739224444301121392?adults=2&check_in=2027-02-04&check_out=2027-02-25",
+        "Palermo-Soho--Buenos-Aires--Argentina/homes": "https://www.airbnb.com.br/rooms/13505237?adults=2&check_in=2026-10-01&check_out=2026-10-29",
+        "Huanchaco--Peru/homes": "https://www.airbnb.com.br/rooms/26988074?adults=2&check_in=2027-01-14&check_out=2027-02-04",
+        "Vichayito--Peru/homes": "https://www.airbnb.com.br/rooms/739224444301121392?adults=2&check_in=2027-02-04&check_out=2027-02-25"
       };
       let changed = false;
       quotes.forEach(q => {
