@@ -3167,6 +3167,34 @@
         hospSubtitleClass = effHosp.isAboveMeta ? 'text-rose-700 font-bold' : 'text-amber-700 font-medium';
       }
 
+      const transSearchInfo = AIRPORT_SEARCH_MAP[base.id] || { from: "Origem", to: base.name, query: `voo para ${base.name}` };
+      const transQueryEnc = encodeURIComponent(transSearchInfo.query);
+      const transBusbudEnc = encodeURIComponent((transSearchInfo.from || "Origem") + ' ' + (transSearchInfo.to || base.name));
+
+      let transBadgeText = 'Meta: ' + formatRawMoney(plannedTrans, currentCurrency);
+      let transBadgeClass = 'text-slate-400';
+      let transSubtitleText = base.transType || 'Transporte previsto';
+      let transSubtitleClass = 'text-slate-400';
+
+      if (effTrans.isBooked) {
+        transBadgeText = '🎉 Emitido';
+        transBadgeClass = 'text-purple-700 font-bold';
+        transSubtitleText = effTrans.quote && effTrans.quote.company ? `${effTrans.quote.company} • ${effTrans.quote.title}` : (effTrans.quote ? effTrans.quote.title : 'Passagem emitida');
+        transSubtitleClass = 'text-purple-700 font-bold';
+      } else if (effTrans.isSelected) {
+        transBadgeText = '⭐ Escolhido';
+        transBadgeClass = 'text-emerald-700 font-bold';
+        transSubtitleText = effTrans.quote && effTrans.quote.company ? `${effTrans.quote.company} • ${effTrans.quote.title}` : (effTrans.quote ? effTrans.quote.title : 'Opção escolhida');
+        transSubtitleClass = 'text-emerald-700 font-bold';
+      } else if (effTrans.hasQuote) {
+        transBadgeText = effTrans.isAboveMeta ? '⚠️ Acima da Meta' : '🟡 Em Cotação';
+        transBadgeClass = effTrans.isAboveMeta ? 'text-rose-700 font-bold' : 'text-amber-700 font-bold';
+        transSubtitleText = effTrans.isAboveMeta 
+          ? `⚠️ +${formatRawMoney(effTrans.diffAbs, currentCurrency)} vs Meta (${formatRawMoney(plannedTrans, currentCurrency)})`
+          : `Meta: ${formatRawMoney(plannedTrans, currentCurrency)}`;
+        transSubtitleClass = effTrans.isAboveMeta ? 'text-rose-700 font-bold' : 'text-amber-700 font-medium';
+      }
+
       const baseTotalCost = effectiveHospCost + plannedAlim + effectiveTransCost + plannedExtras;
       const dailyHosp = days > 0 ? effectiveHospCost / days : 0;
       const dailyAlim = days > 0 ? plannedAlim / days : 0;
@@ -3250,16 +3278,14 @@
               </div>
 
               <!-- 3. TRANSPORTE -->
-              <div class="p-2.5 bg-white rounded-xl border ${effTrans.isAboveMeta ? 'border-rose-300 ring-1 ring-rose-300 bg-rose-50/30' : (effTrans.isBooked ? 'border-purple-300 ring-1 ring-purple-300 bg-purple-50/20' : (effTrans.hasQuote ? 'border-sky-300 ring-1 ring-sky-300 bg-sky-50/20' : 'border-slate-200'))} shadow-2xs">
+              <div class="p-2.5 bg-white rounded-xl border ${effTrans.isAboveMeta ? 'border-rose-300 ring-1 ring-rose-300 bg-rose-50/30' : (effTrans.isBooked ? 'border-purple-300 ring-1 ring-purple-300 bg-purple-50/20' : (effTrans.isSelected ? 'border-emerald-300 ring-1 ring-emerald-300 bg-emerald-50/20' : (effTrans.hasQuote ? 'border-amber-300 ring-1 ring-amber-300 bg-amber-50/20' : 'border-slate-200')))} shadow-2xs">
                 <div class="flex items-center justify-between">
                   <span class="text-[10px] text-sky-800 font-bold flex items-center gap-1">${effTrans.icon} Transporte</span>
-                  <span class="text-[10px] ${effTrans.isBooked ? 'text-purple-700 font-bold' : (effTrans.isAboveMeta ? 'text-rose-700 font-bold' : (effTrans.hasQuote ? 'text-sky-700 font-bold' : 'text-slate-400'))}">
-                    ${effTrans.isBooked ? '✅ Emitido' : (effTrans.hasQuote ? (effTrans.isAboveMeta ? '⚠️ Acima da Meta' : '🟡 Cotado') : 'Meta')}
-                  </span>
+                  <span class="text-[10px] ${transBadgeClass}">${transBadgeText}</span>
                 </div>
-                <span class="text-sm font-black ${effTrans.isAboveMeta ? 'text-rose-700' : (effTrans.isBooked ? 'text-purple-700' : 'text-slate-900')} block mt-1">${formatRawMoney(effectiveTransCost, currentCurrency)}</span>
+                <span class="text-sm font-black ${effTrans.isAboveMeta ? 'text-rose-700' : (effTrans.isBooked ? 'text-purple-700' : (effTrans.isSelected ? 'text-emerald-700' : (effTrans.hasQuote ? 'text-amber-800' : 'text-slate-900')))} block mt-1">${formatRawMoney(effectiveTransCost, currentCurrency)}</span>
                 <div class="flex items-center justify-between mt-1 pt-1 border-t border-slate-100">
-                  <span class="text-[10px] text-slate-500 truncate max-w-[110px]" title="${effTrans.title}">${effTrans.title}</span>
+                  <span class="text-[10px] ${transSubtitleClass} truncate max-w-[110px]" title="${effTrans.title}">${effTrans.title}</span>
                   <button type="button" onclick="openQuickTransportModal('${base.id}')" class="text-[10px] font-bold text-sky-600 hover:text-sky-800 underline shrink-0 cursor-pointer">
                     ${effTrans.hasQuote ? 'Editar' : '+ Cotar'}
                   </button>
@@ -3438,6 +3464,166 @@
                 <span>Cole o link do imóvel para auditar bairro e comodidades.</span>
                 <button type="button" onclick="openQuickAirbnbModal('${base.id}')" class="text-sky-600 hover:text-sky-800 font-bold hover:underline">
                   + Auditar Bairro & Detalhes
+                </button>
+              </div>
+            </div>
+            `}
+          </div>
+
+          <!-- SEÇÃO DO TRANSPORTE / DESLOCAMENTO DESTA ETAPA -->
+          <div class="p-3.5 rounded-2xl border ${effTrans.hasQuote ? (effTrans.isBooked ? 'bg-purple-50/60 border-purple-300' : (effTrans.isSelected ? 'bg-emerald-50/80 border-emerald-300 shadow-2xs' : (effTrans.isAboveMeta ? 'bg-rose-50/70 border-rose-300' : 'bg-sky-50/60 border-sky-300 shadow-2xs'))) : 'bg-slate-50 border-slate-200'} space-y-2.5">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-slate-900 flex items-center gap-1.5">
+                <span class="text-base">${effTrans.icon}</span> <strong>Transporte Desta Etapa</strong>
+              </span>
+              ${effTrans.hasQuote ? `
+              <div class="flex items-center gap-1.5">
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${effTrans.isAboveMeta ? 'bg-rose-100 text-rose-800 border border-rose-300' : (effTrans.isBelowMeta ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-sky-100 text-sky-800 border border-sky-300')}">
+                  ${effTrans.isAboveMeta ? `⚠️ +${formatRawMoney(effTrans.diffAbs, currentCurrency)} vs Meta` : (effTrans.isBelowMeta ? `🎉 -${formatRawMoney(effTrans.diffAbs, currentCurrency)} Economia` : '✅ Na Meta')}
+                </span>
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${effTrans.isBooked ? 'bg-purple-100 text-purple-800 border-purple-300' : (effTrans.isSelected ? 'bg-emerald-100 text-emerald-800 border-emerald-300' : 'bg-amber-100 text-amber-800 border-amber-300')}">
+                  ${effTrans.isBooked ? '🎉 Emitido' : (effTrans.isSelected ? '⭐ Escolhido' : '🟡 Em Cotação')}
+                </span>
+              </div>
+              ` : `
+              <span class="text-[11px] text-slate-400 font-medium">Meta: ${formatRawMoney(plannedTrans, currentCurrency)}</span>
+              `}
+            </div>
+
+            ${effTrans.hasQuote ? `
+            <div class="bg-white p-3 rounded-xl border ${effTrans.isBooked ? 'border-purple-200' : (effTrans.isSelected ? 'border-emerald-200' : (effTrans.isAboveMeta ? 'border-rose-200' : 'border-sky-200'))} shadow-2xs space-y-2.5">
+              <div class="flex items-start justify-between gap-2">
+                <div class="min-w-0">
+                  <div class="flex items-center gap-1.5 flex-wrap">
+                    <h4 class="text-xs font-bold text-slate-900 truncate" title="${effTrans.quote.title || effTrans.title}">
+                      ${effTrans.icon} ${effTrans.quote.title || effTrans.title}
+                    </h4>
+                    ${effTrans.quote.company ? `
+                    <span class="px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 font-bold text-[10px]">
+                      ${effTrans.quote.company}
+                    </span>
+                    ` : ''}
+                  </div>
+                  <div class="flex items-center gap-2 mt-0.5 flex-wrap">
+                    <span class="text-xs font-black ${effTrans.isBooked ? 'text-purple-700' : (effTrans.isSelected ? 'text-emerald-700' : (effTrans.isAboveMeta ? 'text-rose-700' : 'text-sky-800'))}">
+                      ${formatRawMoney(effTrans.cost, currentCurrency)}
+                    </span>
+                    ${effTrans.quote.currency !== currentCurrency ? `
+                      <span class="text-[10px] text-slate-400 font-medium">
+                        (${formatRawMoney(effTrans.quote.price, effTrans.quote.currency)})
+                      </span>
+                    ` : ''}
+                    <span class="text-[10px] text-slate-500 font-medium">
+                      • Meta: ${formatRawMoney(plannedTrans, currentCurrency)}
+                    </span>
+                  </div>
+                </div>
+
+                <div class="flex items-center gap-1.5 shrink-0">
+                  ${effTrans.quote.url ? `
+                  <a href="${effTrans.quote.url}" target="_blank" class="px-2.5 py-1.5 rounded-xl ${effTrans.isBooked ? 'bg-purple-600 hover:bg-purple-700' : (effTrans.isSelected ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-sky-600 hover:bg-sky-700')} text-white font-bold text-xs flex items-center gap-1 transition-colors shadow-xs">
+                    <span>🎫 Ver Passagem</span> ↗
+                  </a>
+                  ` : ''}
+                  <button type="button" onclick="openQuickTransportModal('${base.id}', '${effTrans.quote.id}')" class="px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center gap-1 transition-colors cursor-pointer" title="Editar cotação">
+                    <span>✏️</span> Editar
+                  </button>
+                </div>
+              </div>
+
+              <!-- DETALHES DE ROTA, DATA PREVISTA E OBSERVAÇÕES -->
+              <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-[11px] space-y-1">
+                <div class="flex items-center justify-between">
+                  <span class="font-bold text-slate-700 flex items-center gap-1">
+                    <span>📍 Trecho:</span>
+                    <strong>${base.transType}</strong>
+                  </span>
+                  <span class="text-[10px] font-semibold text-slate-500">
+                    Viagem: <strong>${baseDates.displayCheckin}</strong>
+                  </span>
+                </div>
+                ${effTrans.quote.notes ? `
+                <p class="text-[10px] leading-relaxed text-slate-600 italic pt-1 border-t border-slate-200">
+                  "${effTrans.quote.notes}"
+                </p>
+                ` : ''}
+              </div>
+
+              <!-- ATALHOS DE BUSCA RÁPIDA -->
+              <div class="flex items-center gap-1.5 flex-wrap pt-0.5 text-[10px]">
+                <span class="font-bold text-slate-400">Pesquisar:</span>
+                <a href="https://www.google.com/travel/flights?q=${transQueryEnc}" target="_blank" class="px-2 py-0.5 rounded-md bg-white hover:bg-sky-50 text-slate-700 border border-slate-200 font-semibold transition-colors">
+                  🔍 Google Flights ↗
+                </a>
+                <a href="https://www.skyscanner.com.br/transporte/passagens-aereas/busca?q=${transQueryEnc}" target="_blank" class="px-2 py-0.5 rounded-md bg-white hover:bg-sky-50 text-slate-700 border border-slate-200 font-semibold transition-colors">
+                  ✈️ Skyscanner ↗
+                </a>
+                <a href="https://www.busbud.com/pt/search?q=${transBusbudEnc}" target="_blank" class="px-2 py-0.5 rounded-md bg-white hover:bg-sky-50 text-slate-700 border border-slate-200 font-semibold transition-colors">
+                  🚌 Busbud ↗
+                </a>
+                <button type="button" onclick="openBudgetAdjustModal('${base.id}')" class="text-purple-700 hover:text-purple-900 font-bold underline ml-auto cursor-pointer">
+                  ⚙️ Ajustar Meta
+                </button>
+              </div>
+
+              <!-- AÇÕES DE STATUS E EXCLUSÃO -->
+              <div class="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-100 text-[11px]">
+                <div class="flex items-center gap-1.5 flex-wrap">
+                  ${effTrans.isQuoted ? `
+                    <button type="button" onclick="setTransportStatus('${effTrans.quote.id}', 'selected')" class="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold transition-colors shadow-2xs cursor-pointer">
+                      ⭐ Escolher Opção
+                    </button>
+                    <button type="button" onclick="setTransportStatus('${effTrans.quote.id}', 'booked')" class="px-2.5 py-1 rounded-lg bg-purple-600 hover:bg-purple-700 text-white font-bold transition-colors shadow-2xs cursor-pointer">
+                      ✅ Confirmar Compra
+                    </button>
+                  ` : `
+                    <button type="button" onclick="setTransportStatus('${effTrans.quote.id}', 'quoted')" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold transition-colors cursor-pointer">
+                      🟡 Voltar p/ Cotação
+                    </button>
+                    ${!effTrans.isBooked ? `
+                    <button type="button" onclick="setTransportStatus('${effTrans.quote.id}', 'booked')" class="px-2.5 py-1 rounded-lg bg-purple-600 hover:bg-purple-700 text-white font-bold transition-colors shadow-2xs cursor-pointer">
+                      ✅ Confirmar Compra
+                    </button>
+                    ` : ''}
+                  `}
+                </div>
+                <div class="flex items-center gap-3">
+                  <button type="button" onclick="openQuickTransportModal('${base.id}', '${effTrans.quote.id}')" class="text-sky-700 hover:text-sky-900 font-bold flex items-center gap-1 cursor-pointer">
+                    ✏️ Reauditar / Editar
+                  </button>
+                  <button type="button" onclick="deleteTransportQuoteDirect('${effTrans.quote.id}')" class="text-rose-600 hover:text-rose-800 font-bold hover:underline flex items-center gap-1 cursor-pointer">
+                    <span>✕</span> Excluir Cotação
+                  </button>
+                </div>
+              </div>
+            </div>
+            ` : `
+            <div class="space-y-2">
+              <div class="flex gap-1.5">
+                <input type="url" id="inspectorTransportUrlInput" onkeydown="if(event.key==='Enter') quickSaveTransportUrl('${base.id}')" placeholder="Cole o link da passagem aérea ou ônibus (ex: Google Flights, Decolar...)" class="flex-1 text-xs px-3 py-2 rounded-xl border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-sky-500 text-slate-800 placeholder-slate-400 shadow-2xs">
+                <button type="button" onclick="quickSaveTransportUrl('${base.id}')" class="px-3.5 py-2 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs shrink-0 transition-colors shadow-xs flex items-center gap-1 cursor-pointer">
+                  <span>💾</span> Salvar Link
+                </button>
+              </div>
+              <div class="flex items-center justify-between text-[11px] text-slate-500 px-0.5">
+                <span>Trecho previsto: <strong>${base.transType}</strong> (~${formatRawMoney(plannedTrans, currentCurrency)})</span>
+                <button type="button" onclick="openQuickTransportModal('${base.id}')" class="text-sky-600 hover:text-sky-800 font-bold hover:underline cursor-pointer">
+                  + Cotar Valores & Cia
+                </button>
+              </div>
+              <div class="flex items-center gap-1.5 flex-wrap pt-1 text-[10px]">
+                <span class="font-bold text-slate-400">Atalhos de busca:</span>
+                <a href="https://www.google.com/travel/flights?q=${transQueryEnc}" target="_blank" class="px-2 py-0.5 rounded-md bg-white hover:bg-sky-50 text-slate-700 border border-slate-200 font-semibold transition-colors">
+                  🔍 Google Flights ↗
+                </a>
+                <a href="https://www.skyscanner.com.br/transporte/passagens-aereas/busca?q=${transQueryEnc}" target="_blank" class="px-2 py-0.5 rounded-md bg-white hover:bg-sky-50 text-slate-700 border border-slate-200 font-semibold transition-colors">
+                  ✈️ Skyscanner ↗
+                </a>
+                <a href="https://www.busbud.com/pt/search?q=${transBusbudEnc}" target="_blank" class="px-2 py-0.5 rounded-md bg-white hover:bg-sky-50 text-slate-700 border border-slate-200 font-semibold transition-colors">
+                  🚌 Busbud ↗
+                </a>
+                <button type="button" onclick="openBudgetAdjustModal('${base.id}')" class="text-purple-700 hover:text-purple-900 font-bold underline ml-auto cursor-pointer">
+                  ⚙️ Ajustar Meta
                 </button>
               </div>
             </div>
@@ -5330,6 +5516,7 @@
       saveTransportQuotes(true);
       closeQuickTransportModal();
       selectBase(currentSelectedBaseIndex);
+      renderTransportView();
       renderBases();
       renderCostTable();
       updateAirbnbKPIs();
@@ -5357,6 +5544,101 @@
         saveTransportQuotes(true);
         closeQuickTransportModal();
         selectBase(currentSelectedBaseIndex);
+        renderTransportView();
+        renderBases();
+        renderCostTable();
+        updateAirbnbKPIs();
+        showToast("🗑️ Cotação de transporte removida!");
+      }
+    }
+
+    function setTransportStatus(quoteId, newStatus) {
+      const quote = transportQuotes.find(q => q.id === quoteId);
+      if (!quote) return;
+      quote.status = newStatus;
+      quote.updatedAt = Date.now();
+      saveTransportQuotes(true);
+      selectBase(currentSelectedBaseIndex);
+      renderTransportView();
+      renderBases();
+      renderCostTable();
+      updateAirbnbKPIs();
+      if (newStatus === 'booked') {
+        showToast("🎉 Passagem marcada como Comprada / Emitida!");
+      } else if (newStatus === 'selected') {
+        showToast("⭐ Transporte definido como Opção Escolhida!");
+      } else {
+        showToast("🟡 Transporte colocado em Cotação / Análise.");
+      }
+    }
+
+    function quickSaveTransportUrl(baseId) {
+      const input = document.getElementById("inspectorTransportUrlInput");
+      if (!input) return;
+      const url = input.value.trim();
+      if (!url) {
+        showToast("⚠️ Insira o link da passagem aérea ou ônibus!");
+        return;
+      }
+      const base = baseData.find(b => b.id === baseId);
+      if (!base) return;
+
+      let existing = transportQuotes.find(q => q.baseId === baseId && q.status !== 'discarded');
+      if (existing) {
+        existing.url = url;
+        existing.updatedAt = Date.now();
+      } else {
+        let defaultMode = "bus";
+        if (base.transType) {
+          const tLower = base.transType.toLowerCase();
+          if (tLower.includes("voo")) defaultMode = "flight";
+          else if (tLower.includes("ferry")) defaultMode = "ferry";
+          else if (tLower.includes("carro")) defaultMode = "car";
+          else if (tLower.includes("van") || tLower.includes("transfer")) defaultMode = "transfer";
+        }
+        const defaultPrice = Math.round(getBaseTargetTransInActiveCurrency(base));
+        const newQuote = {
+          id: "trans-" + Date.now(),
+          baseId: baseId,
+          mode: defaultMode,
+          status: "quoted",
+          title: base.transType || `Transporte para ${base.name}`,
+          company: "",
+          url: url,
+          price: defaultPrice > 0 ? defaultPrice : 500,
+          currency: currentCurrency,
+          notes: "Link salvo via Inspetor",
+          createdAt: new Date().toISOString().split("T")[0],
+          updatedAt: Date.now()
+        };
+        transportQuotes.unshift(newQuote);
+      }
+      saveTransportQuotes(true);
+      selectBase(currentSelectedBaseIndex);
+      renderTransportView();
+      renderBases();
+      renderCostTable();
+      updateAirbnbKPIs();
+      showToast("🎫 Link da passagem salvo com sucesso!");
+    }
+
+    function deleteTransportQuoteDirect(quoteId) {
+      if (confirm("Deseja remover esta cotação de transporte?")) {
+        try {
+          let deletedIds = [];
+          const dtSaved = appStorage.getItem("expedicao_deleted_transports");
+          if (dtSaved) deletedIds = JSON.parse(dtSaved);
+          if (!Array.isArray(deletedIds)) deletedIds = [];
+          if (!deletedIds.includes(quoteId)) {
+            deletedIds.push(quoteId);
+            appStorage.setItem("expedicao_deleted_transports", JSON.stringify(deletedIds));
+          }
+        } catch (e) {}
+
+        transportQuotes = transportQuotes.filter(q => q.id !== quoteId);
+        saveTransportQuotes(true);
+        selectBase(currentSelectedBaseIndex);
+        renderTransportView();
         renderBases();
         renderCostTable();
         updateAirbnbKPIs();
