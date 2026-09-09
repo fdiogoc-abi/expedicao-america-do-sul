@@ -3246,6 +3246,7 @@
       const effHosp = getBaseEffectiveHosp(base);
       const effTrans = getBaseEffectiveTrans(base);
       const chosenAirbnb = effHosp.quote;
+      const hasChosenRealUrl = hasValidQuoteUrl(chosenAirbnb);
       const effectiveHospCost = effHosp.cost;
       const plannedHosp = effHosp.plannedCost;
 
@@ -3501,9 +3502,20 @@
                     ` : ''}
                   </div>
                 </div>
-                <a href="${getSafeAirbnbUrl(chosenAirbnb, base)}" target="_blank" class="shrink-0 px-3 py-1.5 rounded-xl ${isBooked ? 'bg-purple-600 hover:bg-purple-700' : (isApproved ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-amber-600 hover:bg-amber-700')} text-white font-bold text-xs flex items-center gap-1 transition-colors shadow-xs" title="Abrir anúncio do imóvel escolhido no Airbnb">
+                ${hasChosenRealUrl ? `
+                <a href="${cleanAirbnbUrl(chosenAirbnb.url)}" target="_blank" class="shrink-0 px-3 py-1.5 rounded-xl ${isBooked ? 'bg-purple-600 hover:bg-purple-700' : (isApproved ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-amber-600 hover:bg-amber-700')} text-white font-bold text-xs flex items-center gap-1 transition-colors shadow-xs" title="Abrir anúncio salvo no banco de dados">
                   <span>Abrir no Airbnb</span> ↗
                 </a>
+                ` : `
+                <div class="flex items-center gap-1.5 shrink-0">
+                  <button type="button" onclick="openQuickAirbnbModal('${base.id}', '${chosenAirbnb.id}')" class="px-2.5 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs flex items-center gap-1 transition-colors shadow-xs" title="Adicionar link real deste imóvel ao banco">
+                    <span>🔗</span> Inserir Link
+                  </button>
+                  <a href="${getAirbnbSearchUrl(base)}" target="_blank" class="px-2.5 py-1.5 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs flex items-center gap-1 transition-colors shadow-xs" title="Pesquisar opções no Airbnb">
+                    <span>🔍</span> Buscar ↗
+                  </a>
+                </div>
+                `}
               </div>
 
               <!-- AUDITORIA DO BAIRRO -->
@@ -3572,6 +3584,15 @@
                     <span>✕</span> Desvincular Imóvel
                   </button>
                 </div>
+                ${!hasChosenRealUrl ? `
+                <div class="pt-2 border-t border-slate-100 flex items-center gap-2">
+                  <span class="text-[11px] text-amber-700 font-bold whitespace-nowrap">🔗 Link do Imóvel:</span>
+                  <input type="url" id="inspectorAirbnbUrlInput" onkeydown="if(event.key==='Enter') quickSaveAirbnbUrl('${base.id}')" placeholder="https://www.airbnb.com.br/rooms/..." class="flex-1 text-xs px-2.5 py-1.5 rounded-lg border border-amber-300 bg-amber-50/50 focus:outline-none focus:ring-1 focus:ring-amber-500 text-slate-800 placeholder-slate-400">
+                  <button type="button" onclick="quickSaveAirbnbUrl('${base.id}')" class="px-2.5 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs shrink-0 transition-colors shadow-2xs flex items-center gap-1 cursor-pointer" title="Salvar link direto deste imóvel no banco">
+                    <span>💾</span> Salvar
+                  </button>
+                </div>
+                ` : ''}
               </div>
             </div>
             ` : `
@@ -3787,12 +3808,12 @@
           </div>
 
           <!-- BOTÕES DE AÇÃO: GUIA DA CIDADE + IMÓVEL ESCOLHIDO / BUSCA AIRBNB -->
-          ${chosenAirbnb ? `
+          ${hasChosenRealUrl ? `
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
             <button type="button" onclick="openCityGuideModal('${base.id}')" class="w-full py-2.5 px-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-colors shadow-sm cursor-pointer">
               <span>📖</span> Guia & Segredos (${base.name})
             </button>
-            <a href="${getSafeAirbnbUrl(chosenAirbnb, base)}" target="_blank" class="w-full py-2.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-colors shadow-sm" title="Abrir anúncio do imóvel escolhido no Airbnb">
+            <a href="${cleanAirbnbUrl(chosenAirbnb.url)}" target="_blank" class="w-full py-2.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-colors shadow-sm" title="Abrir imóvel escolhido salvo no banco de dados">
               <span>🏡</span> Abrir Imóvel Escolhido ↗
             </a>
           </div>
@@ -3810,6 +3831,13 @@
               <span>🔍</span> Buscar no Airbnb (${baseDates.displayCheckin} a ${baseDates.displayCheckout}) ↗
             </a>
           </div>
+          ${chosenAirbnb ? `
+          <div class="pt-0.5 text-center">
+            <button type="button" onclick="openQuickAirbnbModal('${base.id}', '${chosenAirbnb.id}')" class="inline-flex items-center gap-1 text-[11px] text-amber-700 hover:text-amber-900 font-semibold hover:underline">
+              <span>🔗</span> Cole o link do imóvel escolhido para salvar no banco
+            </button>
+          </div>
+          ` : ''}
           `}
         </div>
       `;
@@ -3989,9 +4017,15 @@
                 </div>
                 <div class="mt-2.5 flex flex-wrap items-center gap-2">
                   ${chosen ? `
-                  <a href="${getSafeAirbnbUrl(chosen, base)}" target="_blank" class="inline-flex items-center gap-1.5 text-[11px] font-bold ${effHosp.isAboveMeta ? 'text-amber-900 hover:text-amber-950 bg-amber-50 hover:bg-amber-100 border-amber-300' : 'text-emerald-800 hover:text-emerald-950 bg-emerald-50 hover:bg-emerald-100 border-emerald-300'} border px-2.5 py-1 rounded-lg transition-colors shadow-2xs" title="${chosen.title || 'Abrir anúncio escolhido no Airbnb'}">
-                    <span>🏠</span> Airbnb: ${formatRawMoney(effHosp.cost, currentCurrency)} ↗
-                  </a>
+                    ${hasValidQuoteUrl(chosen) ? `
+                    <a href="${cleanAirbnbUrl(chosen.url)}" target="_blank" class="inline-flex items-center gap-1.5 text-[11px] font-bold ${effHosp.isAboveMeta ? 'text-amber-900 hover:text-amber-950 bg-amber-50 hover:bg-amber-100 border-amber-300' : 'text-emerald-800 hover:text-emerald-950 bg-emerald-50 hover:bg-emerald-100 border-emerald-300'} border px-2.5 py-1 rounded-lg transition-colors shadow-2xs" title="${chosen.title || 'Abrir imóvel salvo no banco de dados'}">
+                      <span>🏠</span> Airbnb: ${formatRawMoney(effHosp.cost, currentCurrency)} ↗
+                    </a>
+                    ` : `
+                    <a href="${getAirbnbSearchUrl(base)}" target="_blank" class="inline-flex items-center gap-1.5 text-[11px] font-bold ${effHosp.isAboveMeta ? 'text-amber-900 hover:text-amber-950 bg-amber-50 hover:bg-amber-100 border-amber-300' : 'text-slate-700 hover:text-slate-900 bg-slate-50 hover:bg-slate-100 border-slate-300'} border px-2.5 py-1 rounded-lg transition-colors shadow-2xs" title="Buscar opções no Airbnb">
+                      <span>🔍</span> Airbnb: ${formatRawMoney(effHosp.cost, currentCurrency)} ↗
+                    </a>
+                    `}
                   ${effHosp.isAboveMeta ? `
                   <span class="inline-flex items-center gap-1 text-[11px] font-black px-2 py-0.5 rounded-md bg-rose-100 text-rose-800 border border-rose-300 shadow-2xs" title="Meta planejada da etapa: ${formatRawMoney(effHosp.plannedCost, currentCurrency)}">
                     ⚠️ +${formatRawMoney(effHosp.diffAbs, currentCurrency)} vs Meta
@@ -4216,29 +4250,17 @@
       }
     }
 
-    const REAL_ROOM_FALLBACKS = {
-      ba: "https://www.airbnb.com.br/rooms/13505237?adults=2&check_in=2026-10-01&check_out=2026-10-29",
-      huanchaco: "https://www.airbnb.com.br/rooms/26988074?adults=2&check_in=2027-01-14&check_out=2027-02-04",
-      organos: "https://www.airbnb.com.br/rooms/739224444301121392?adults=2&check_in=2027-02-04&check_out=2027-02-25",
-      arequipa: "https://www.airbnb.com.br/rooms/1341429163762649536?adults=2&check_in=2026-12-17&check_out=2026-12-31"
-    };
+    function hasValidQuoteUrl(quote) {
+      if (!quote || !quote.url) return false;
+      const rawUrl = String(quote.url).trim();
+      return (rawUrl.startsWith("http://") || rawUrl.startsWith("https://")) && !rawUrl.includes("sample-") && !rawUrl.includes("example.com");
+    }
 
     function getSafeAirbnbUrl(quote, base) {
-      const bId = base ? base.id : (quote ? quote.baseId : null);
-      if (!quote) {
-        if (bId && REAL_ROOM_FALLBACKS[bId]) return REAL_ROOM_FALLBACKS[bId];
-        return getAirbnbSearchUrl(base);
+      if (hasValidQuoteUrl(quote)) {
+        return cleanAirbnbUrl(quote.url);
       }
-      const rawUrl = (quote.url || "").trim();
-      if (!rawUrl || rawUrl.includes("sample-") || rawUrl.includes("example.com") || (!rawUrl.startsWith("http://") && !rawUrl.startsWith("https://"))) {
-        if (bId && REAL_ROOM_FALLBACKS[bId]) return REAL_ROOM_FALLBACKS[bId];
-        return getAirbnbSearchUrl(base);
-      }
-      // Se a URL salva era apenas uma página de busca (/homes) e temos o anúncio do quarto real escolhido
-      if (rawUrl.includes("/homes") && bId && REAL_ROOM_FALLBACKS[bId]) {
-        return REAL_ROOM_FALLBACKS[bId];
-      }
-      return cleanAirbnbUrl(rawUrl);
+      return getAirbnbSearchUrl(base);
     }
 
     function getAirbnbSearchUrl(base) {
@@ -4377,22 +4399,13 @@
 
     function sanitizeQuotes(quotes) {
       if (!Array.isArray(quotes)) return { quotes, changed: false };
-      const sampleMap = {
-        "sample-palermo": "https://www.airbnb.com.br/rooms/13505237?adults=2&check_in=2026-10-01&check_out=2026-10-29",
-        "sample-huanchaco": "https://www.airbnb.com.br/rooms/26988074?adults=2&check_in=2027-01-14&check_out=2027-02-04",
-        "sample-vichayito": "https://www.airbnb.com.br/rooms/739224444301121392?adults=2&check_in=2027-02-04&check_out=2027-02-25",
-        "Palermo-Soho--Buenos-Aires--Argentina/homes": "https://www.airbnb.com.br/rooms/13505237?adults=2&check_in=2026-10-01&check_out=2026-10-29",
-        "Huanchaco--Peru/homes": "https://www.airbnb.com.br/rooms/26988074?adults=2&check_in=2027-01-14&check_out=2027-02-04",
-        "Vichayito--Peru/homes": "https://www.airbnb.com.br/rooms/739224444301121392?adults=2&check_in=2027-02-04&check_out=2027-02-25"
-      };
       let changed = false;
       quotes.forEach(q => {
-        if (!q || !q.url) return;
-        for (const [token, realUrl] of Object.entries(sampleMap)) {
-          if (q.url.includes(token)) {
-            q.url = realUrl;
-            changed = true;
-          }
+        if (!q) return;
+        // Limpa URLs de exemplo legadas (sample-) para que o banco contenha exclusivamente os links reais adicionados pelo usuário
+        if (q.url && (q.url.includes("sample-") || q.url.includes("example.com"))) {
+          q.url = "";
+          changed = true;
         }
       });
       return { quotes, changed };
@@ -4846,12 +4859,16 @@
             <!-- Título e Link do Airbnb -->
             <div>
               <h4 class="font-bold text-slate-900 text-sm leading-snug ${isDiscarded ? 'line-through' : ''}">${quote.title}</h4>
-              ${quote.url ? `
-                <a href="${getSafeAirbnbUrl(quote, base)}" target="_blank" rel="noopener noreferrer" class="text-xs text-sky-600 hover:text-sky-800 font-medium inline-flex items-center gap-1 mt-0.5 hover:underline" title="Abrir imóvel no Airbnb / Booking">
+              ${hasValidQuoteUrl(quote) ? `
+                <a href="${cleanAirbnbUrl(quote.url)}" target="_blank" rel="noopener noreferrer" class="text-xs text-sky-600 hover:text-sky-800 font-medium inline-flex items-center gap-1 mt-0.5 hover:underline" title="Abrir anúncio salvo no banco de dados">
                   <span>Abrir no Airbnb / Booking</span>
                   <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
                 </a>
-              ` : '<span class="text-[11px] text-slate-400">Sem link direto</span>'}
+              ` : `
+                <button type="button" onclick="openQuickAirbnbModal('${quote.baseId}', '${quote.id}')" class="text-[11px] text-amber-700 hover:text-amber-900 font-bold inline-flex items-center gap-1 mt-0.5 hover:underline cursor-pointer">
+                  <span>🔗 Inserir link do anúncio</span>
+                </button>
+              `}
             </div>
 
             <!-- Bloco de Preço e Comparador -->
@@ -5165,7 +5182,9 @@
           quote.price = extractedPrice;
         }
         quote.status = "analyzing";
-        quote.title = `Airbnb em Análise - ${baseName}`;
+        if (!quote.title || quote.title.startsWith("Airbnb em Análise")) {
+          quote.title = `Airbnb em Análise - ${baseName}`;
+        }
         quote.updatedAt = Date.now();
       } else {
         const defaultPrice = base ? Math.round(getBaseTargetHospInActiveCurrency(base)) : 3500;
