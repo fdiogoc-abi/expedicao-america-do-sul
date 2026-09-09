@@ -907,6 +907,19 @@
           <p id="modalGuideSafety" class="text-xs text-slate-700 leading-relaxed"></p>
         </div>
 
+        <!-- 6. FESTAS, BARES & ROLÊS LGBTQIA+ (LARGURA TOTAL) -->
+        <div class="p-4 rounded-2xl bg-gradient-to-br from-purple-50/90 via-pink-50/40 to-slate-50 border border-purple-200/90 space-y-2 shadow-2xs">
+          <div class="flex items-center justify-between flex-wrap gap-2">
+            <div class="flex items-center gap-2 text-purple-900 font-bold text-sm">
+              <span class="text-base">🏳️‍🌈</span> <strong>Festas, Bares & Rolês LGBTQIA+ (Noite & Comunidade)</strong>
+            </div>
+            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-purple-100 text-purple-800 border border-purple-300">
+              Gay-Friendly & Safe Spots
+            </span>
+          </div>
+          <p id="modalGuideLgbtq" class="text-xs text-slate-700 leading-relaxed"></p>
+        </div>
+
         <!-- RODAPÉ DE AÇÕES DO MODAL -->
         <div class="pt-3 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-slate-100">
           <button type="button" onclick="closeCityGuideModal()" class="w-full sm:w-auto px-5 py-2.5 rounded-xl border border-slate-300 text-slate-700 font-bold text-xs hover:bg-slate-50 transition-colors">
@@ -1775,6 +1788,14 @@
       }
       if (bundle.cityGuides) {
         CITY_NEIGHBORHOOD_GUIDE = bundle.cityGuides;
+      }
+      if (Array.isArray(baseData) && typeof DEFAULT_LGBTQ_GUIDE !== "undefined") {
+        baseData.forEach(b => {
+          if (!b.guide) b.guide = {};
+          if (!b.guide.lgbtq && DEFAULT_LGBTQ_GUIDE[b.id]) {
+            b.guide.lgbtq = DEFAULT_LGBTQ_GUIDE[b.id];
+          }
+        });
       }
       if (Array.isArray(bundle.mapRoutes)) {
         mapRoutes = bundle.mapRoutes;
@@ -2756,6 +2777,98 @@
       other: "Transporte"
     };
 
+
+    // ==========================================
+    // GUIA DE FESTAS, BARES & ROLÊS LGBTQIA+ (14 BASES)
+    // ==========================================
+    const LGBTQ_INSPECTOR_MAP = {
+      ba: "Feliza, Club 69, Fiesta Plop!, Amerika e bares de Palermo Soho.",
+      colonia: "Bares acolhedores no Bairro Histórico (Blanco & Negro, Barbot) e proximidade com Buenos Aires.",
+      "7lagos": "Cervejarias da Rua Juramento (Manush/Antares), Dusk Bar e pôr do sol na Cervecería Patagonia.",
+      mendoza: "Queen Disco (Godoy Cruz), El Botellón (Sarmiento) e bares da Calle Arístides Villanueva.",
+      santiago_exp: "Club Blondie, Fausto Discotheque, Bar Chueca (Barrio Italia) e Bellavista.",
+      arequipa: "Déjà Vu (Centro Histórico), Forum Rock Café e Sunset Rooftop com vista da Catedral.",
+      cusco: "Changó Club, Mama Africa na Plaza, Km 0 em San Blas e retiros no Vale Sagrado.",
+      lima: "ValeTodo Downtown (Miraflores), Barba Negra e La Noche (Barranco).",
+      huanchaco: "Moksha Surf House (café inclusivo), My Friend Bar e Línea Bar na orla.",
+      organos: "Loki Máncora (pool parties), The Point e luaus privativos à luz de fogueira em Los Órganos.",
+      olon_ayampe: "Lost Beach Club (Montañita - techno mundial), Distrito Ayampe e sunsets na praia.",
+      vulcoes: "Leprechaun Bar (com fogueira interna), Mocambo Latin Bar e Calle de los Bares em Baños.",
+      medellin: "Chiquita Bar (Provenza), Industry Club, Donde Aquellos e Viva Disco.",
+      caribe: "Frikadelle Club (Palomino na areia), Tiki Hut e bares abertos do Parque de los Novios."
+    };
+
+    const DEFAULT_LGBTQ_GUIDE = {
+      ba: "<strong>Point Central:</strong> Palermo Soho, Palermo Hollywood e San Telmo.<br>" +
+          "• <strong>Clubs & Baladas:</strong> <em>Club 69</em> (no Niceto Club às quintas - icônica noite com shows de drags, performance e eletrônico), <em>Fiesta Plop!</em> (no Teatro Vorterix - pop anos 90/00 gigante), <em>Amerika</em> (em Almagro - a maior e mais clássica boate gay da América do Sul com várias pistas e darkroom).<br>" +
+          "• <strong>Bares & Esquenta:</strong> <em>Feliza</em> (Av. Córdoba - casarão queer multicultural de vários andares com livraria, karaokê, drinks autorais e pátio), <em>Peuteo</em> (Palermo Soho - bar intimista e animado com mesinhas na calçada) e <em>Sitges Bar</em>.<br>" +
+          "• <strong>Vibe & Dica:</strong> Buenos Aires é uma das capitais mais LGBTQ-friendly do mundo; demonstrações de carinho e andar de mãos dadas são super naturais em Palermo e Recoleta.",
+
+      colonia: "<strong>Cenário & Clima:</strong> O Uruguai é pioneiro mundial em direitos civis e respeito à comunidade LGBTQIA+. Colonia é uma cidadezinha histórica romântica e serena.<br>" +
+          "• <strong>Bares & Encontros:</strong> Não há boates exclusivas gays pelo tamanho da cidade, mas os bares do Bairro Histórico são 100% acolhedores e abertos: <em>Blanco & Negro</em> (vinhos uruguaios e tábuas em clima intimista à luz de velas), <em>Barbot Brewpub</em> (cervejaria artesanal com música ao vivo) e <em>El Drugstore</em> (ambiente excêntrico e artístico).<br>" +
+          "• <strong>Conexão Noturna:</strong> Para mega-festas, a travessia de balsa (1h15 de Buquebus) leva direto a Buenos Aires; Montevidéu (2h) conta com a clássica <em>Il Tempo</em> e a <em>Fiesta Jolie</em>.",
+
+      "7lagos": "<strong>Bariloche & San Martín de los Andes:</strong><br>" +
+          "• <strong>Bariloche (Cervejarias & Noite Jovem):</strong> O polo na Calle Juramento reúne público jovem e diverso sem preconceitos: <em>Cervecería Manush</em> e <em>Antares</em>. Para dançar e ouvir eletrônico/pop alternativo, confira o <em>Dusk Bar</em> e festas sazonais no <em>Club Araucanía</em>. Sunset imperdível na <em>Cervecería Patagonia</em> (Circuito Chico).<br>" +
+          "• <strong>San Martín de los Andes:</strong> Ambiente calmo e charmoso de montanha: <em>Dublin South Pub</em> e <em>Ulises Café</em> são ótimos para pós-trilha.<br>" +
+          "• <strong>Vibe:</strong> Região turística acostumada a viajantes internacionais e nômades digitais, clima seguro e acolhedor.",
+
+      mendoza: "<strong>Capital do Vinho & Vendimia Gay:</strong><br>" +
+          "• <strong>Balada Principal:</strong> <em>Queen Disco</em> (em Guaymallén/Godoy Cruz - a mais tradicional e histórica discoteca gay do interior argentino, com shows drag, pop latino e pista eletrônica).<br>" +
+          "• <strong>Bares & Esquenta:</strong> <em>El Botellón</em> (Calle Sarmiento - bar cultural com arte, música ao vivo e chopp artesanal, ponto de encontro queer diário), <em>Grita Silencio</em> e os bistrôs e wine bars da <em>Calle Arístides Villanueva</em> (a rua mais agitada e diversa da cidade).<br>" +
+          "• <strong>Evento Ícone:</strong> Em março ocorre a famosa <em>Vendimia Para Todxs (Vendimia Gay)</em>, um dos maiores festivais LGBTQ+ da América Latina, com festa oficial no Arena Maipú.",
+
+      santiago_exp: "<strong>Santiago (Bellavista & Barrio Italia):</strong><br>" +
+          "• <strong>Clubs Lendários:</strong> <em>Club Blondie</em> (em Estación Central - templo do pop alternativo, new wave e cultura queer desde 1993), <em>Fausto Discotheque</em> (em Providencia - a mais antiga boate gay do Chile, famosa pelos shows de humor e drags lendárias) e <em>Bunker</em> (Bellavista - reggaeton e pop latino em pistas cheias).<br>" +
+          "• <strong>Bares Queer:</strong> <em>Bar Chueca</em> (Barrio Italia - primeiro bar feminista e queer do Chile, com coquetelaria autoral incrível e brunch), <em>Iluminati</em> (Bellavista) e <em>Station Bar</em>.<br>" +
+          "• <strong>Dica de Segurança:</strong> A Calle Bombero Núñez em Bellavista concentra o agito gay; à noite, use Uber/Cabify para se deslocar até o local.",
+
+      arequipa: "<strong>Arequipa & Centro Histórico:</strong><br>" +
+          "• <strong>Bares & Festas:</strong> Arequipa é uma cidade andina mais tradicional, mas o Centro Histórico tem atmosfera universitária e cosmopolita: <em>Déjà Vu</em> (Calle San Francisco - bar e balada com terraço, público viajante e aberto), <em>Forum Rock Café</em> (música ao vivo e ambientes amplos) e <em>Sunset Rooftop Bar</em> (coquetéis com vista para a Catedral e o vulcão Misti).<br>" +
+          "• <strong>Cena Queer Local:</strong> Coletivos locais organizam noites de música eletrônica e festas alternativas itinerantes nos fins de semana.<br>" +
+          "• <strong>Dica:</strong> Em Yanahuara e no Centro os restaurantes e cafés recebem casais internacionais com muita hospitalidade.",
+
+      cusco: "<strong>Cusco & Vale Sagrado:</strong><br>" +
+          "• <strong>Vida Noturna em San Blas:</strong> O bairro dos artistas é o coração boêmio e tolerante de Cusco. Destaques: <em>Km 0</em> (bar intimista com música acústica ao vivo, pisco sours e público alternativo), <em>Limbus Restobar</em> (o melhor mirante com coquetéis) e <em>Paddy's Irish Pub</em> na Plaza de Armas.<br>" +
+          "• <strong>Baladas na Plaza:</strong> <em>Changó Club</em> e <em>Mama Africa</em> reúnem mochileiros de todo o mundo em pistas de dança sem preconceitos até altas horas.<br>" +
+          "• <strong>Vale Sagrado (Pisac):</strong> Comunidades holísticas, círculos de música e retiros espirituais são espaços abertos, amorosos e totalmente queer-safe.",
+
+      lima: "<strong>Lima (Miraflores & Barranco):</strong><br>" +
+          "• <strong>O Mega Club do Peru:</strong> <em>ValeTodo Downtown</em> (em Miraflores, Calle Pasaje Porta - o maior e mais famoso complexo LGBTQ+ do país, com 4 andares, pistas de pop/eletrônico, área lounge e shows drag espetaculares).<br>" +
+          "• <strong>Barranco Cultural & Alternativo:</strong> <em>Barba Negra</em> (cervejas artesanais e clima descontraído queer), <em>La Noche de Barranco</em> (música ao vivo e boêmia intelectual) e <em>Bizzarro Bar</em>.<br>" +
+          "• <strong>Outras Festas:</strong> <em>Legendaris Club</em> (Miraflores) e festas de música eletrônica como <em>Matacandela</em> e coletivos techno na Costa Verde.<br>" +
+          "• <strong>Vibe:</strong> Miraflores e Barranco são modernos, seguros para caminhar de mãos dadas e repletos de opções gastronômicas acolhedoras.",
+
+      huanchaco: "<strong>Huanchaco & Trujillo:</strong><br>" +
+          "• <strong>Clima Praiano & Surf:</strong> Huanchaco é uma vila pacata de pescadores e surfistas com clima rústico e acolhedor: <em>Moksha Surf House & Café</em> (yoga, cafeteria vegana e ponto de encontro nômade com vibe super diversa e inclusiva), <em>My Friend Surf Bar</em> e <em>Línea Bar</em> (drinks de frente para as ondas ao pôr do sol).<br>" +
+          "• <strong>Trujillo (Cidade Vizinha a 15 min):</strong> Para vida noturna urbana, a Av. Larco e bares universitários concentram o público jovem e eventos pontuais nos fins de semana.",
+
+      organos: "<strong>Los Órganos, Máncora & Vichayito:</strong><br>" +
+          "• <strong>Festas em Máncora (a 12 min):</strong> O point mais festeiro do norte peruano: <em>Loki Máncora</em> (famoso pelas festas na piscina com jovens do mundo inteiro e clima de paquera super aberto e gay-friendly), <em>The Point Máncora</em> e <em>Atelier Wine Bar</em>.<br>" +
+          "• <strong>Los Órganos & Vichayito (Refúgio Romântico):</strong> A vibe aqui é de praia deserta, luaus pé na areia com fogueira, vinho sob as estrelas e restaurantes acolhedores como <em>Sirena D’Juan</em>.<br>" +
+          "• <strong>Vibe:</strong> 100% clima de férias tropicais, roupas leves e liberdade à beira-mar.",
+
+      olon_ayampe: "<strong>Olón, Ayampe & Montañita:</strong><br>" +
+          "• <strong>O Templo Eletrônico:</strong> A 5 minutos de Olón fica Montañita, lar do lendário <em>Lost Beach Club</em> (votado repetidamente um dos melhores clubs de música eletrônica do mundo pela DJ Mag, com terraço ao ar livre na praia e público internacional onde todos são livres para ser quem são). Outra opção festeira é o <em>Cana Grill</em>.<br>" +
+          "• <strong>Olón & Ayampe (Chill & Pôr do Sol):</strong> Clima zen e surf: <em>Distrito Ayampe</em> (coquetéis e pizza com galera descolada), fogueiras no fim de tarde na praia de Olón e cafés artesanais acolhedores.",
+
+      vulcoes: "<strong>Baños de Agua Santa & Quilotoa:</strong><br>" +
+          "• <strong>Baños (A Capital da Aventura):</strong> A vida noturna se concentra na animada <em>Calle Eloy Alfaro</em> (a 'calle dos bares'): <em>Leprechaun Bar</em> (um dos bares mais originais do Equador, com fogueira mágica em pátio interno, música ao vivo e público mochileiro super amigável), <em>Mocambo Latin Bar</em> e <em>Jack Rock Café</em>.<br>" +
+          "• <strong>Quilotoa:</strong> Na cratera do vulcão a noite é fria e aconchegante, para curtir lareiras e chocolate quente nas pousadas comunitárias indígenas.<br>" +
+          "• <strong>Vibe:</strong> O público de Baños é composto por esportistas e viajantes do mundo todo, garantindo uma recepção descontraída e segura.",
+
+      medellin: "<strong>Medellín (Provenza, El Poblado & Laureles):</strong><br>" +
+          "• <strong>A Capital Queer da Colômbia:</strong> Medellín tem uma cena LGBTQ+ vibrante, aberta e repleta de estilo.<br>" +
+          "• <strong>Bares em Provenza / El Poblado:</strong> <em>Chiquita Bar</em> (o bar queer mais charmoso e disputado da cidade, com terraço florido, coquetéis de autor e pop latino animado), <em>Donde Aquellos</em> (bar de calçada clássico na Calle 10 com ótima socialização) e <em>Bar Industry</em> (referência em techno e música eletrônica com DJs renomados e público lindo).<br>" +
+          "• <strong>Megaclubs & Reggaeton:</strong> <em>Viva Disco</em> e <em>Happy</em> para noites de reggaeton e shows de drag queens.<br>" +
+          "• <strong>Laureles:</strong> Região mais residencial e arborizada, com cafés e gastrobares na Av. Nutibara e Primeiro Parque super acolhedores para casais.",
+
+      caribe: "<strong>Caribe Colombiano (Tayrona, Palomino & Santa Marta):</strong><br>" +
+          "• <strong>Palomino (Boemia Pé na Areia):</strong> Vilarejo rústico com festas memoráveis na praia: <em>Frikadelle Club</em> (festas com DJ, música tropical/eletrônica e público alternativo/queer de várias nacionalidades), <em>Tiki Hut Bar</em> (piscina e coquetéis) e luaus espontâneos na beira do mar.<br>" +
+          "• <strong>Santa Marta (Centro Histórico):</strong> O <em>Parque de los Novios</em> concentra mesinhas ao ar livre, música ao vivo e os bares mais animados e abertos da cidade, além da boate <em>Prive Club</em>.<br>" +
+          "• <strong>Vibe:</strong> Energia solar, noites quentes caribenhas, brisa do mar e acolhimento caloroso típico do Caribe colombiano."
+    };
+
     const AIRPORT_SEARCH_MAP = {
       ba: { from: "Brasil", to: "Buenos Aires", query: "passagens voo Brasil Buenos Aires" },
       colonia: { from: "Buenos Aires", to: "Colonia del Sacramento", query: "ferry Buquebus Buenos Aires Colonia del Sacramento" },
@@ -3642,6 +3755,10 @@
               <span class="font-medium text-indigo-900 text-right leading-relaxed">${base.spanishNotes}</span>
             </div>
             ` : ''}
+            <div class="flex items-start justify-between p-2.5 rounded-lg border border-purple-100 bg-purple-50/70 gap-3">
+              <span class="text-purple-900 font-bold shrink-0 flex items-center gap-1">🏳️‍🌈 <strong>Rolês & Noite LGBTQIA+:</strong></span>
+              <span class="font-medium text-purple-950 text-right leading-relaxed">${(typeof LGBTQ_INSPECTOR_MAP !== "undefined" && LGBTQ_INSPECTOR_MAP[base.id]) || "Bares e points acolhedores no centro."}</span>
+            </div>
             <div class="flex items-center justify-between p-2.5 rounded-lg border border-slate-100 bg-slate-50">
               <span class="text-slate-500">🏄 <strong>Mar / Lazer:</strong></span>
               <span class="font-medium text-slate-800 text-right">${base.surfNotes}</span>
@@ -4870,6 +4987,11 @@
 
       const safetyEl = document.getElementById("modalGuideSafety");
       if (safetyEl) safetyEl.textContent = guide.safety || "Dicas gerais: use transporte por aplicativo oficial e evite expor eletrônicos em vias movimentadas.";
+
+      const lgbtqEl = document.getElementById("modalGuideLgbtq");
+      if (lgbtqEl) {
+        lgbtqEl.innerHTML = (guide && guide.lgbtq) || (typeof DEFAULT_LGBTQ_GUIDE !== "undefined" && DEFAULT_LGBTQ_GUIDE[base.id]) || "Bares, cafés e pontos de encontro acolhedores e amigáveis para a comunidade LGBTQIA+ nos bairros centrais.";
+      }
 
       const airbnbBtn = document.getElementById("modalAirbnbBtn");
       if (airbnbBtn) airbnbBtn.href = getAirbnbSearchUrl(base);
