@@ -119,11 +119,15 @@
       <button onclick="switchTab('map')" id="tab-map" class="py-3 px-2 tab-active transition-colors whitespace-nowrap">🗺️ Mapa & Inspetor da Rota</button>
       <button onclick="switchTab('itinerary')" id="tab-itinerary" class="py-3 px-2 text-slate-500 hover:text-slate-800 transition-colors whitespace-nowrap">📋 Cronograma (14 Etapas)</button>
       <button onclick="switchTab('costs')" id="tab-costs" class="py-3 px-2 text-slate-500 hover:text-slate-800 transition-colors whitespace-nowrap">💰 Custos Reais Detalhados</button>
-      <button onclick="switchTab('airbnb')" id="tab-airbnb" class="py-3 px-2 text-slate-500 hover:text-slate-800 transition-colors whitespace-nowrap flex items-center gap-1.5">
+      <button onclick="switchTab('airbnb')" id="tab-airbnb" class="py-3 px-2 text-slate-500 hover:text-slate-800 transition-colors whitespace-nowrap flex items-center gap-1.5 cursor-pointer">
         <span>🏡 Cotações de Airbnbs</span>
         <span id="tabAirbnbBadge" class="bg-sky-100 text-sky-800 text-[10px] font-bold px-1.5 py-0.5 rounded-full">3</span>
       </button>
-      <button onclick="switchTab('spanish')" id="tab-spanish" class="py-3 px-2 text-slate-500 hover:text-slate-800 transition-colors whitespace-nowrap flex items-center gap-1.5">
+      <button onclick="switchTab('transport')" id="tab-transport" class="py-3 px-2 text-slate-500 hover:text-slate-800 transition-colors whitespace-nowrap flex items-center gap-1.5 cursor-pointer">
+        <span>✈️ Cotações de Transporte</span>
+        <span id="tabTransportBadge" class="bg-sky-100 text-sky-800 text-[10px] font-bold px-1.5 py-0.5 rounded-full">0</span>
+      </button>
+      <button onclick="switchTab('spanish')" id="tab-spanish" class="py-3 px-2 text-slate-500 hover:text-slate-800 transition-colors whitespace-nowrap flex items-center gap-1.5 cursor-pointer">
         <span>🎓 Espanhol Prático</span>
       </button>
     </div>
@@ -639,6 +643,66 @@
         <!-- Injetado dinamicamente via JS -->
       </div>
 
+    </div>
+
+    <!-- ========================================== -->
+    <!-- ✈️ ABA: CENTRAL DE COTAÇÕES DE TRANSPORTE -->
+    <!-- ========================================== -->
+    <div id="content-transport" class="hidden space-y-6">
+      <!-- HEADER HERO DA CENTRAL DE TRANSPORTES -->
+      <div class="bg-gradient-to-br from-sky-900 via-slate-900 to-indigo-950 rounded-2xl p-6 text-white shadow-lg relative overflow-hidden">
+        <div class="absolute -right-10 -bottom-10 opacity-10 text-9xl select-none pointer-events-none">✈️</div>
+        <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <div class="flex items-center gap-2 mb-2 flex-wrap">
+              <span class="text-xs px-2.5 py-0.5 rounded-full bg-sky-500/20 text-sky-200 border border-sky-400/30 font-bold inline-block">
+                ✈️ Voos • 🚌 Ônibus • ⛴️ Ferries • 🚗 Carros
+              </span>
+              <span class="text-xs px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-200 border border-emerald-400/30 font-bold inline-block">
+                14 Trechos da Expedição
+              </span>
+            </div>
+            <h2 class="text-2xl md:text-3xl font-black tracking-tight">Central de Cotações de Transporte</h2>
+            <p class="text-xs text-slate-300 mt-1 max-w-2xl leading-relaxed">
+              Monitore, pesquise e cadastre as passagens aéreas, ônibus leito interestaduais e transfers da viagem. Ao cadastrar um valor, os totais da expedição e a tabela financeira recalculam automaticamente.
+            </p>
+          </div>
+          <div class="flex items-center gap-2 shrink-0">
+            <button type="button" onclick="openQuickTransportModal(baseData && baseData[0] ? baseData[0].id : 'ba')" class="px-4 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 text-xs font-black shadow-md transition-all hover:scale-105 flex items-center gap-1.5 cursor-pointer">
+              <span>➕</span> Nova Cotação de Transporte
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- KPIS DA CENTRAL DE TRANSPORTE -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-2xs">
+          <span class="text-[11px] text-slate-400 font-bold block uppercase tracking-wider">Total Previsto Transporte</span>
+          <span class="text-xl font-black text-slate-900 block mt-1" id="kpiTransTotal">R$ 0</span>
+          <span class="text-[10px] text-slate-500 block mt-0.5">Cotações ativas + metas</span>
+        </div>
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-2xs">
+          <span class="text-[11px] text-slate-400 font-bold block uppercase tracking-wider">Meta Orçamentária</span>
+          <span class="text-xl font-black text-slate-700 block mt-1" id="kpiTransTarget">R$ 0</span>
+          <span class="text-[10px] text-slate-400 block mt-0.5">Planejado original</span>
+        </div>
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-2xs">
+          <span class="text-[11px] text-slate-400 font-bold block uppercase tracking-wider">Balanço vs Meta</span>
+          <span class="text-xl font-black text-emerald-700 block mt-1" id="kpiTransDiff">R$ 0</span>
+          <span class="text-[10px] text-slate-500 block mt-0.5" id="kpiTransDiffSub">Dentro do planejado</span>
+        </div>
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-2xs">
+          <span class="text-[11px] text-slate-400 font-bold block uppercase tracking-wider">Status dos Trechos</span>
+          <span class="text-xl font-black text-sky-800 block mt-1" id="kpiTransCount">0 / 14</span>
+          <span class="text-[10px] text-slate-500 block mt-0.5" id="kpiTransCountSub">Trechos com cotação</span>
+        </div>
+      </div>
+
+      <!-- LISTA CRONOLÓGICA DE TRECHOS DE TRANSPORTE -->
+      <div class="space-y-3" id="transportLegsContainer">
+        <!-- Injetado dinamicamente via renderTransportView() -->
+      </div>
     </div>
 
     <!-- ABA 2.7: CURSOS & IMERSÃO EM ESPANHOL -->
@@ -1856,6 +1920,8 @@
       renderAirbnbCards();
       updateAirbnbKPIs();
       updateAirbnbBadge();
+      updateTransportBadge();
+      renderTransportView();
 
       return true;
     }
@@ -2830,6 +2896,10 @@
         } catch (e) {}
       }
 
+      updateTransportBadge();
+      const tContainer = document.getElementById("transportLegsContainer");
+      if (tContainer) renderTransportView();
+
       if (immediateSync) {
         syncToCloud(true);
       } else if (typeof scheduleCloudSync === "function") {
@@ -2864,6 +2934,167 @@
       showToast(`⚙️ Orçamento de ${base.name} atualizado e sincronizado na nuvem!`);
       return true;
     }
+
+    function updateTransportBadge() {
+      const badge = document.getElementById("tabTransportBadge");
+      if (badge) {
+        const count = transportQuotes.filter(q => q.status !== "discarded").length;
+        badge.textContent = count;
+      }
+    }
+
+    function renderTransportView() {
+      updateTransportBadge();
+      const container = document.getElementById("transportLegsContainer");
+      if (!container || !baseData || baseData.length === 0) return;
+
+      const datesMap = calculateAllBaseDates(tripStartDate);
+      let totalEffectiveUsd = 0;
+      let totalPlannedUsd = 0;
+      let quotedCount = 0;
+      let bookedCount = 0;
+
+      const mult = profileMultiplier > 0 ? profileMultiplier : 1;
+      const rate = currentCurrency === "BRL" ? usdRate : 1;
+
+      let html = "";
+
+      baseData.forEach((base, index) => {
+        const effTrans = getBaseEffectiveTrans(base);
+        totalEffectiveUsd += effTrans.costUsd;
+        totalPlannedUsd += effTrans.plannedCostUsd;
+
+        if (effTrans.hasQuote) {
+          quotedCount++;
+          if (effTrans.isBooked) bookedCount++;
+        }
+
+        const bDates = datesMap[base.id];
+        const travelDate = bDates ? bDates.displayCheckin : "Início da etapa";
+
+        const searchInfo = AIRPORT_SEARCH_MAP[base.id] || { from: "Origem", to: base.name, query: `voo para ${base.name}` };
+        const queryEnc = encodeURIComponent(searchInfo.query);
+
+        html += `
+          <div class="bg-white rounded-2xl p-4 md:p-5 border ${effTrans.isAboveMeta ? 'border-rose-200 ring-1 ring-rose-200' : (effTrans.isBooked ? 'border-purple-200 ring-1 ring-purple-200 bg-purple-50/10' : (effTrans.hasQuote ? 'border-sky-200 bg-sky-50/10' : 'border-slate-200'))} shadow-sm transition-all hover:border-slate-300">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <!-- LADO ESQUERDO: INFORMAÇÕES DO TRECHO -->
+              <div class="flex items-start gap-3.5 min-w-0">
+                <span class="text-2xl p-2.5 rounded-xl ${effTrans.isBooked ? 'bg-purple-100 text-purple-800' : (effTrans.hasQuote ? 'bg-sky-100 text-sky-800' : 'bg-slate-100 text-slate-700')} shrink-0">
+                  ${effTrans.icon}
+                </span>
+                <div class="min-w-0">
+                  <div class="flex items-center gap-2 flex-wrap">
+                    <span class="text-xs font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">Trecho ${index + 1} de 14</span>
+                    <h3 class="text-base font-bold text-slate-900">${base.flag} ${base.name}</h3>
+                    <span class="text-xs px-2 py-0.5 rounded-full bg-sky-50 text-sky-800 font-bold border border-sky-200">📅 Viagem: ${travelDate}</span>
+                  </div>
+
+                  <p class="text-xs text-slate-600 mt-1 font-medium">
+                    ${base.transType}
+                  </p>
+
+                  <!-- COTAÇÃO VINCULADA OU STATUS -->
+                  <div class="mt-2 flex items-center gap-2 flex-wrap">
+                    ${effTrans.hasQuote ? `
+                      <span class="inline-flex items-center gap-1.5 text-xs font-bold px-2.5 py-1 rounded-lg ${effTrans.isBooked ? 'bg-purple-100 text-purple-900 border border-purple-300' : (effTrans.isSelected ? 'bg-emerald-100 text-emerald-900 border border-emerald-300' : 'bg-amber-100 text-amber-900 border border-amber-300')}">
+                        ${effTrans.isBooked ? '🎉 Passagem Comprada / Emitida' : (effTrans.isSelected ? '⭐ Opção Escolhida' : '🟡 Cotação em Análise')}
+                      </span>
+                      ${effTrans.quote && effTrans.quote.company ? `<span class="text-xs text-slate-500 font-semibold">• Cia: ${effTrans.quote.company}</span>` : ''}
+                      ${effTrans.quote && effTrans.quote.notes ? `<span class="text-xs text-slate-400 truncate max-w-xs" title="${effTrans.quote.notes}">(${effTrans.quote.notes})</span>` : ''}
+                    ` : `
+                      <span class="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-lg bg-slate-100 text-slate-500 border border-slate-200">
+                        ⚪ Nenhuma cotação cadastrada (usando meta planejada)
+                      </span>
+                    `}
+                  </div>
+
+                  <!-- ATALHOS DE BUSCA -->
+                  <div class="mt-3 flex items-center gap-2 flex-wrap">
+                    <button type="button" onclick="openQuickTransportModal('${base.id}')" class="inline-flex items-center gap-1 text-[11px] font-bold ${effTrans.hasQuote ? 'bg-sky-50 text-sky-800 hover:bg-sky-100 border-sky-300' : 'bg-sky-600 text-white hover:bg-sky-700 shadow-2xs'} border px-3 py-1 rounded-lg transition-colors cursor-pointer">
+                      <span>${effTrans.hasQuote ? '✏️' : '➕'}</span> ${effTrans.hasQuote ? 'Editar Cotação' : 'Cotar Este Trecho'}
+                    </button>
+                    ${effTrans.quote && effTrans.quote.url ? `
+                    <a href="${effTrans.quote.url}" target="_blank" class="inline-flex items-center gap-1 text-[11px] font-bold bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 px-2.5 py-1 rounded-lg transition-colors shadow-2xs">
+                      <span>🎫</span> Ver Passagem Salva ↗
+                    </a>
+                    ` : ''}
+                    <a href="https://www.google.com/travel/flights?q=${queryEnc}" target="_blank" class="inline-flex items-center gap-1 text-[11px] font-bold text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 border border-slate-200 px-2.5 py-1 rounded-lg transition-colors">
+                      <span>🔍</span> Google Flights ↗
+                    </a>
+                    <a href="https://www.skyscanner.com.br/transporte/passagens-aereas/busca?q=${queryEnc}" target="_blank" class="inline-flex items-center gap-1 text-[11px] font-bold text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 border border-slate-200 px-2.5 py-1 rounded-lg transition-colors">
+                      <span>✈️</span> Skyscanner ↗
+                    </a>
+                    <a href="https://www.busbud.com/pt/search?q=${encodeURIComponent(searchInfo.from + ' ' + searchInfo.to)}" target="_blank" class="inline-flex items-center gap-1 text-[11px] font-bold text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 border border-slate-200 px-2.5 py-1 rounded-lg transition-colors">
+                      <span>🚌</span> Busbud ↗
+                    </a>
+                    <button type="button" onclick="openBudgetAdjustModal('${base.id}')" class="text-[11px] font-semibold text-purple-700 hover:text-purple-900 underline ml-1 cursor-pointer">
+                      ⚙️ Ajustar Meta
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- LADO DIREITO: VALOR E BALANÇO -->
+              <div class="flex items-center justify-between md:justify-end gap-4 pt-3 md:pt-0 border-t md:border-t-0 border-slate-100 shrink-0 text-right">
+                <div>
+                  <span class="text-xs text-slate-400 block">${effTrans.hasQuote ? (effTrans.isBooked ? 'Custo Real Emitido' : 'Valor Cotado') : 'Meta Planejada'}</span>
+                  <span class="text-lg font-black ${effTrans.isAboveMeta ? 'text-rose-700' : (effTrans.isBooked ? 'text-purple-700' : 'text-slate-900')}">
+                    ${formatRawMoney(effTrans.cost, currentCurrency)}
+                  </span>
+                  ${effTrans.hasQuote ? (effTrans.isAboveMeta ? `
+                    <span class="text-[11px] font-bold text-rose-700 block mt-0.5">⚠️ +${formatRawMoney(effTrans.diffAbs, currentCurrency)} vs Meta</span>
+                  ` : (effTrans.isBelowMeta ? `
+                    <span class="text-[11px] font-bold text-emerald-700 block mt-0.5">🎉 -${formatRawMoney(effTrans.diffAbs, currentCurrency)} vs Meta</span>
+                  ` : `
+                    <span class="text-[11px] font-medium text-slate-400 block mt-0.5">Na meta exata</span>
+                  `)) : `
+                    <span class="text-[11px] text-slate-400 block mt-0.5">Meta: ${formatRawMoney(effTrans.plannedCost, currentCurrency)}</span>
+                  `}
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+
+      container.innerHTML = html;
+
+      // Atualiza KPIs do topo da Central de Transporte
+      const totalActive = totalEffectiveUsd * mult * rate;
+      const targetActive = totalPlannedUsd * mult * rate;
+      const diffActive = totalActive - targetActive;
+
+      const kpiTotalEl = document.getElementById("kpiTransTotal");
+      const kpiTargetEl = document.getElementById("kpiTransTarget");
+      const kpiDiffEl = document.getElementById("kpiTransDiff");
+      const kpiDiffSubEl = document.getElementById("kpiTransDiffSub");
+      const kpiCountEl = document.getElementById("kpiTransCount");
+      const kpiCountSubEl = document.getElementById("kpiTransCountSub");
+
+      if (kpiTotalEl) kpiTotalEl.textContent = formatRawMoney(totalActive, currentCurrency);
+      if (kpiTargetEl) kpiTargetEl.textContent = formatRawMoney(targetActive, currentCurrency);
+
+      if (kpiDiffEl) {
+        if (diffActive < -10) {
+          kpiDiffEl.className = "text-xl font-black text-emerald-700 block mt-1";
+          kpiDiffEl.textContent = `-${formatRawMoney(Math.abs(diffActive), currentCurrency)}`;
+          if (kpiDiffSubEl) kpiDiffSubEl.textContent = "🎉 Economia abaixo da meta";
+        } else if (diffActive > 10) {
+          kpiDiffEl.className = "text-xl font-black text-rose-700 block mt-1";
+          kpiDiffEl.textContent = `+${formatRawMoney(diffActive, currentCurrency)}`;
+          if (kpiDiffSubEl) kpiDiffSubEl.textContent = "⚠️ Sobrecusto vs meta";
+        } else {
+          kpiDiffEl.className = "text-xl font-black text-slate-700 block mt-1";
+          kpiDiffEl.textContent = "R$ 0";
+          if (kpiDiffSubEl) kpiDiffSubEl.textContent = "Dentro do planejado";
+        }
+      }
+
+      if (kpiCountEl) kpiCountEl.textContent = `${quotedCount} / ${baseData.length}`;
+      if (kpiCountSubEl) kpiCountSubEl.textContent = `${bookedCount} emitidos / comprados`;
+    }
+
 
 
     function selectBase(index) {
@@ -3600,7 +3831,7 @@
     }
 
     function switchTab(tabId) {
-      const tabs = ["map", "itinerary", "costs", "airbnb", "spanish"];
+      const tabs = ["map", "itinerary", "costs", "airbnb", "transport", "spanish"];
       tabs.forEach(t => {
         const btn = document.getElementById("tab-" + t);
         const content = document.getElementById("content-" + t);
@@ -3616,6 +3847,8 @@
       if (tabId === "airbnb") {
         renderAirbnbCards();
         updateAirbnbKPIs();
+      } else if (tabId === "transport") {
+        renderTransportView();
       }
     }
 
